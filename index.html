@@ -595,7 +595,68 @@ const STUDENTS = {
       { txt: "Par exemple, payer un fournisseur très en retard pour garder la trésorerie, c’est interdit. En France, le délai de paiement est de 60 jours maximum après la date de la facture (Code de commerce, art. L441-10)." },
       { txt: "Si on te demande quelque chose de contraire à l’éthique, propose une solution conforme et, si besoin, alerte : la loi Sapin II prévoit des dispositifs d’alerte dans les grandes entreprises." }
     ],
-    memo: ["Face à la pression d’un supérieur : rester poli, mais ne pas céder sur les règles.", "Délais de paiement : 60 jours maximum après la facture (art. L441-10).", "Proposer une solution conforme ; alerter si besoin (loi Sapin II)."] }
+    memo: ["Face à la pression d’un supérieur : rester poli, mais ne pas céder sur les règles.", "Délais de paiement : 60 jours maximum après la facture (art. L441-10).", "Proposer une solution conforme ; alerter si besoin (loi Sapin II)."] },
+  maehara: { name: "Hiroto Maehara", short: "Maehara", f: false, pre: 0, at: [17, 11], hair: "#B5793F", style: "short", skin: "#EBCDB0", svg: student("#F4E8D6", "#EBCDB0", "#B5793F", "short", "Maehara"),
+    title: "Calculer le prix plancher du vendeur",
+    lines: [
+      { txt: "Hé ! Avant le test de Koro-sensei, un truc que j’ai appris en vendant des billets pour la kermesse : un vendeur ne descend jamais sous un certain prix, son prix plancher." },
+      { txt: "Ce plancher, c’est en gros son coût de revient plus sa marge minimale. Si un ordinateur lui coûte 980 € et qu’il veut au moins 8 % de marge, il ne descendra pas sous 980 × 1,08, soit environ 1 060 €." },
+      { ex: true, txt: "Exemple : un T-shirt qui coûte 10 € à fabriquer, vendu avec au moins 20 % de marge : le vendeur ne descendra pas sous 12 €." },
+      { txt: "Ton plafond à toi, c’est ta MESORE, ta meilleure solution de rechange. Entre son plancher et ton plafond, c’est la ZOPA : la zone où un accord est possible." }
+    ],
+    memo: ["Prix plancher du vendeur ≈ coût de revient + marge minimale (980 € + 8 % ≈ 1 060 €).", "Le plafond de l’acheteur, c’est sa MESORE.", "La ZOPA va du plancher du vendeur au plafond de l’acheteur."] },
+  hara: { name: "Sumire Hara", short: "Hara", f: true, pre: 0, at: [23, 11], hair: "#3A2A20", style: "bob", skin: "#F1D3B3", svg: student("#F6E2E2", "#F1D3B3", "#3A2A20", "short", "Hara"),
+    title: "Les 4 principes de Harvard",
+    lines: [
+      { txt: "Je cuisine souvent pour toute la classe, et je m’arrange pour que chacun soit content. C’est un peu l’idée de la méthode raisonnée de Harvard, de Fisher et Ury (1981)." },
+      { txt: "Elle tient en quatre principes : séparer les personnes du problème ; se concentrer sur les intérêts, pas sur les positions ; inventer des options à bénéfice mutuel ; s’appuyer sur des critères objectifs." },
+      { txt: "Un critère objectif, c’est une référence que les deux acceptent : un prix de marché, un indice officiel, un devis comparable. Ça évite le bras de fer." },
+      { ex: true, txt: "Exemple : pour fixer le loyer d’une colocation, on regarde les prix du quartier au lieu de se disputer." }
+    ],
+    memo: ["Méthode de Harvard : séparer les personnes du problème, viser les intérêts, inventer des options à bénéfice mutuel, utiliser des critères objectifs.", "Critère objectif : une référence extérieure que les deux peuvent vérifier (prix de marché, indice, devis comparable)."] },
+  fuwa: { name: "Yuzuki Fuwa", short: "Fuwa", f: true, pre: 1, at: [13, 12], hair: "#2A2A30", style: "bob", skin: "#F3D7C0", svg: student("#E2E8F4", "#F3D7C0", "#2A2A30", "short", "Fuwa"),
+    title: "Les micro-expressions",
+    lines: [
+      { txt: "Comme dans les mangas policiers, ce sont les détails qui trahissent ! Paul Ekman a décrit 7 émotions de base reconnues dans de nombreuses cultures : joie, tristesse, colère, peur, surprise, dégoût et mépris." },
+      { txt: "Une micro-expression, c’est une émotion qui passe sur le visage en moins d’une demi-seconde, souvent malgré la personne." },
+      { txt: "Deux indices utiles : un vrai sourire plisse aussi les yeux, c’est le sourire de Duchenne ; un seul coin de la bouche qui se relève, c’est souvent du mépris ou de l’assurance." },
+      { txt: "Mais comme tout signal, c’est une piste, pas une preuve. On la vérifie par une question." }
+    ],
+    memo: ["Les 7 émotions de base d’Ekman : joie, tristesse, colère, peur, surprise, dégoût, mépris.", "Une micro-expression dure moins d’une demi-seconde.", "Sourire de Duchenne : les yeux plissent aussi. Un seul coin de la bouche relevé : souvent du mépris."] },
+  okajima: { name: "Taiga Okajima", short: "Okajima", f: false, pre: 3, at: [24, 20], hair: "#3A2A20", style: "short", skin: "#E6C4A6", svg: student("#E8EEF6", "#E6C4A6", "#3A2A20", "short", "Okajima"),
+    title: "Garder son calme face aux tactiques",
+    lines: [
+      { txt: "Moi, je me fais souvent surprendre… alors j’ai appris à garder mon calme. Séparer les personnes du problème, c’est rester respectueux même quand l’autre pousse fort." },
+      { txt: "Si tu penses que l’autre bluffe, ne l’accuse pas : « Vous bluffez ! » abîme la relation. Demande plutôt une preuve : « Pouvez-vous me montrer ce document ? »" },
+      { txt: "Et si la discussion se tend, propose une pause, ou reviens aux faits et aux critères objectifs." }
+    ],
+    memo: ["Rester respectueux même sous pression : séparer les personnes du problème.", "Face à un bluff : demander une preuve plutôt qu’accuser.", "Si ça se tend : une pause, ou retour aux faits et aux critères objectifs."] },
+  chiba: { name: "Ryunosuke Chiba", short: "Chiba", f: false, pre: 3, at: [17, 21], hair: "#1A1A1E", style: "short", skin: "#EBCDB0", svg: student("#E4E4EA", "#EBCDB0", "#1A1A1E", "short", "Chiba"),
+    title: "Conclure et écrire l’accord",
+    lines: [
+      { txt: "Je parle peu, mais je vise juste : une négociation n’est pas finie quand on se serre la main." },
+      { txt: "À la fin, on récapitule tout ce qui a été convenu : prix, garantie, délais, conditions. Puis on le fait valider par les deux parties." },
+      { txt: "Ensuite, on formalise par écrit : compte rendu, bon de commande ou contrat. Un accord oral, ça s’envole." },
+      { txt: "Et on assure le suivi : livraison, respect des engagements, évaluation du fournisseur." }
+    ],
+    memo: ["Conclusion : récapituler tous les points et les faire valider.", "Formalisation : compte rendu écrit, bon de commande ou contrat.", "Suivi : livraison, respect des engagements, évaluation du fournisseur."] },
+  hayami: { name: "Rinka Hayami", short: "Hayami", f: true, pre: 4, at: [12, 23], hair: "#C8742E", style: "twin", skin: "#F3D7C0", svg: student("#F6E8DA", "#F3D7C0", "#C8742E", "twin", "Hayami"),
+    title: "Les achats responsables",
+    lines: [
+      { txt: "Je vise toujours la cible, pas le premier truc qui bouge. En achats, la cible, ce n’est pas seulement le prix le plus bas." },
+      { txt: "Un achat responsable, d’après la norme ISO 20400, tient compte du coût global : prix, transport, consommation, durée de vie, recyclage." },
+      { ex: true, txt: "Exemple : une imprimante pas chère, mais dont les cartouches coûtent une fortune, peut revenir bien plus cher en trois ans." },
+      { txt: "Il regarde aussi les impacts sociaux et environnementaux du fournisseur. Ces critères doivent être annoncés dans l’appel d’offres, puis vérifiés : une étiquette « verte » ne suffit pas." }
+    ],
+    memo: ["Achat responsable (ISO 20400) : raisonner en coût global, pas seulement en prix.", "Tenir compte des impacts sociaux et environnementaux du fournisseur.", "Des critères annoncés à l’avance et vérifiés."] },
+  kanzaki: { name: "Yukiko Kanzaki", short: "Kanzaki", f: true, pre: 6, at: [8, 12], hair: "#1A1A1E", style: "long", skin: "#F5DCC6", svg: student("#ECE6F2", "#F5DCC6", "#1A1A1E", "long", "Kanzaki"),
+    title: "Séparation des tâches et équité",
+    lines: [
+      { txt: "Avant d’entrer dans le bâtiment, deux règles que les portes scellées vont tester. D’abord, la séparation des tâches : la personne qui choisit le fournisseur ne valide pas seule la commande et le paiement." },
+      { txt: "Ça protège tout le monde contre les erreurs et les fraudes, comme un faux fournisseur ou une facture gonflée." },
+      { txt: "Ensuite, l’équité de traitement : tous les candidats reçoivent les mêmes informations, les mêmes règles et les mêmes délais. Pas de passe-droit, même pour un fournisseur qu’on apprécie." }
+    ],
+    memo: ["Séparation des tâches : choisir, valider et payer ne sont pas faits par la même personne.", "Elle protège contre les erreurs et les fraudes.", "Équité de traitement : mêmes informations, mêmes règles, mêmes délais pour tous les candidats."] }
 };
 Object.keys(STUDENTS).forEach(id => { CAST[id] = { name: STUDENTS[id].name, svg: STUDENTS[id].svg }; });
 
@@ -1708,7 +1769,28 @@ const CHECKS = {
     why: "Taire son prix limite est permis. Inventer une fausse offre est un mensonge, qui peut même constituer un dol (Code civil, art. 1137)." },
   isogai: { again: "Le Code de commerce fixe une limite précise, comptée à partir de la date de la facture.", q: "En France, quel est le délai de paiement maximum d’un fournisseur, en règle générale ?",
     opts: ["60 jours après la date de la facture.", "180 jours, si l’acheteur le décide.", "Il n’y a pas de limite."], ok: 0,
-    why: "Le Code de commerce (art. L441-10) fixe le délai à 60 jours maximum après la date de la facture. Payer plus tard pour garder sa trésorerie est interdit." }
+    why: "Le Code de commerce (art. L441-10) fixe le délai à 60 jours maximum après la date de la facture. Payer plus tard pour garder sa trésorerie est interdit." },
+  maehara: { again: "Son plancher, c’est son coût de revient augmenté de sa marge minimale.", q: "Un fournisseur a un coût de revient de 1 000 € et veut au moins 10 % de marge. Quel est, à peu près, son prix plancher ?",
+    opts: ["1 100 €", "1 000 €", "900 €"], ok: 0,
+    why: "1 000 € + 10 % = 1 100 €. En dessous, il n’atteindrait pas sa marge minimale : il refusera." },
+  hara: { again: "Un critère objectif ne dépend ni de toi ni de l’autre : c’est une référence extérieure que tout le monde peut vérifier.", q: "Lequel de ces éléments est un critère objectif ?",
+    opts: ["Les prix constatés sur le marché pour ce produit.", "Le prix qui me semble juste.", "Le prix que mon chef aimerait payer."], ok: 0,
+    why: "Les prix de marché sont une référence extérieure, vérifiable par les deux parties. Les deux autres ne sont que des souhaits." },
+  fuwa: { again: "Repense à l’asymétrie : un sourire d’un seul côté n’est pas un vrai sourire de joie.", q: "Un seul coin de la bouche se relève une fraction de seconde. Quelle émotion est-ce souvent ?",
+    opts: ["Le mépris.", "La joie.", "La peur."], ok: 0,
+    why: "Le mépris se lit souvent dans un coin de la bouche relevé d’un seul côté. La joie sincère plisse aussi les yeux." },
+  okajima: { again: "Accuser abîme la relation, accepter sans vérifier coûte cher. Quelle réponse permet de vérifier calmement ?", q: "Le fournisseur annonce une hausse de prix « obligatoire ». Tu soupçonnes un bluff. Que dis-tu ?",
+    opts: ["« Pouvez-vous me montrer le document qui justifie cette hausse ? »", "« Vous bluffez, et vous le savez. »", "« D’accord, nous acceptons. »"], ok: 0,
+    why: "Demander une preuve permet de vérifier sans accuser : la relation est préservée, et un bluff s’effondre de lui-même." },
+  chiba: { again: "Pense à la dernière étape du processus : la formalisation et le suivi.", q: "Tu viens de trouver un accord oral avec le fournisseur. Que fais-tu ensuite ?",
+    opts: ["Je récapitule les points convenus et j’envoie un compte rendu écrit.", "Rien : la poignée de main suffit.", "J’attends la facture pour voir ce qu’il a compris."], ok: 0,
+    why: "On récapitule, on fait valider, puis on formalise par écrit. Sans écrit, chacun se souvient d’un accord différent." },
+  hayami: { again: "Pense à tout ce que l’achat coûte, pas seulement le jour où on paie.", q: "Qu’est-ce que le coût global d’un achat ?",
+    opts: ["Le prix d’achat plus tous les coûts sur la durée de vie : transport, utilisation, entretien, fin de vie.", "Le prix affiché sur le devis.", "Le prix le plus bas trouvé sur Internet."], ok: 0,
+    why: "Le coût global additionne tous les coûts, de l’achat à la fin de vie. C’est la base d’un achat responsable (ISO 20400)." },
+  kanzaki: { again: "Repense à la séparation des tâches : choisir le fournisseur, valider et payer, ce sont des rôles différents.", q: "Qui doit valider le paiement d’une commande ?",
+    opts: ["Une autre personne que celle qui a choisi le fournisseur.", "La personne qui a choisi le fournisseur, pour aller plus vite.", "Le fournisseur lui-même."], ok: 0,
+    why: "C’est la séparation des tâches : choisir, valider et payer sont faits par des personnes différentes, pour éviter les erreurs et les fraudes." }
 };
 /* conversations des élèves (une par élève), construites à partir de STUDENTS */
 Object.keys(STUDENTS).forEach(id => {
@@ -1765,7 +1847,7 @@ function quest(){
   return QUESTS[S.q];
 }
 /* élèves à écouter avant la quête en cours */
-function prereqLeft(){ return Object.keys(STUDENTS).filter(id => STUDENTS[id].pre === S.q && !(S.met || {})[id]); }
+function prereqLeft(){ if (S.q === 0 && lessonsLeft().length) return []; return Object.keys(STUDENTS).filter(id => STUDENTS[id].pre === S.q && !(S.met || {})[id]); }
 const WHO = { nagisa: "Nagisa", karma: "Karma", lefort: "Claire Lefort", irina: "Irina", asano: "le directeur Asano", karasuma: "Karasuma-sensei", koro: "Koro-sensei" };
 function listFr(a){ return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " et " + a[a.length - 1]; }
 function advanceQuest(id){
@@ -1784,7 +1866,7 @@ function advanceQuest(id){
     S.lessons[id] = 1;
     const left = lessonsLeft().length;
     if (left){ save(); toast(`Leçon apprise et notée dans le carnet : ${LESSONS.length - left} / ${LESSONS.length}.`); }
-    else { S.tokens++; save(); toast("Tournée terminée ! +1 jeton d’indice. Koro-sensei t’attend devant le tableau pour le test."); }
+    else { S.tokens++; save(); toast("Tournée terminée ! +1 jeton d’indice. Avant le test de Koro-sensei, écoute encore Maehara et Hara, dans la cour."); }
     return;
   }
   if (NEXT_Q[id] !== undefined && S.q < NEXT_Q[id]){ S.q = NEXT_Q[id]; save(); toast("Nouvel objectif : " + QUESTS[S.q].obj); }
@@ -2508,10 +2590,14 @@ function updCam(dt, snap){
   if (snap || RM || !cam.ready){ cam.x = tx; cam.y = ty; cam.ready = true; return; }
   const k = 1 - Math.pow(0.0025, dt); cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
 }
+let clockT = 0;
+function playTime(){ const m = Math.floor((S.playMs || 0) / 60000), h = Math.floor(m / 60); return "⏱ " + (h ? h + " h " + String(m % 60).padStart(2, "0") : m + " min") + " / 1 h 30"; }
 function loopW(t){
   if (lastT === null) lastT = t;
   const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
   updateWorld(dt);
+  S.playMs = (S.playMs || 0) + dt * 1000; clockT += dt;
+  if (clockT > 1){ clockT = 0; const ck = $("#clock"); if (ck) ck.textContent = playTime(); if (((S.playMs / 1000) | 0) % 15 === 0) save(); }
   updCam(dt);
   if (ov.hidden) drawWorld(t);
   rafW = requestAnimationFrame(loopW);
@@ -2620,7 +2706,7 @@ function drawHud(){
     <div class="tools"><button class="btn small" id="b-carnet">Carnet</button><button class="btn small" id="b-guide">Guide</button><button class="btn small ghost" id="b-sound" aria-pressed="${!S.mute}">${S.mute ? "Son : non" : "Son : oui"}</button><button class="btn small ghost" id="b-menu">Menu</button></div>
     <div class="gauges"><div class="gauge hp"><span class="nm">Koro-sensei</span><div class="tr"><span style="width:${S.hp / HP_MAX * 100}%"></span></div><span class="v">${Math.ceil(S.hp)} PV</span></div>
       <div class="gauge trust"><span class="nm">Confiance</span><div class="tr"><span style="width:${S.trust * 10}%"></span></div><span class="v">${S.trust} / 10</span></div>
-      <span class="tokens" title="Jetons d’indice">★ ${S.tokens}</span><span class="tokens" title="Élèves écoutés" style="color:var(--chalk)">Élèves ${Object.keys(S.met || {}).length} / ${Object.keys(STUDENTS).length}</span></div>
+      <span class="tokens" title="Jetons d’indice">★ ${S.tokens}</span><span class="tokens" title="Élèves écoutés" style="color:var(--chalk)">Élèves ${Object.keys(S.met || {}).length} / ${Object.keys(STUDENTS).length}</span><span class="tokens" id="clock" title="Temps de jeu (durée conseillée : 1 h 30)" style="color:var(--chalk-2)">${playTime()}</span></div>
     <div class="objective"><b>Objectif</b><span>${esc(qd ? qd.obj : "")}</span></div>${teamBar()}`;
   $("#b-carnet").onclick = renderCarnet;
   $("#b-guide").onclick = renderGuide;
@@ -2704,14 +2790,14 @@ function renderCarnet(){
 function renderGuide(){
   cur = null;
   paint(`<section class="act"><div class="act-head">${portraitHead("karasuma")}<div><div class="kicker">Pour le groupe qui anime</div><h1 style="font-size:30px">Guide de l’animateur</h1></div></div></section>${SPLIT}<section class="act">
-    <div class="memo"><h3>Déroulé conseillé (environ 60 minutes)</h3><ul>
-      <li><b>5 min · Lancement.</b> Projetez le jeu, choisissez « Classe en équipes » et le mode Affrontement, formez des groupes de 3 à 5. Un élève tient le clavier et déplace le personnage ; la classe le guide.</li>
-      <li><b>14 min · Chapitre 1 (Koro-sensei).</b> Processus, méthode de Harvard, laboratoire de ZOPA, calcul de la MESORE.</li>
-      <li><b>12 min · Chapitre 2 (Nagisa).</b> Lecture de signaux non verbaux, puis entraînement éclair « Signal ou certitude ? ».</li>
-      <li><b>12 min · Chapitre 3 (Karma, puis Claire Lefort).</b> Échauffement « Repère la tactique », décision sur le cadeau, puis négociation en temps réel : la patience de Claire baisse, il faut cliquer « Observer » pendant ses micro-expressions.</li>
-      <li><b>10 min · Chapitre 4 (Irina, puis le directeur Asano).</b> Cinq dossiers éthiques, puis la pression du directeur. Les choix modifient la jauge de Confiance et l’histoire.</li>
-      <li><b>7 min · Chapitre 5 (gymnase).</b> Examen final : les bonnes réponses donnent des billes, puis la classe tire sur Koro-sensei quand il se moque. Fin selon la Confiance et le résultat.</li>
-    </ul></div>
+    <div class="memo"><h3>Déroulé conseillé (environ 1 h 30)</h3><p>Le chronomètre en haut de l’écran (⏱) indique le temps de jeu. Chaque élève rencontré dehors explique un thème puis pose une question de vérification : on apprend toujours avant d’être interrogé.</p><ul>
+      <li><b>5 min · Lancement.</b> Projetez le jeu, choisissez le mode (solo ou classe en équipes), regardez le prologue et le tutoriel. Un élève tient le clavier ; la classe le guide.</li>
+      <li><b>20 min · La préparation.</b> Tournée des 4 leçons (Nagisa, Karma, Karasuma-sensei, Irina), puis Maehara (prix plancher) et Hara (méthode de Harvard). Chapitre 1 avec Koro-sensei : 7 étapes, MESORE, ZOPA, ancrage. Koro-sensei s’enfuit dans le bâtiment.</li>
+      <li><b>14 min · L’observation.</b> Kayano (non-verbal), Nakamura (distances et silence), Fuwa (micro-expressions), puis le chapitre 2 de Nagisa : signaux, planche des 7 émotions, entraînement éclair.</li>
+      <li><b>22 min · La négociation.</b> Sugino (ouverture et ancrage), Kataoka (questions et concessions), Takebayashi (tactiques adverses), l’échauffement de Karma, puis Okajima (garder son calme) et Chiba (conclure par écrit). Négociation en temps réel avec Claire Lefort au portail, avec ses micro-expressions.</li>
+      <li><b>15 min · L’éthique.</b> Terasaka (cadeaux, confidentialité), Okuda (bluff, manipulation, vigilance), Hayami (achats responsables), le chapitre 4 d’Irina ; puis Isogai (résister à la pression) et la convocation du directeur Asano.</li>
+      <li><b>14 min · Le bâtiment de la 3-E.</b> Kanzaki (séparation des tâches, équité), Karasuma-sensei ouvre le bâtiment, 5 portes scellées à ouvrir avec les cartes d’éthique, puis l’examen final contre Koro-sensei au gymnase et l’une des 5 fins.</li>
+    </ul><p style="font-size:14px">Pour raccourcir ou reprendre une séance : Menu, puis « Aller à un chapitre ».</p></div>
     <div class="memo"><h3>Critères du cahier des charges</h3><div class="tablewrap" style="border-width:2px"><table><thead><tr><th>Critère</th><th>Ce que le jeu apporte</th></tr></thead><tbody>
       <tr><td>Rigueur et maîtrise</td><td>Chaque réponse est suivie d’une explication sourcée (Fisher et Ury, Mehrabian, Hall, Ekman, Sapin II, Code de commerce, Code civil, devoir de vigilance, ISO 20400).</td></tr>
       <tr><td>Application concrète</td><td>Un achat chiffré de 30 ordinateurs, une négociation complète en temps réel, des dilemmes éthiques aux conséquences visibles.</td></tr>

@@ -8,7 +8,7 @@ Thèmes : **processus de négociation**, **communication non verbale** et **éth
 
 Jouer en ligne : **https://jmelsofia8-bit.github.io/Classe-3E-negociation/** (ou ouvrez `index.html` dans un navigateur).
 
-Le jeu est une petite aventure : **dehors** (cour, forêt, terrain de sport, étang, portail, pavillon du directeur), on apprend auprès des élèves et des professeurs. Koro-sensei se cache ensuite dans le **bâtiment de la 3-E**, qui s'ouvre une fois tout appris : à l'intérieur, 5 portes scellées s'ouvrent chacune avec une carte d'éthique, puis on affronte Koro-sensei au gymnase.
+Durée conseillée : **environ 1 h 30** (chronomètre affiché en haut de l’écran). Le jeu est une petite aventure : **dehors** (cour, forêt, terrain de sport, étang, portail, pavillon du directeur), on apprend auprès de 15 élèves et des professeurs : chacun explique un thème puis pose une question de vérification. Koro-sensei se cache ensuite dans le **bâtiment de la 3-E**, qui s'ouvre une fois tout appris : à l'intérieur, 5 portes scellées s'ouvrent chacune avec une carte d'éthique, puis on affronte Koro-sensei au gymnase.
 
 - **Se déplacer** : flèches, Z Q S D ou W A S D, ou la croix à l'écran
 - **Parler** : E, Espace ou Entrée, ou le bouton rond
