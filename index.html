@@ -320,7 +320,7 @@ const root = $("#root"), ov = $("#ov"), app = $("#app");
 const HP_MAX = 150;
 
 const FRESH = () => ({ name: "Élève", mode: "solo", answerMode: "all", teams: [], turn: 0, results: {}, best: {}, noTimer: false, assist: false,
-  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 7 * 32 + 16, py: 8 * 32 + 20, tokens: 0, found: {}, lessons: {}, cards: {}, started: false, nego: null, examWin: null, ending: null });
+  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 20 * 32, py: 16 * 32 + 16, map: "out", mapV: 2, tokens: 0, found: {}, lessons: {}, cards: {}, started: false, nego: null, examWin: null, ending: null });
 let S = FRESH();
 let cur = null;
 function load(){ try { const r = localStorage.getItem(SAVE_KEY); if (r) Object.assign(S, JSON.parse(r)); } catch(e){} }
@@ -627,7 +627,7 @@ c1: { no: 1, title: "Le temps de la préparation", label: "Chapitre 1", scored: 
     { t: "quiz", who: "karma", q: "Karma propose d’ouvrir à 700 €, « pour les choquer ». Quel prix d’ouverture choisis-tu ?",
       opts: ["700 €, comme le dit Karma", "1 040 €, justifié par les prix constatés sur le marché", "1 190 €, pour aller vite", "1 250 €, on accepte leur prix"], ok: 1,
       why: "L’ancrage marche s’il est ambitieux mais crédible. 1 040 € est sous la ZOPA, ce qui laisse de la marge, et il s’appuie sur les prix du marché (1 020 à 1 120 €). 700 € n’est pas crédible et abîme la relation dès la première minute." },
-    { t: "say", who: "koro", txt: "Excellent ! Votre arme principale n’est pas le couteau, c’est la préparation. Allez voir Nagisa : il a des choses à vous apprendre sur ce que le corps ne dit pas." }
+    { t: "say", who: "koro", txt: "Excellent ! Votre arme principale n’est pas le couteau, c’est la préparation. Et maintenant… attrapez-moi si vous pouvez ! Je me cache dans le bâtiment de la 3-E. Il restera fermé tant que vous n’aurez pas appris tout ce que vos camarades ont à vous enseigner dehors. Commencez par Nagisa, dans la cour. Nurufufu !" }
   ] },
 c2: { no: 2, title: "Le temps de l’observation", label: "Chapitre 2", scored: true, mentor: "nagisa",
   maxim: "Un geste n’est pas une preuve. C’est une question à poser.",
@@ -682,11 +682,11 @@ c2: { no: 2, title: "Le temps de l’observation", label: "Chapitre 2", scored: 
         { t: "Au Japon, « hai » veut toujours dire « j’accepte ».", a: 1, why: "Il signifie souvent « je vous écoute »." },
         { t: "En observant le corps, on détecte un mensonge 9 fois sur 10.", a: 1, why: "Environ 54 % seulement (Bond et DePaulo, 2006)." }
       ] },
-    { t: "say", who: "nagisa", txt: "Retiens : un geste n’est pas une preuve, c’est une question à poser. Karma veut t’entraîner avant ta vraie négociation. Il traîne au fond de la classe." }
+    { t: "say", who: "nagisa", txt: "Retiens : un geste n’est pas une preuve, c’est une question à poser. Karma veut t’entraîner avant ta vraie négociation. Il est sur le terrain de sport, en haut à droite." }
   ] },
 c3a: { title: "L’échauffement de Karma", label: "Chapitre 3",
   steps: [
-    { t: "say", who: "karma", txt: "Claire Lefort, de Pixelia, est en salle de réunion. Avant d’y aller, échauffement : je te lance ses répliques favorites. Dis-moi quelle tactique elle utilise. Vite." },
+    { t: "say", who: "karma", txt: "Claire Lefort, de Pixelia, arrive au portail de l’école. Avant de la rejoindre, échauffement : je te lance ses répliques favorites. Dis-moi quelle tactique elle utilise. Vite." },
     { t: "blitz", who: "karma", title: "Repère la tactique", q: "45 secondes : quelle tactique se cache derrière chaque réplique ?", time: 45, choices: ["Fausse date limite", "Grignotage", "Ancrage", "Silence", "Menace"],
       items: [
         { t: "« Ce prix ne tient que jusqu’à ce soir 18 h. »", a: 0, why: "Urgence sans justification : demande-la par écrit." },
@@ -754,7 +754,7 @@ c4a: { no: 4, title: "Le temps de l’éthique", label: "Chapitre 4", scored: tr
       opts: ["Tu signes : ce n’est pas ton usine.", "Tu demandes des preuves (audit indépendant, certifications), tu ajoutes un critère RSE, et tu écartes l’offre si le risque est confirmé.", "Tu demandes un prix encore plus bas."], ok: 1,
       fx: { 0: () => { S.flags.forced = true; trustAdd(-3); }, 1: () => trustAdd(1), 2: () => trustAdd(-2) },
       why: "La loi sur le devoir de vigilance (2017) oblige les grandes entreprises (5 000 salariés en France ou 10 000 dans le monde) à prévenir les atteintes graves aux droits humains chez leurs fournisseurs. ISO 20400 guide les achats responsables." },
-    { t: "say", who: "irina", txt: "Pas mal. Ah, et le directeur Asano te cherche. Il n’a pas l’air de bonne humeur. Son bureau est en bas à droite." }
+    { t: "say", who: "irina", txt: "Pas mal. Ah, et le directeur Asano te cherche. Il n’a pas l’air de bonne humeur. Son pavillon est en bas à droite, après l’étang." }
   ] },
 /* ----- cartes d’éthique : une carte se pioche après certains chapitres, ou depuis le Menu.
    Chaque choix modifie la jauge de Confiance (cardFx). ----- */
@@ -821,7 +821,7 @@ c5pre: { title: "Les nouvelles de Karasuma", label: "Chapitre 5",
   steps: [
     { t: "say", who: "karasuma", cond: () => S.flags.obey, txt: "J’ai appris pour les 120 jours imposés à la PME. Le service juridique a tout annulé : c’était illégal. Retiens la leçon." },
     { t: "say", who: "karasuma", cond: () => S.flags.stood, txt: "Le directeur m’a parlé de ton refus. Il ne l’avouera jamais, mais il était impressionné. Moi aussi." },
-    { t: "say", who: "karasuma", txt: "Le gymnase est ouvert. Koro-sensei vous y attend pour l’examen final. Répondez bien pour gagner des munitions, puis visez quand il se moque de vous : c’est là qu’il est vulnérable." }
+    { t: "say", who: "karasuma", txt: "Le bâtiment de la 3-E est ouvert. Koro-sensei vous attend au gymnase, au fond, derrière 5 portes scellées : chacune s’ouvre avec une carte d’éthique. Ensuite, l’examen final. Répondez bien pour gagner des munitions, puis visez quand il se moque de vous : c’est là qu’il est vulnérable." }
   ] },
 c5: { no: 5, title: "Le temps de l’examen final", label: "Chapitre 5", final: true, mentor: "karasuma",
   maxim: "Vous ne m’avez pas battu avec un couteau. Vous m’avez battu avec une MESORE.",
@@ -958,6 +958,10 @@ function closeMission(done){
   if (done && id) advanceQuest(id);
   save(); drawHud();
   if (id === "c0" && !S.tutoDone && $(".stage")) startTuto();
+  // Koro-sensei s'enfuit à Mach 20 dans le bâtiment après le chapitre 1
+  if (done && id === "c1" && S.map === "out"){ const p = T2P(22, 7); puff(p.x, p.y - 14, 50, "#F5C518", 260, 1.1, 30); puff(p.x, p.y, 20, "dust", 120, 0.8, 10); sfx("open"); setTimeout(() => toast("Koro-sensei s’est enfui dans le bâtiment à Mach 20 ! " + QUESTS[S.q].obj), 400); }
+  // une porte scellée s'ouvre
+  if (done && CARDS.includes(id) && S.map === "in"){ sfx("star"); const gt = nextGate(); setTimeout(() => toast(gt ? "La porte s’ouvre ! Encore " + (["1", "2", "3", "4", "g"].filter(ch => !gateOpen(ch)).length) + " porte(s) avant Koro-sensei." : "La dernière porte s’ouvre : Koro-sensei t’attend au gymnase !"), 350); }
   if (done && CARD_AFTER.includes(id) && $(".stage")) setTimeout(() => { if (ov.hidden && !cur){ sfx("open"); drawCard(false); } }, 900);
 }
 function startChapter(id){
@@ -1585,20 +1589,20 @@ function finishChapter(){
 
 /* ---------- quêtes ---------- */
 const QUESTS = [
-  { npc: "koro", ch: "c1", obj: "Parle à Koro-sensei, devant le tableau de la classe 3-E." },
-  { npc: "nagisa", ch: "c2", obj: "Nagisa t’attend dans la classe 3-E." },
-  { npc: "karma", ch: "c3a", obj: "Karma veut t’entraîner : il est au fond de la classe 3-E." },
-  { npc: "lefort", ch: "c3b", obj: "Rejoins Claire Lefort en salle de réunion (en haut à droite)." },
-  { npc: "irina", ch: "c4a", obj: "Irina t’attend en salle des profs (en bas à gauche)." },
-  { npc: "asano", ch: "c4b", obj: "Le directeur Asano te convoque dans son bureau (en bas à droite)." },
-  { npc: "karasuma", ch: "c5pre", obj: "Karasuma a des nouvelles : salle des profs." },
-  { npc: "koro", ch: "c5", obj: "Le gymnase est ouvert : affronte Koro-sensei !" },
+  { npc: "koro", ch: "c1", obj: "Koro-sensei t’attend devant la porte du bâtiment de la 3-E." },
+  { npc: "nagisa", ch: "c2", obj: "Nagisa t’attend dans la cour, devant le bâtiment." },
+  { npc: "karma", ch: "c3a", obj: "Karma veut t’entraîner : il est sur le terrain de sport (en haut à droite)." },
+  { npc: "lefort", ch: "c3b", obj: "Claire Lefort arrive au portail de l’école (en bas) : va l’accueillir." },
+  { npc: "irina", ch: "c4a", obj: "Irina t’attend au bord de l’étang (en bas à gauche)." },
+  { npc: "asano", ch: "c4b", obj: "Le directeur Asano te convoque devant son pavillon (en bas à droite)." },
+  { npc: "karasuma", ch: "c5pre", obj: "Karasuma-sensei t’attend dans la clairière de la forêt (à gauche)." },
+  { npc: "koro", ch: "c5", obj: "Le bâtiment est ouvert ! Entre, ouvre les 5 portes scellées, puis affronte Koro-sensei au gymnase." },
   { npc: null, ch: null, obj: "Année terminée ! Explore l’école, ou rejoue depuis le menu." }
 ];
 const NEXT_Q = { c1: 1, c2: 2, c3a: 3, c3b: 4, c4a: 5, c4b: 6, c5pre: 7 };
 /* cartes d’éthique : piochées après ces chapitres (dans l'ordre), ou à la demande depuis le Menu */
 const CARDS = ["k1", "k2", "k3", "k4", "k5"];
-const CARD_AFTER = ["c1", "c2", "c3a", "c3b", "c4b"];
+const CARD_AFTER = []; /* les cartes ouvrent désormais les portes scellées du bâtiment */
 function cardFx(id, d, ok){
   if (!S.cards) S.cards = {};
   trustAdd(d); S.cards[id] = ok ? "ok" : "ko"; save();
@@ -1646,8 +1650,9 @@ const CHATTER = {
 };
 
 /* ---------- le monde (canevas) ---------- */
-const TILE = 32, COLS = 30, ROWS = 18, WW = COLS * TILE, WH = ROWS * TILE;
-const MAP = [
+/* deux cartes : l'extérieur (on apprend auprès des camarades) et le bâtiment de la 3-E (un donjon à 5 portes scellées, Koro-sensei au gymnase) */
+const TILE = 32;
+const IN_MAP = [
   "##############################",
   "#BBBBBBBBBBBB#SSSSSSSSSSSSSSS#",
   "#............#...............#",
@@ -1656,8 +1661,8 @@ const MAP = [
   "#..DD.DD.DD..#...............#",
   "#............#P.............P#",
   "######d##############d########",
-  "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
-  "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+  "#,,,,,,,,,,,,,4,,,3,,,,2,,,1,X",
+  "#,,,,,,,,,,,,,4,,,3,,,,2,,,1,X",
   "#####d#####g#########d########",
   "#.........#GGGGGGGGG#........#",
   "#.TTT.....#GGGGGGGGG#..TTTT..#",
@@ -1667,8 +1672,7 @@ const MAP = [
   "#.........#GGGGGGGGG#........#",
   "##############################"
 ];
-const SOLID = new Set(["#", "B", "D", "T", "S", "P"]);
-const ROOMS = [
+const IN_ROOMS = [
   { n: "Classe 3-E", x: 1, y: 1, w: 12, h: 6, f: "#B9895A" },
   { n: "Salle de réunion", x: 14, y: 1, w: 15, h: 6, f: "#9DA7A3" },
   { n: "Couloir", x: 1, y: 8, w: 28, h: 2, f: "#C9C2B3" },
@@ -1676,6 +1680,62 @@ const ROOMS = [
   { n: "Gymnase", x: 11, y: 11, w: 9, h: 6, f: "#D9A35C" },
   { n: "Bureau du directeur", x: 21, y: 11, w: 8, h: 6, f: "#7E5B4A" }
 ];
+/* portes scellées du bâtiment : chacune s'ouvre avec une carte d'éthique ; la dernière (g) mène au gymnase */
+const GATE = { "1": "k1", "2": "k2", "3": "k3", "4": "k4", "g": "k5" };
+function makeOutside(){
+  const C = 40, R = 26, m = [...Array(R)].map(() => Array(C).fill(".")), rnd = rng(42);
+  const fill = (ch, x, y, w, h) => { for (let r = y; r < y + h; r++) for (let c = x; c < x + w; c++) if (m[r] && m[r][c] !== undefined) m[r][c] = ch; };
+  // forêt de la colline (à gauche), avec une clairière et un sentier
+  for (let r = 1; r < 12; r++) for (let c = 1; c < 12; c++) if (rnd() < 0.55) m[r][c] = "T";
+  fill(".", 3, 6, 5, 5); fill(",", 5, 9, 1, 4); fill(",", 3, 4, 1, 5); fill(",", 3, 8, 3, 1); fill(".", 2, 3, 3, 2);
+  // bâtiment de la 3-E : toit, façade, porte
+  fill("R", 14, 1, 12, 3); fill("H", 14, 4, 12, 2); m[5][19] = "D"; m[5][20] = "D";
+  fill("t", 13, 5, 1, 1); fill("t", 26, 5, 1, 1);
+  // allées
+  fill(",", 19, 6, 2, 18); fill(",", 4, 13, 31, 2); fill(",", 30, 8, 2, 5); fill(",", 24, 15, 1, 0);
+  // terrain de sport (en haut à droite)
+  fill("F", 27, 1, 12, 1); fill("S", 28, 2, 10, 6); m[4][28] = "G"; m[4][37] = "G"; fill(".", 30, 8, 2, 0);
+  // étang (en bas à gauche) et banc
+  fill("~", 3, 17, 8, 5); fill("~", 4, 16, 6, 1); fill("~", 4, 22, 6, 1); m[17][13] = "B"; m[17][14] = "B";
+  // pavillon du directeur (en bas à droite)
+  fill("R", 30, 16, 7, 3); fill("W", 30, 19, 7, 1); m[19][33] = "w"; fill(",", 33, 20, 1, 1); fill(",", 33, 15, 1, 1);
+  // portail de l'école (en bas)
+  fill("F", 1, 24, 16, 1); fill("F", 23, 24, 16, 1); m[24][17] = "P"; m[24][22] = "P"; fill(",", 18, 24, 4, 1);
+  // bordure d'arbres
+  fill("T", 0, 0, C, 1); fill("T", 0, R - 1, C, 1); fill("T", 0, 0, 1, R); fill("T", C - 1, 0, 1, R); fill("q", 18, 25, 4, 1);
+  // buissons, rochers et fleurs dans l'herbe (sans bloquer les passages)
+  for (let r = 7; r < 24; r++) for (let c = 1; c < C - 1; c++){
+    if (m[r][c] !== ".") continue;
+    const k = rnd();
+    const nearPath = [[0, 1], [1, 0], [0, -1], [-1, 0]].some(([dc, dr]) => (m[r + dr] || [])[c + dc] === ",");
+    if (k < 0.035 && !nearPath && c > 12) m[r][c] = rnd() < 0.7 ? "t" : "r";
+    else if (k < 0.12) m[r][c] = "f";
+  }
+  // cases à garder libres (personnages, étoiles, abords)
+  [[22, 7], [16, 9], [33, 5], [22, 22], [12, 18], [35, 21], [5, 8], [3, 3], [38, 9], [2, 23], [38, 22], [20, 7], [19, 7], [21, 8], [15, 9], [17, 9], [12, 19], [11, 18], [36, 21], [34, 21], [23, 22], [21, 22]].forEach(([c, r]) => { if ("tTr".includes(m[r][c])) m[r][c] = "."; });
+  return m.map(row => row.join(""));
+}
+const OUT_MAP = makeOutside();
+const OUT_ROOMS = [
+  { n: "Cour de la 3-E", x: 12, y: 6, w: 16, h: 7 },
+  { n: "Terrain de sport", x: 27, y: 1, w: 12, h: 8 },
+  { n: "Forêt de la colline", x: 1, y: 1, w: 11, h: 12 },
+  { n: "Étang", x: 1, y: 15, w: 14, h: 9 },
+  { n: "Pavillon du directeur", x: 28, y: 15, w: 11, h: 9 },
+  { n: "Portail de l’école", x: 15, y: 19, w: 10, h: 6 },
+  { n: "Allée de la colline", x: 1, y: 13, w: 38, h: 2 }
+];
+const SOLID_IN = new Set(["#", "B", "D", "T", "S", "P"]);
+const SOLID_OUT = new Set(["#", "T", "t", "r", "F", "R", "H", "~", "W", "w", "P", "q", "G", "B"]);
+let MAP = OUT_MAP, ROOMS = OUT_ROOMS, COLS = 40, ROWS = 26, WW = COLS * TILE, WH = ROWS * TILE, LAMPS = [];
+function setMap(id){
+  S.map = id;
+  MAP = id === "in" ? IN_MAP : OUT_MAP; ROOMS = id === "in" ? IN_ROOMS : OUT_ROOMS;
+  ROWS = MAP.length; COLS = MAP[0].length; WW = COLS * TILE; WH = ROWS * TILE;
+  LAMPS = [];
+  if (id === "in") ROOMS.forEach(rm => { const n = Math.max(1, Math.round(rm.w / 7)); for (let i = 0; i < n; i++) LAMPS.push({ x: (rm.x + rm.w * (i + 0.5) / n) * TILE, y: (rm.y + rm.h / 2) * TILE, r: Math.min(rm.w / n, rm.h) * TILE * 0.95, warm: rm.n !== "Salle de réunion" }); });
+  bgCv = null; curRoom = ""; if (typeof cam !== "undefined") cam.ready = false;
+}
 const LOOK = {
   player: { body: "#F4F4F4", vest: "#3B3F4A", hair: "#3A2A20", style: "short", skin: "#F1D3B3" },
   nagisa: { body: "#F4F4F4", vest: "#3B3F4A", hair: "#4C7BD9", style: "twin", skin: "#F3D7C0" },
@@ -1685,38 +1745,60 @@ const LOOK = {
   asano: { body: "#2F2F35", vest: "#2F2F35", hair: "#6E5E52", style: "slick", skin: "#EBCDB0" },
   lefort: { body: "#1F6E68", vest: "#1F6E68", hair: "#4A2F25", style: "bob", skin: "#E9C3A2" }
 };
-const STARS = [{ id: "s1", c: 12, r: 6 }, { id: "s2", c: 28, r: 9 }, { id: "s3", c: 1, r: 16 }, { id: "s4", c: 28, r: 16 }];
+const STARS = [{ id: "s1", c: 3, r: 3 }, { id: "s2", c: 38, r: 9 }, { id: "s3", c: 2, r: 23 }, { id: "s4", c: 38, r: 22 }];
 const T2P = (c, r) => ({ x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 });
+const DOOR_OUT = { x: 20 * TILE, y: 7 * TILE + 8 }, ENTRY_IN = { x: 28 * TILE + 16, y: 9 * TILE };
 function npcs(){
+  if (S.map === "in") return S.q >= 7 ? [{ id: "koro", ...T2P(15, 13) }] : [];
   const list = [
-    { id: "nagisa", ...T2P(5, 4) }, { id: "karma", ...T2P(11, 6) },
-    { id: "lefort", ...T2P(21, 5) }, { id: "irina", ...T2P(6, 14) },
-    { id: "karasuma", ...T2P(3, 11) }, { id: "asano", ...T2P(25, 14) }
+    { id: "nagisa", ...T2P(16, 9) }, { id: "karma", ...T2P(33, 5) },
+    { id: "lefort", ...T2P(22, 22) }, { id: "irina", ...T2P(12, 18) },
+    { id: "karasuma", ...T2P(5, 8) }, { id: "asano", ...T2P(35, 21) }
   ];
-  list.push(S.q >= 7 ? { id: "koro", ...T2P(15, 13) } : { id: "koro", ...T2P(9, 2) });
+  if (S.q === 0) list.push({ id: "koro", ...T2P(22, 7) });
   return list;
 }
-function gymOpen(){ return S.q >= 7; }
+function buildingOpen(){ return S.q >= 7; }
+function gymOpen(){ return !!(S.cards || {}).k5; }
+function gateOpen(ch){ return !!(S.cards || {})[GATE[ch]]; }
 function tileAt(c, r){ return (MAP[r] || "")[c] || "#"; }
-function solidAt(x, y){
-  const c = Math.floor(x / TILE), r = Math.floor(y / TILE), t = tileAt(c, r);
-  if (t === "g") return !gymOpen();
-  return SOLID.has(t);
+function solidCh(t){
+  if (S.map === "in"){ if (GATE[t]) return !gateOpen(t); return SOLID_IN.has(t); }
+  if (t === "D") return !buildingOpen();
+  return SOLID_OUT.has(t);
 }
+function solidAt(x, y){ return solidCh(tileAt(Math.floor(x / TILE), Math.floor(y / TILE))); }
 function blocked(x, y){
   if ([[x - 9, y - 2], [x + 9, y - 2], [x - 9, y + 12], [x + 9, y + 12]].some(([px, py]) => solidAt(px, py))) return true;
   return npcs().some(n => Math.hypot(n.x - x, n.y + 6 - y) < 20);
 }
+/* prochaine porte scellée du bâtiment (de l'entrée vers le gymnase) */
+function nextGate(){
+  const order = ["1", "2", "3", "4", "g"].find(ch => !gateOpen(ch));
+  if (!order) return null;
+  const spots = [];
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (MAP[r][c] === order) spots.push(T2P(c, r));
+  const x = spots.reduce((a, p) => a + p.x, 0) / spots.length, y = spots.reduce((a, p) => a + p.y, 0) / spots.length;
+  return { id: "gate", ch: order, card: GATE[order], x, y: order === "g" ? y - 4 : y };
+}
+/* cibles de l'objectif sur la carte actuelle : personnages ou lieux (porte du bâtiment, porte scellée) */
+function targetsHere(){
+  const qd = quest(); if (!qd) return [];
+  if (S.q === 7){
+    if (S.map === "out") return [{ id: "door", x: DOOR_OUT.x, y: 5 * TILE + 10 }];
+    const gt = nextGate(); if (gt) return [gt];
+  } else if (S.map === "in") return [{ id: "exit", x: 29 * TILE + 16, y: 9 * TILE }];
+  const ids = qd.npcs || (qd.npc ? [qd.npc] : []);
+  return npcs().filter(n => ids.includes(n.id));
+}
 
 let cv, g, keys = {}, lastT = null, walk = 0, facing = 1, faceY = 1, near = null, rafW = 0;
-const VW = WW, VH = WH, ZOOM = 1.65, DPR = Math.min(2, window.devicePixelRatio || 1);
+const VW = 960, VH = 576, ZOOM = 1.65, DPR = Math.min(2, window.devicePixelRatio || 1);
 const cam = { x: 0, y: 0, ready: false };
-let bgCv = null, bgKey = "", parts = [], stepT = 0, stepAlt = 0, curRoom = "", banner = { txt: "", t: 0 };
+let bgCv = null, bgKey = "", parts = [], stepT = 0, stepAlt = 0, curRoom = "", banner = { txt: "", t: 0 }, fade = 0;
 function rng(seed){ let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 10000) / 10000; }; }
 function shade(hex, k){ const n = parseInt(hex.slice(1), 16); let r = n >> 16, gg = (n >> 8) & 255, b = n & 255; const f = v => clamp(Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k), 0, 255); return "#" + ((1 << 24) + (f(r) << 16) + (f(gg) << 8) + f(b)).toString(16).slice(1); }
 function roomAt(x, y){ const c = x / TILE, r = y / TILE; return ROOMS.find(rm => c >= rm.x && c < rm.x + rm.w && r >= rm.y && r < rm.y + rm.h); }
-const LAMPS = [];
-ROOMS.forEach(rm => { const n = Math.max(1, Math.round(rm.w / 7)); for (let i = 0; i < n; i++) LAMPS.push({ x: (rm.x + rm.w * (i + 0.5) / n) * TILE, y: (rm.y + rm.h / 2) * TILE, r: Math.min(rm.w / n, rm.h) * TILE * 0.95, warm: rm.n !== "Salle de réunion" }); });
 
 /* ----- sons (synthétisés, aucun fichier) ----- */
 let AC = null, musicOn = false, musicTimer = 0;
@@ -1756,16 +1838,17 @@ function startMusic(){ if (musicOn) return; musicOn = true; music(); }
 
 /* ----- décor pré-rendu (sols, murs, mobilier) ----- */
 function buildBg(){
-  const key = gymOpen() ? "open" : "closed";
+  const key = S.map + "|" + buildingOpen() + "|" + CARDS.map(k => (S.cards || {})[k] ? 1 : 0).join("");
   if (bgCv && bgKey === key) return;
   bgKey = key; const SC = 2;
   bgCv = document.createElement("canvas"); bgCv.width = WW * SC; bgCv.height = WH * SC;
   const b = bgCv.getContext("2d"); b.scale(SC, SC);
   const R = rng(7);
+  if (S.map === "out") return buildOutside(b, R);
   b.fillStyle = "#121218"; b.fillRect(0, 0, WW, WH);
   ROOMS.forEach(rm => floor(b, rm, R));
-  // embrasures de portes : sol du couloir
-  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){ const ch = MAP[r][c]; if (ch === "d" || ch === "g") doorTile(b, c, r, ch); }
+  // embrasures de portes : sol du couloir ; portes scellées ; sortie
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){ const ch = MAP[r][c]; if (ch === "d" || ch === "g") doorTile(b, c, r, ch); else if (GATE[ch]) gateTile(b, c, r, ch); else if (ch === "X") exitTile(b, c, r); }
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (MAP[r][c] === "#") wallTile(b, c, r, R);
   // ombres portées des murs sur le sol
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
@@ -1822,11 +1905,109 @@ function doorTile(b, c, r, ch){
   b.fillStyle = "#C9C2B3"; b.fillRect(x, y, TILE, TILE);
   b.fillStyle = "#6B4A2B"; b.fillRect(x, y, 4, TILE); b.fillRect(x + TILE - 4, y, 4, TILE);
   b.fillStyle = "rgba(0,0,0,.2)"; b.fillRect(x + 4, y, TILE - 8, 3);
-  if (ch === "g" && !gymOpen()){
-    b.fillStyle = "#3A1E50"; b.fillRect(x + 2, y + 6, TILE - 4, TILE - 12);
-    b.save(); b.beginPath(); b.rect(x + 2, y + 6, TILE - 4, TILE - 12); b.clip(); b.fillStyle = "#F5C518"; for (let i = -2; i < 6; i++){ b.beginPath(); b.moveTo(x + i * 10, y + 6); b.lineTo(x + i * 10 + 5, y + 6); b.lineTo(x + i * 10 - 15, y + 26); b.lineTo(x + i * 10 - 20, y + 26); b.fill(); } b.restore();
-    b.fillStyle = "#17171C"; b.fillRect(x + 4, y + 12, TILE - 8, 9); b.fillStyle = "#fff"; b.font = "bold 7px sans-serif"; b.textAlign = "center"; b.fillText("FERMÉ", x + 16, y + 19);
+  if (ch === "g" && !gymOpen()) seal(b, x, y, 5);
+}
+/* porte scellée : barrière violette avec cadenas et numéro ; ouverte = simple encadrement */
+function seal(b, x, y, n){
+  b.fillStyle = "#2A1240"; b.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
+  b.save(); b.beginPath(); b.rect(x + 1, y + 1, TILE - 2, TILE - 2); b.clip();
+  b.fillStyle = "rgba(160,90,220,.55)"; for (let i = 0; i < 4; i++) b.fillRect(x + 3 + i * 8, y, 3, TILE);
+  b.strokeStyle = "rgba(245,197,24,.8)"; b.lineWidth = 1.5; b.beginPath(); b.moveTo(x, y + 6); b.lineTo(x + TILE, y + TILE - 6); b.moveTo(x + TILE, y + 6); b.lineTo(x, y + TILE - 6); b.stroke();
+  b.restore();
+  b.fillStyle = "#F5C518"; b.strokeStyle = "#17171C"; b.lineWidth = 1.5; b.beginPath(); b.arc(x + 16, y + 12, 4, Math.PI, 0); b.stroke(); b.fillRect(x + 10, y + 12, 12, 10); b.strokeRect(x + 10, y + 12, 12, 10);
+  b.fillStyle = "#17171C"; b.font = "bold 8px sans-serif"; b.textAlign = "center"; b.fillText(String(n), x + 16, y + 20);
+}
+function gateTile(b, c, r, ch){
+  const x = c * TILE, y = r * TILE;
+  b.fillStyle = "#5A4636"; b.fillRect(x + 12, y, 8, TILE);
+  if (!gateOpen(ch)) seal(b, x, y, ch);
+  else { b.fillStyle = "#6B4A2B"; b.fillRect(x + 12, y, 2, TILE); b.fillRect(x + 18, y, 2, TILE); b.fillStyle = "rgba(245,197,24,.25)"; b.fillRect(x + 14, y, 4, TILE); }
+}
+function exitTile(b, c, r){
+  const x = c * TILE, y = r * TILE, gr = b.createLinearGradient(x, 0, x + TILE, 0);
+  gr.addColorStop(0, "#C9C2B3"); gr.addColorStop(1, "#FFF6D6"); b.fillStyle = gr; b.fillRect(x, y, TILE, TILE);
+  b.fillStyle = "#6B4A2B"; b.fillRect(x, y, TILE, 3);
+  if (r === 9){ b.fillStyle = "#1D7A4C"; b.fillRect(x + 2, y - 16, TILE - 4, 10); b.fillStyle = "#fff"; b.font = "bold 7px sans-serif"; b.textAlign = "center"; b.fillText("SORTIE", x + 16, y - 8); }
+}
+/* ----- l'extérieur : herbe, allées, forêt, étang, bâtiment de la 3-E, terrain, pavillon, portail ----- */
+function buildOutside(b, R){
+  const at = (c, r) => (MAP[r] || "")[c] || "#";
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+    const x = c * TILE, y = r * TILE, ch = at(c, r);
+    // sol de base
+    const ground = ch === "," || ch === "D" || ch === "q" ? "path" : ch === "S" || ch === "G" ? "sand" : ch === "~" ? "water" : "grass";
+    if (ground === "grass"){
+      b.fillStyle = shade("#6FAE4E", (R() - 0.5) * 0.1); b.fillRect(x, y, TILE, TILE);
+      for (let i = 0; i < 7; i++){ b.fillStyle = R() < 0.5 ? "rgba(40,90,30,.35)" : "rgba(170,220,120,.35)"; const gx = x + R() * TILE, gy = y + R() * TILE; b.fillRect(gx, gy, 1.2, 3); }
+    } else if (ground === "path"){
+      b.fillStyle = shade("#CDAE7A", (R() - 0.5) * 0.08); b.fillRect(x, y, TILE, TILE);
+      for (let i = 0; i < 4; i++){ b.fillStyle = R() < 0.5 ? "rgba(120,90,50,.35)" : "rgba(255,240,210,.4)"; b.beginPath(); b.arc(x + R() * TILE, y + R() * TILE, 0.8 + R() * 1.2, 0, 7); b.fill(); }
+      [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dc, dr]) => { const n = at(c + dc, r + dr); if (n === "." || n === "f" || n === "t" || n === "r" || n === "T"){ b.fillStyle = "rgba(80,130,50,.35)"; if (dr) b.fillRect(x, dr < 0 ? y : y + TILE - 3, TILE, 3); else b.fillRect(dc < 0 ? x : x + TILE - 3, y, 3, TILE); } });
+      if (ch === "q"){ b.fillStyle = "#5C5C66"; b.fillRect(x, y + 8, TILE, TILE - 8); b.fillStyle = "#F1F0E8"; if (c % 2) b.fillRect(x + 8, y + 18, 14, 2); }
+    } else if (ground === "sand"){
+      b.fillStyle = shade("#D9BE8A", (R() - 0.5) * 0.06); b.fillRect(x, y, TILE, TILE);
+      for (let i = 0; i < 5; i++){ b.fillStyle = "rgba(150,110,60,.25)"; b.fillRect(x + R() * TILE, y + R() * TILE, 1.5, 1.5); }
+    } else {
+      b.fillStyle = "#3F86BE"; b.fillRect(x, y, TILE, TILE);
+      b.strokeStyle = "rgba(255,255,255,.25)"; b.lineWidth = 1; for (let i = 0; i < 2; i++){ const wy = y + 8 + i * 14 + R() * 4, wx = x + R() * 12; b.beginPath(); b.moveTo(wx, wy); b.quadraticCurveTo(wx + 5, wy - 2, wx + 10, wy); b.stroke(); }
+      [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dc, dr]) => { if (at(c + dc, r + dr) !== "~"){ b.fillStyle = "#D9C79A"; if (dr) b.fillRect(x, dr < 0 ? y : y + TILE - 4, TILE, 4); else b.fillRect(dc < 0 ? x : x + TILE - 4, y, 4, TILE); } });
+    }
+    if (ch === "f"){ for (let i = 0; i < 3; i++){ const fx = x + 6 + R() * 20, fy = y + 6 + R() * 20; b.fillStyle = ["#F5C518", "#F4F4F4", "#E86A8A", "#B48CE0"][Math.floor(R() * 4)]; for (let k = 0; k < 5; k++){ b.beginPath(); b.arc(fx + Math.cos(k * 1.26) * 2, fy + Math.sin(k * 1.26) * 2, 1.6, 0, 7); b.fill(); } b.fillStyle = "#E8741E"; b.beginPath(); b.arc(fx, fy, 1.2, 0, 7); b.fill(); } }
   }
+  // terrain de sport : lignes
+  b.strokeStyle = "rgba(255,255,255,.8)"; b.lineWidth = 2; b.strokeRect(28 * TILE + 4, 2 * TILE + 4, 10 * TILE - 8, 6 * TILE - 8);
+  b.beginPath(); b.moveTo(33 * TILE, 2 * TILE + 4); b.lineTo(33 * TILE, 8 * TILE - 4); b.stroke(); b.beginPath(); b.arc(33 * TILE, 5 * TILE, 26, 0, 7); b.stroke();
+  // éléments en relief, du haut vers le bas pour la profondeur
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+    const x = c * TILE, y = r * TILE, ch = at(c, r);
+    if (ch === "T") tree(b, x, y, R);
+    else if (ch === "t") bush(b, x, y, R);
+    else if (ch === "r"){ b.fillStyle = "rgba(0,0,0,.25)"; b.beginPath(); b.ellipse(x + 16, y + 25, 11, 4, 0, 0, 7); b.fill(); b.fillStyle = "#8E8E98"; b.beginPath(); b.ellipse(x + 16, y + 19, 11, 8, 0, 0, 7); b.fill(); b.fillStyle = "#B4B4BE"; b.beginPath(); b.ellipse(x + 13, y + 16, 6, 4, -0.3, 0, 7); b.fill(); }
+    else if (ch === "F"){ b.fillStyle = "rgba(0,0,0,.2)"; b.fillRect(x, y + 24, TILE, 3); b.fillStyle = "#8A6240"; b.fillRect(x, y + 12, TILE, 3); b.fillRect(x, y + 19, TILE, 3); b.fillStyle = "#6B4A2B"; b.fillRect(x + 2, y + 8, 4, 18); b.fillRect(x + 18, y + 8, 4, 18); b.fillStyle = "#A07850"; b.fillRect(x + 2, y + 8, 4, 2); b.fillRect(x + 18, y + 8, 4, 2); }
+    else if (ch === "G"){ b.strokeStyle = "#F4F4F4"; b.lineWidth = 3; b.strokeRect(x + 6, y - 10, 20, 40); b.strokeStyle = "rgba(255,255,255,.4)"; b.lineWidth = 1; for (let i = 1; i < 5; i++){ b.beginPath(); b.moveTo(x + 6, y - 10 + i * 8); b.lineTo(x + 26, y - 10 + i * 8); b.stroke(); } }
+    else if (ch === "B"){ b.fillStyle = "rgba(0,0,0,.25)"; b.fillRect(x + 2, y + 24, TILE - 4, 4); b.fillStyle = "#8A6240"; b.fillRect(x, y + 12, TILE, 5); b.fillRect(x, y + 4, TILE, 4); b.fillStyle = "#5A3A20"; b.fillRect(x + 4, y + 17, 3, 9); b.fillRect(x + TILE - 7, y + 17, 3, 9); }
+    else if (ch === "P"){ b.fillStyle = "rgba(0,0,0,.3)"; b.fillRect(x + 4, y + 26, 26, 5); b.fillStyle = "#9A9AA4"; b.fillRect(x + 4, y - 14, 24, 40); b.fillStyle = "#B8B8C2"; b.fillRect(x + 2, y - 18, 28, 6); b.fillStyle = "#6E6E78"; for (let i = 0; i < 4; i++) b.fillRect(x + 4, y - 6 + i * 9, 24, 1); }
+  }
+  // bâtiment de la 3-E : toit de tuiles et façade en bois
+  const bx = 14 * TILE, by = 1 * TILE, bw = 12 * TILE;
+  b.fillStyle = "rgba(0,0,0,.3)"; b.fillRect(bx + 6, by + 5 * TILE - 2, bw, 14);
+  b.fillStyle = "#4A3A30"; b.beginPath(); b.moveTo(bx - 10, by + 3 * TILE + 6); b.lineTo(bx + 20, by - 12); b.lineTo(bx + bw - 20, by - 12); b.lineTo(bx + bw + 10, by + 3 * TILE + 6); b.closePath(); b.fill();
+  for (let i = 0; i < 9; i++){ const yy = by - 8 + i * 12; b.fillStyle = i % 2 ? "#5E4A3C" : "#54423A"; b.fillRect(bx - 6 + i * 1.2, yy, bw + 12 - i * 2.4, 6); b.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 24; k++) b.fillRect(bx + k * 16 + (i % 2) * 8, yy, 1, 6); }
+  b.fillStyle = "#3A2C24"; b.fillRect(bx - 10, by + 3 * TILE + 2, bw + 20, 6);
+  b.fillStyle = "#9A6E46"; b.fillRect(bx, by + 3 * TILE + 8, bw, 2 * TILE - 8);
+  for (let k = 0; k < 24; k++){ b.fillStyle = k % 2 ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.05)"; b.fillRect(bx + k * 16, by + 3 * TILE + 8, 16, 2 * TILE - 8); }
+  for (let c = 14; c < 26; c++){ if (c === 19 || c === 20 || c % 2) continue; const wx = c * TILE + 4, wy = by + 3 * TILE + 16; b.fillStyle = "#EDE7DA"; b.fillRect(wx, wy, 26, 22); const wg = b.createLinearGradient(0, wy, 0, wy + 20); wg.addColorStop(0, "#9FD3F2"); wg.addColorStop(1, "#E8F4FA"); b.fillStyle = wg; b.fillRect(wx + 2, wy + 2, 22, 18); b.fillStyle = "#EDE7DA"; b.fillRect(wx + 12, wy + 2, 2, 18); b.fillRect(wx + 2, wy + 10, 22, 2); }
+  // porte : fermée (scellée) ou ouverte
+  const dx = 19 * TILE, dy = 5 * TILE - 30;
+  b.fillStyle = "#5A3A20"; b.fillRect(dx - 4, dy - 4, 2 * TILE + 8, 34);
+  if (buildingOpen()){ const dg = b.createLinearGradient(0, dy, 0, dy + 30); dg.addColorStop(0, "#1A1410"); dg.addColorStop(1, "#4A3A22"); b.fillStyle = dg; b.fillRect(dx, dy, 2 * TILE, 30); b.fillStyle = "rgba(245,197,24,.35)"; b.fillRect(dx + 8, dy + 22, 2 * TILE - 16, 8); }
+  else { b.fillStyle = "#7A5230"; b.fillRect(dx, dy, TILE - 1, 30); b.fillRect(dx + TILE + 1, dy, TILE - 1, 30); b.strokeStyle = "#B8B8C2"; b.lineWidth = 2; b.beginPath(); b.moveTo(dx, dy + 8); b.lineTo(dx + 2 * TILE, dy + 22); b.moveTo(dx + 2 * TILE, dy + 8); b.lineTo(dx, dy + 22); b.stroke(); b.fillStyle = "#F5C518"; b.fillRect(dx + TILE - 6, dy + 11, 12, 10); b.strokeStyle = "#17171C"; b.lineWidth = 1.5; b.strokeRect(dx + TILE - 6, dy + 11, 12, 10); }
+  b.fillStyle = "#1D3A2E"; b.fillRect(bx + bw / 2 - 46, by + 2 * TILE + 2, 92, 22); b.strokeStyle = "#C9A774"; b.lineWidth = 2; b.strokeRect(bx + bw / 2 - 46, by + 2 * TILE + 2, 92, 22);
+  b.fillStyle = "#F1F0E8"; b.font = "13px 'Mochiy Pop One', sans-serif"; b.textAlign = "center"; b.fillText("CLASSE 3-E", bx + bw / 2, by + 2 * TILE + 18);
+  // pavillon du directeur
+  const px = 30 * TILE, py = 16 * TILE, pw = 7 * TILE;
+  b.fillStyle = "rgba(0,0,0,.3)"; b.fillRect(px + 6, py + 4 * TILE - 2, pw, 12);
+  b.fillStyle = "#7A3A3A"; b.beginPath(); b.moveTo(px - 8, py + 3 * TILE + 4); b.lineTo(px + 16, py - 8); b.lineTo(px + pw - 16, py - 8); b.lineTo(px + pw + 8, py + 3 * TILE + 4); b.closePath(); b.fill();
+  for (let i = 0; i < 8; i++){ b.fillStyle = i % 2 ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.06)"; b.fillRect(px - 4 + i, py - 4 + i * 13, pw + 8 - i * 2, 6); }
+  b.fillStyle = "#F1EDE2"; b.fillRect(px, py + 3 * TILE, pw, TILE); b.fillStyle = "#5A3A20"; b.fillRect(33 * TILE + 6, py + 3 * TILE + 4, 20, TILE - 4);
+  [30.5, 31.6, 34.6, 35.7].forEach(c => { b.fillStyle = "#9FD3F2"; b.fillRect(c * TILE, py + 3 * TILE + 8, 18, 14); b.strokeStyle = "#8A8A94"; b.lineWidth = 1.5; b.strokeRect(c * TILE, py + 3 * TILE + 8, 18, 14); });
+  b.fillStyle = "#17171C"; b.fillRect(px + pw / 2 - 40, py + 2 * TILE + 6, 80, 16); b.fillStyle = "#E8C25A"; b.font = "bold 9px 'Zen Maru Gothic', sans-serif"; b.fillText("DIRECTION", px + pw / 2, py + 2 * TILE + 17);
+  // panneau du portail
+  b.fillStyle = "#1D3A2E"; b.fillRect(17.5 * TILE, 23 * TILE + 2, 5 * TILE, 16); b.fillStyle = "#F1F0E8"; b.font = "bold 9px 'Zen Maru Gothic', sans-serif"; b.fillText("COLLÈGE KUNUGIGAOKA", 20 * TILE, 23 * TILE + 13);
+  // plaques des lieux
+  ROOMS.forEach(rm => { if (rm.n.startsWith("Allée") || rm.n.startsWith("Cour") || rm.n.startsWith("Portail")) return; const tx = (rm.x + rm.w / 2) * TILE, ty = (rm.y + rm.h) * TILE - 8; b.font = "bold 9px 'Zen Maru Gothic', sans-serif"; const w = b.measureText(rm.n.toUpperCase()).width + 12; b.fillStyle = "rgba(14,14,18,.5)"; b.fillRect(tx - w / 2, ty - 10, w, 14); b.fillStyle = "rgba(241,240,232,.9)"; b.fillText(rm.n.toUpperCase(), tx, ty); });
+}
+function tree(b, x, y, R){
+  const s = 0.9 + R() * 0.25;
+  b.fillStyle = "rgba(0,0,0,.28)"; b.beginPath(); b.ellipse(x + 18, y + 27, 15 * s, 5, 0, 0, 7); b.fill();
+  b.fillStyle = "#6B4A2B"; b.fillRect(x + 13, y + 14, 6, 14);
+  const cx = x + 16, cy = y + 8;
+  [["#2F6B34", 0, 2, 16], ["#3E8A43", -5, -2, 11], ["#3E8A43", 6, -1, 11], ["#4FA352", -1, -7, 9], ["#6CBF62", -4, -9, 4]].forEach(([col, ox, oy, rr]) => { b.fillStyle = col; b.beginPath(); b.arc(cx + ox * s, cy + oy * s, rr * s, 0, 7); b.fill(); });
+}
+function bush(b, x, y, R){
+  b.fillStyle = "rgba(0,0,0,.25)"; b.beginPath(); b.ellipse(x + 16, y + 26, 12, 4, 0, 0, 7); b.fill();
+  [["#2F7049", 0, 4, 11], ["#3E8E5E", -6, 2, 7], ["#3E8E5E", 6, 1, 7], ["#5FAF6A", -2, -2, 4]].forEach(([col, ox, oy, rr]) => { b.fillStyle = col; b.beginPath(); b.arc(x + 16 + ox, y + 16 + oy, rr, 0, 7); b.fill(); });
+  if (R() < 0.4){ b.fillStyle = "#C8322F"; b.beginPath(); b.arc(x + 12, y + 15, 1.6, 0, 7); b.arc(x + 20, y + 19, 1.6, 0, 7); b.fill(); }
 }
 function wallTile(b, c, r, R){
   const x = c * TILE, y = r * TILE, below = tileAt(c, r + 1), face = below !== "#" && r < ROWS - 1;
@@ -1906,12 +2087,14 @@ function puff(x, y, n, col, sp, life, up){
 function updParts(dt){
   parts = parts.filter(p => (p.life -= dt) > 0);
   parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.94; p.vy *= 0.94; });
-  if (!RM && Math.random() < dt * 6){ const L = LAMPS[Math.floor(Math.random() * LAMPS.length)], a = Math.random() * 7, d = Math.random() * L.r * 0.7; parts.push({ x: L.x + Math.cos(a) * d, y: L.y + Math.sin(a) * d * 0.6, vx: (Math.random() - 0.5) * 6, vy: -3 - Math.random() * 4, life: 4, max: 4, col: "mote", s: 1 + Math.random() }); }
+  if (!RM && S.map === "out" && Math.random() < dt * 3){ const vw = VW / ZOOM; parts.push({ x: cam.x + Math.random() * vw, y: cam.y - 10, vx: 8 + Math.random() * 14, vy: 18 + Math.random() * 14, life: 9, max: 9, col: "leaf", s: 2 + Math.random() * 1.5, ph: Math.random() * 7, hue: Math.random() < 0.5 ? "#E8A23A" : "#7DBA55" }); }
+  if (!RM && LAMPS.length && Math.random() < dt * 6){ const L = LAMPS[Math.floor(Math.random() * LAMPS.length)], a = Math.random() * 7, d = Math.random() * L.r * 0.7; parts.push({ x: L.x + Math.cos(a) * d, y: L.y + Math.sin(a) * d * 0.6, vx: (Math.random() - 0.5) * 6, vy: -3 - Math.random() * 4, life: 4, max: 4, col: "mote", s: 1 + Math.random() }); }
 }
 function drawParts(){
   parts.forEach(p => {
     const k = p.life / p.max;
     if (p.col === "mote"){ g.fillStyle = `rgba(255,244,214,${0.5 * Math.sin(k * Math.PI)})`; g.fillRect(p.x, p.y, p.s, p.s); return; }
+    if (p.col === "leaf"){ p.ph += 0.05; g.save(); g.translate(p.x + Math.sin(p.ph) * 6, p.y); g.rotate(p.ph); g.globalAlpha = Math.min(1, k * 3); g.fillStyle = p.hue; g.beginPath(); g.ellipse(0, 0, p.s * 1.6, p.s * 0.8, 0, 0, 7); g.fill(); g.restore(); g.globalAlpha = 1; return; }
     g.globalAlpha = k * (p.col === "dust" ? 0.45 : 1); g.fillStyle = p.col === "dust" ? "#E8E0D0" : p.col;
     g.beginPath(); g.arc(p.x, p.y, p.s * (p.col === "dust" ? 1 + (1 - k) * 1.5 : k + 0.3), 0, 7); g.fill(); g.globalAlpha = 1;
   });
@@ -1926,8 +2109,8 @@ function drawWorld(t){
   g.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, -cam.x * DPR * ZOOM, -cam.y * DPR * ZOOM);
   g.imageSmoothingEnabled = true;
   g.drawImage(bgCv, cam.x * 2, cam.y * 2, vw * 2, vh * 2, cam.x, cam.y, vw, vh);
-  if (gymOpen()){ const k = RM ? 0.5 : 0.5 + Math.sin(t / 300) * 0.3; g.strokeStyle = `rgba(245,197,24,${k})`; g.lineWidth = 3; g.beginPath(); g.arc(15.5 * TILE, 14 * TILE, 50, 0, 7); g.stroke(); }
-  STARS.forEach(sr => {
+  if (S.map === "in" && gymOpen()){ const k = RM ? 0.5 : 0.5 + Math.sin(t / 300) * 0.3; g.strokeStyle = `rgba(245,197,24,${k})`; g.lineWidth = 3; g.beginPath(); g.arc(15.5 * TILE, 14 * TILE, 50, 0, 7); g.stroke(); }
+  if (S.map === "out") STARS.forEach(sr => {
     if (S.found[sr.id]) return; const p = T2P(sr.c, sr.r), k = 1 + Math.sin(t / 200) * 0.18, fl = RM ? 0 : Math.sin(t / 400) * 3;
     const gl = g.createRadialGradient(p.x, p.y + fl, 0, p.x, p.y + fl, 22); gl.addColorStop(0, "rgba(245,197,24,.55)"); gl.addColorStop(1, "rgba(245,197,24,0)"); g.fillStyle = gl; g.fillRect(p.x - 22, p.y - 22 + fl, 44, 44);
     g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(p.x, p.y + 12, 6, 2, 0, 0, 7); g.fill();
@@ -1935,40 +2118,54 @@ function drawWorld(t){
     if (!RM && Math.random() < 0.06) puff(p.x + (Math.random() - 0.5) * 14, p.y + fl, 1, "#FFE58A", 10, 0.7, 12);
   });
   const ents = npcs().map(n => ({ ...n, kind: "npc" })).concat([{ id: "player", x: S.px, y: S.py, kind: "player" }]).sort((a, b) => a.y - b.y);
-  const qd = quest(), targets = qd ? (qd.npcs || (qd.npc ? [qd.npc] : [])) : [];
+  const tg = targetsHere(), tids = tg.map(p => p.id);
   drawParts();
   ents.forEach(e => {
     if (e.id === "koro") drawKoroW(e.x, e.y, t);
     else if (e.kind === "player") drawChar(e.x, e.y, LOOK.player, walk, facing, faceY, t);
     else { const dx = S.px - e.x, dy = S.py - e.y, close = Math.hypot(dx, dy) < 120; drawChar(e.x, e.y, LOOK[e.id], 0, close ? (dx > 0 ? 1 : -1) : 0, close && Math.abs(dy) > Math.abs(dx) && dy < 0 ? -1 : 1, t); }
-    if (e.kind === "npc" && targets.includes(e.id)){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
+    if (e.kind === "npc" && tids.includes(e.id)){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
   });
+  // « ! » sur les lieux à atteindre (porte du bâtiment, porte scellée)
+  tg.filter(p => p.id === "door" || p.id === "gate").forEach(p => { const by = p.y - 34 + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(p.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(p.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", p.x, by + 5); });
+  // halo des portes scellées
+  if (S.map === "in"){ const gt = nextGate(); if (gt){ const k = RM ? 0.35 : 0.3 + Math.sin(t / 250) * 0.15; const gl = g.createRadialGradient(gt.x, gt.y, 0, gt.x, gt.y, 46); gl.addColorStop(0, `rgba(170,100,240,${k})`); gl.addColorStop(1, "rgba(170,100,240,0)"); g.fillStyle = gl; g.fillRect(gt.x - 46, gt.y - 46, 92, 92); } }
   lighting(t);
-  if (near){
-    const n = near, nm = CAST[n.id].name.split(" · ")[0];
-    g.font = "bold 11px 'Zen Maru Gothic', sans-serif"; const w = g.measureText("Parler à " + nm).width + 36;
-    const bx = clamp(n.x - w / 2, cam.x + 4, cam.x + vw - w - 4), by = n.y - (n.id === "koro" ? 82 : 72) + (RM ? 0 : Math.sin(t / 250) * 1.5);
+  const prompt = (x, y, label) => {
+    g.font = "bold 11px 'Zen Maru Gothic', sans-serif"; const w = g.measureText(label).width + 36;
+    const bx = clamp(x - w / 2, cam.x + 4, cam.x + vw - w - 4), by = y + (RM ? 0 : Math.sin(t / 250) * 1.5);
     g.fillStyle = "rgba(0,0,0,.3)"; roundRect(bx + 2, by + 3, w, 22, 7); g.fill();
     g.fillStyle = "#FFFDF6"; g.strokeStyle = INK; g.lineWidth = 2; roundRect(bx, by, w, 22, 7); g.fill(); g.stroke();
     g.fillStyle = "#E8741E"; roundRect(bx + 5, by + 4, 16, 14, 4); g.fill(); g.stroke(); g.fillStyle = INK; g.textAlign = "center"; g.fillText("E", bx + 13, by + 15);
-    g.textAlign = "left"; g.fillText("Parler à " + nm, bx + 26, by + 15);
-  }
+    g.textAlign = "left"; g.fillText(label, bx + 26, by + 15);
+  };
+  if (near){ const nm = CAST[near.id].name.split(" · ")[0]; prompt(near.x, near.y - (near.id === "koro" ? 82 : 72), "Parler à " + nm); }
+  else { const sp = nearSpot(); if (sp) prompt(sp.x, sp.y - 56, sp.label); }
   // couche écran : vignette, flèche d'objectif, mini-carte, bannière
   g.setTransform(DPR, 0, 0, DPR, 0, 0);
   const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.95); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.55)"); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
-  const tn = npcs().filter(n => targets.includes(n.id)).sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py))[0];
+  const tn = tg.slice().sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py))[0];
   if (tn){ const sx = (tn.x - cam.x) * ZOOM, sy = (tn.y - cam.y) * ZOOM; if (sx < 0 || sy < 0 || sx > VW || sy > VH){ const cx = VW / 2, cy = VH / 2, a = Math.atan2(sy - cy, sx - cx), m = 34, ex = clamp(cx + Math.cos(a) * 2000, m, VW - m), ey = clamp(cy + Math.sin(a) * 2000, m, VH - m), pul = RM ? 1 : 1 + Math.sin(t / 160) * 0.12;
     g.save(); g.translate(ex, ey); g.rotate(a); g.scale(pul, pul); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 3; g.beginPath(); g.moveTo(18, 0); g.lineTo(-10, -13); g.lineTo(-4, 0); g.lineTo(-10, 13); g.closePath(); g.fill(); g.stroke(); g.restore(); } }
-  minimap(targets);
+  minimap(tg);
   if (banner.t > 0){ g.globalAlpha = clamp(Math.min((2.6 - banner.t) / 0.3, banner.t / 0.5), 0, 1);
     g.font = "20px 'Mochiy Pop One', sans-serif"; g.textAlign = "center"; const w = g.measureText(banner.txt).width + 60, by = 34;
     const bgd = g.createLinearGradient(VW / 2 - w / 2, 0, VW / 2 + w / 2, 0); bgd.addColorStop(0, "rgba(14,14,18,0)"); bgd.addColorStop(0.2, "rgba(14,14,18,.8)"); bgd.addColorStop(0.8, "rgba(14,14,18,.8)"); bgd.addColorStop(1, "rgba(14,14,18,0)");
     g.fillStyle = bgd; g.fillRect(VW / 2 - w / 2, by - 4, w, 40); g.fillStyle = "#F5C518"; g.fillRect(VW / 2 - w / 2 + 30, by + 34, w - 60, 2);
     g.fillStyle = "#F1F0E8"; g.fillText(banner.txt, VW / 2, by + 24); g.globalAlpha = 1; }
+  if (fade > 0){ g.fillStyle = `rgba(8,8,12,${clamp(fade, 0, 1)})`; g.fillRect(0, 0, VW, VH); }
 }
 function lighting(t){
   const vw = VW / ZOOM, vh = VH / ZOOM;
   g.save();
+  if (S.map === "out"){
+    // lumière du jour, ombres de nuages qui passent, soleil doux
+    g.globalCompositeOperation = "multiply"; g.fillStyle = "#F3EDE0"; g.fillRect(cam.x, cam.y, vw, vh);
+    if (!RM) for (let i = 0; i < 4; i++){ const cx = ((t / 60 + i * 420) % (WW + 600)) - 300, cy = 140 + i * 190 + Math.sin(t / 5000 + i) * 40; const cg = g.createRadialGradient(cx, cy, 10, cx, cy, 190); cg.addColorStop(0, "rgba(90,100,130,.22)"); cg.addColorStop(1, "rgba(90,100,130,0)"); g.fillStyle = cg; g.fillRect(cx - 190, cy - 190, 380, 380); }
+    g.globalCompositeOperation = "screen";
+    const sg = g.createRadialGradient(cam.x + vw * 0.2, cam.y - 40, 20, cam.x + vw * 0.2, cam.y - 40, vw * 0.9); sg.addColorStop(0, "rgba(255,230,170,.35)"); sg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sg; g.fillRect(cam.x, cam.y, vw, vh);
+    g.restore(); return;
+  }
   g.globalCompositeOperation = "multiply"; g.fillStyle = "#CFCBDA"; g.fillRect(cam.x, cam.y, vw, vh);
   g.globalCompositeOperation = "screen";
   LAMPS.forEach(L => { if (L.x + L.r < cam.x || L.x - L.r > cam.x + vw || L.y + L.r < cam.y || L.y - L.r > cam.y + vh) return;
@@ -1981,11 +2178,12 @@ function lighting(t){
   g.restore();
 }
 function minimap(targets){
-  const s = 0.13, mw = WW * s, mh = WH * s, mx = VW - mw - 12, my = 12;
+  const s = 125 / Math.max(WW, WH * 1.4), mw = WW * s, mh = WH * s, mx = VW - mw - 12, my = 12;
   g.fillStyle = "rgba(10,10,14,.7)"; roundRect(mx - 5, my - 5, mw + 10, mh + 10, 8); g.fill();
   g.globalAlpha = 0.9; g.drawImage(bgCv, mx, my, mw, mh); g.globalAlpha = 1;
   g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 1; g.strokeRect(mx + cam.x * s, my + cam.y * s, VW / ZOOM * s, VH / ZOOM * s);
-  npcs().forEach(n => { const on = targets.includes(n.id); g.fillStyle = on ? "#F5C518" : "#E8741E"; g.beginPath(); g.arc(mx + n.x * s, my + n.y * s, on ? 3.5 : 2.2, 0, 7); g.fill(); });
+  npcs().forEach(n => { g.fillStyle = "#E8741E"; g.beginPath(); g.arc(mx + n.x * s, my + n.y * s, 2.2, 0, 7); g.fill(); });
+  targets.forEach(p => { g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 1; g.beginPath(); g.arc(mx + p.x * s, my + p.y * s, 3.8, 0, 7); g.fill(); g.stroke(); });
   g.fillStyle = "#fff"; g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.arc(mx + S.px * s, my + S.py * s, 3.5, 0, 7); g.fill(); g.stroke();
 }
 function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
@@ -2055,10 +2253,36 @@ function drawKoroW(x, y, t){
 /* déplacement au clic : plus court chemin sur la grille des cases (parcours en largeur) */
 let path = [], autoTalk = null;
 function walkable(c, r){
-  const t = tileAt(c, r);
-  if (t === "g") return gymOpen();
-  if (SOLID.has(t)) return false;
+  if (solidCh(tileAt(c, r))) return false;
   return !npcs().some(n => Math.floor(n.x / TILE) === c && Math.floor(n.y / TILE) === r);
+}
+/* lieux avec lesquels on interagit (hors personnages) : porte du bâtiment, portes scellées */
+function nearSpot(){
+  if (S.map === "out"){
+    if (Math.hypot(S.px - DOOR_OUT.x, S.py - DOOR_OUT.y) < 50 && !buildingOpen()) return { id: "door", x: DOOR_OUT.x, y: DOOR_OUT.y - 24, label: "Porte fermée" };
+    return null;
+  }
+  const gt = nextGate();
+  if (gt && Math.hypot(S.px - gt.x, S.py - gt.y) < 54) return { ...gt, label: "Ouvrir la porte scellée n° " + (gt.ch === "g" ? 5 : gt.ch) };
+  return null;
+}
+function useSpot(sp){
+  if (sp.id === "door"){
+    sfx("talk");
+    toast(S.q === 0 ? "La porte est fermée. Koro-sensei est juste à côté : parle-lui !" : "Le bâtiment est fermé à clé. Koro-sensei s’y cache : termine d’abord toutes les missions dehors (regarde l’objectif en haut).");
+    return;
+  }
+  if (sp.id === "gate"){ sfx("open"); startChapter(sp.card); }
+}
+/* passage d'une carte à l'autre, avec fondu au noir */
+function switchMap(id, x, y){
+  fade = 1.2; sfx("open");
+  setMap(id); S.px = x; S.py = y; path = []; autoTalk = null; keys = {}; parts = [];
+  facing = id === "in" ? -1 : 1; faceY = id === "in" ? 0 : 1;
+  save(); updCam(0, true);
+  banner = { txt: id === "in" ? "Bâtiment de la 3-E" : "Cour de la 3-E", t: 2.6 };
+  curRoom = (roomAt(S.px, S.py) || {}).n || "";
+  if (id === "in" && S.q === 7 && nextGate()) setTimeout(() => toast("5 portes scellées te séparent de Koro-sensei. Chaque porte s’ouvre avec une carte : choisis ce que tu ferais vraiment."), 700);
 }
 function goTo(x, y, npc){
   const sc = Math.floor(S.px / TILE), sr = Math.floor(S.py / TILE);
@@ -2087,6 +2311,7 @@ function setFace(dx, dy){ if (Math.abs(dy) > Math.abs(dx) + 0.01){ faceY = dy > 
 function updateWorld(dt){
   updParts(dt);
   if (banner.t > 0) banner.t -= dt;
+  if (fade > 0) fade -= dt * 1.6;
   if (!ov.hidden) return;
   let dx = 0, dy = 0, moved = false;
   if (keys.ArrowLeft || keys.q || keys.a) dx--;
@@ -2110,11 +2335,14 @@ function updateWorld(dt){
     walk += dt; moved = true; setFace(dx, dy);
   } else if (!path.length) walk = 0;
   if (moved){ stepT -= dt; if (stepT <= 0){ stepT = 0.28; sfx("step"); puff(S.px, S.py + 14, 2, "dust", 18, 0.5, 4); } } else stepT = 0;
+  const tc = tileAt(Math.floor(S.px / TILE), Math.floor((S.py + 6) / TILE));
+  if (S.map === "out" && tc === "D" && buildingOpen()) return switchMap("in", ENTRY_IN.x, ENTRY_IN.y);
+  if (S.map === "in" && tc === "X") return switchMap("out", DOOR_OUT.x, DOOR_OUT.y + 10);
   const rm = roomAt(S.px, S.py), rn = rm ? rm.n : "";
   if (rn && rn !== curRoom){ if (curRoom){ banner = { txt: rn, t: 2.6 }; sfx("room"); } curRoom = rn; }
   findNear();
   tutoTick();
-  STARS.forEach(sr => {
+  if (S.map === "out") STARS.forEach(sr => {
     if (S.found[sr.id]) return;
     const p = T2P(sr.c, sr.r);
     if (Math.hypot(p.x - S.px, p.y - S.py) < 22){ S.found[sr.id] = 1; S.tokens++; save(); drawHud(); sfx("star"); puff(p.x, p.y, 26, "#F5C518", 120, 0.9, 10); toast("Note de Nagisa trouvée : +1 jeton d’indice (indice gratuit)."); }
@@ -2140,7 +2368,8 @@ function findNear(){
   return near;
 }
 function interact(){
-  if (!ov.hidden || !findNear()) return;
+  if (!ov.hidden) return;
+  if (!findNear()){ const sp = nearSpot(); if (sp) useSpot(sp); return; }
   if (tuto && TUTO[tuto.i].id === "talk") endTuto(true);
   const qd = quest(), les = lessonFor(near.id);
   if (les){ sfx("open"); startChapter(les); return; }
@@ -2174,8 +2403,10 @@ const TUTO = [
     txt: "En haut : ton <b>objectif</b> du moment, la jauge de <b>Koro-sensei</b> (chaque bonne réponse lui fait perdre des points de vie) et la <b>Confiance</b> (tes choix éthiques). <b>Carnet</b> = tes fiches de révision · <b>Guide</b> = les règles · <b>Son</b> = couper le son · <b>Menu</b> = options." },
   { id: "stars", title: "Les étoiles cachées",
     txt: "4 <b style=\"color:var(--koro)\">★ étoiles</b> sont cachées dans l’école. Chacune te donne un <b>jeton d’indice</b> gratuit : pendant une question, il te donne un coup de pouce sans perdre de points." },
+  { id: "quest", title: "Ton aventure",
+    txt: "Dehors, fais le tour des élèves et des professeurs : chacun t’apprend quelque chose (la cour, la forêt, le terrain de sport, l’étang, le portail, le pavillon du directeur). Koro-sensei va se cacher dans le <b>bâtiment de la 3-E</b> : il ne s’ouvrira que quand tu auras tout appris. Dedans, il faudra franchir des portes scellées pour l’affronter." },
   { id: "cards", title: "Les cartes", glow: ".gauge.trust",
-    txt: "Pendant le jeu, des <b style=\"color:var(--koro)\">cartes</b> vont apparaître, par exemple après un chapitre. Chacune décrit une situation que vit un acheteur au travail. Lis-la bien et choisis ce que tu ferais <b>vraiment</b>. Chaque choix fait monter ou descendre ta jauge de <b>Confiance</b>, qui clignote en haut. À la fin de l’année, c’est elle qui décide de ta fin parmi les 5 possibles." },
+    txt: "Dans le bâtiment, chaque porte scellée s’ouvre avec une <b style=\"color:var(--koro)\">carte</b>. Chacune décrit une situation que vit un acheteur au travail. Lis-la bien et choisis ce que tu ferais <b>vraiment</b>. Chaque choix fait monter ou descendre ta jauge de <b>Confiance</b>, qui clignote en haut. À la fin de l’année, c’est elle qui décide de ta fin parmi les 5 possibles." },
   { id: "talk", title: "Parler aux personnages", glow: "#abtn",
     txt: "Approche-toi d’un personnage : une bulle <kbd>E</kbd> « Parler à… » apparaît. Appuie sur <kbd>E</kbd>, <kbd>Espace</kbd> ou <kbd>Entrée</kbd>, ou sur le bouton rond orange. Dans les dialogues, <kbd>Entrée</kbd> ou « Suite » fait avancer ; clique la bulle pour afficher tout le texte d’un coup.",
     todo: "À toi : va parler à un camarade qui a un « ! »." }
@@ -2254,10 +2485,14 @@ function renderWorld(){
   cv.onclick = e => {
     const r = cv.getBoundingClientRect(), x = cam.x + (e.clientX - r.left) * VW / r.width / ZOOM, y = cam.y + (e.clientY - r.top) * VH / r.height / ZOOM;
     const n = npcs().find(n => Math.hypot(n.x - x, n.y - 10 - y) < 26);
+    const spot = S.map === "in" ? nextGate() : (!buildingOpen() ? { id: "door", x: DOOR_OUT.x, y: DOOR_OUT.y - 20 } : null);
+    if (!n && spot && Math.hypot(spot.x - x, spot.y - y) < 34){ if (tuto) tuto.clicked = true; const sp = nearSpot(); if (sp) useSpot(sp); else goTo(x, y, { ...spot, id: "spot" }); return; }
     if (tuto) tuto.clicked = true;
     if (n && findNear() && n.id === near.id) interact();
     else goTo(x, y, n || null);
   };
+  if (S.mapV !== 2){ S.mapV = 2; if (S.q >= 7 && S.q < 8){ S.map = "in"; S.px = ENTRY_IN.x; S.py = ENTRY_IN.y; } else { S.map = "out"; S.px = 20 * TILE; S.py = 16 * TILE + 16; } save(); }
+  setMap(S.map === "in" ? "in" : "out");
   curRoom = (roomAt(S.px, S.py) || {}).n || "";
   drawHud(); updCam(0, true);
   cancelAnimationFrame(rafW); lastT = null; rafW = requestAnimationFrame(loopW);
@@ -2336,11 +2571,13 @@ function renderMenu(){
     <div class="memo"><h3>Aller à un chapitre (animateur)</h3><p>Pratique pour gérer le temps de la séance ou reprendre une partie précise.</p>
       <div class="row" style="margin-top:10px">${QUESTS.slice(0, 8).map((q, i) => `<button class="btn small" data-jump="${i}">${["Chap. 1", "Chap. 2", "Échauffement", "Négociation", "Éthique", "Directeur", "Karasuma", "Examen"][i]}</button>`).join("")}</div></div>
     <div class="memo"><h3>Accessibilité</h3><div class="row"><label class="toggle"><input type="checkbox" id="m-notimer" ${S.noTimer ? "checked" : ""}> Sans chrono (questions et patience)</label><label class="toggle"><input type="checkbox" id="m-assist" ${S.assist ? "checked" : ""}> Tir assisté</label></div></div>
-    <div class="memo"><h3>Cartes · éthique</h3><p>Une carte se pioche automatiquement après les chapitres 1, 2, l’échauffement, la négociation et la convocation du directeur. Tu peux aussi en piocher une à tout moment (${CARDS.filter(k => (S.cards || {})[k]).length} / ${CARDS.length} déjà jouées).</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-card">Piocher une carte</button></div></div>
+    <div class="memo"><h3>Cartes · éthique</h3><p>Les 5 cartes ouvrent les portes scellées du bâtiment de la 3-E, sur le chemin de Koro-sensei. Tu peux aussi en piocher une à tout moment, par exemple pour en discuter en classe (${CARDS.filter(k => (S.cards || {})[k]).length} / ${CARDS.length} déjà jouées).</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-card">Piocher une carte</button></div></div>
     <div class="memo"><h3>Comment jouer</h3><p>Revois pas à pas les touches, la mini-carte, les étoiles et la façon de parler aux personnages.</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-tuto">Revoir le tutoriel</button></div></div>
     <div class="row end"><button class="btn ghost" id="m-title">Écran titre</button><button class="btn ghost" id="m-reset">Recommencer à zéro</button><button class="btn primary" id="m-back">Reprendre</button></div></section>`);
   $$("[data-jump]").forEach(b => b.onclick = () => {
     S.q = +b.dataset.jump;
+    if (S.q >= 7){ setMap("out"); S.px = DOOR_OUT.x; S.py = DOOR_OUT.y + 40; save(); closeMission(false); toast("Objectif : " + QUESTS[S.q].obj); return; }
+    setMap("out");
     const n = npcs().find(n => n.id === QUESTS[S.q].npc);
     if (n){ const spot = [[0, 40], [40, 0], [-40, 0], [0, -40], [40, 40], [-40, 40]].map(([dx, dy]) => [n.x + dx, n.y + dy]).find(([x, y]) => !blocked(x, y)); if (spot){ S.px = spot[0]; S.py = spot[1]; } }
     save(); closeMission(false); toast("Objectif : " + QUESTS[S.q].obj);
@@ -2371,7 +2608,7 @@ function renderTitle(){
     <div class="hero">
       <div><div style="font-weight:900;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--koro)">Ludopédagogie · Master GPLA · Achats</div>
         <h1>Classe 3-E : <em>Opération Négociation</em></h1><div class="chalkline"></div>
-        <p class="lede">Explore l’école de la classe 3-E, accepte les missions de Koro-sensei et de ses élèves, négocie en temps réel avec Claire Lefort, résiste aux pressions… puis affronte Koro-sensei au gymnase. Tes choix éthiques décident de la fin.</p></div>
+        <p class="lede">Explore les alentours de l’école, apprends auprès des élèves et des professeurs, négocie en temps réel avec Claire Lefort, résiste aux pressions… puis affronte Koro-sensei au gymnase. Tes choix éthiques décident de la fin.</p></div>
       <div class="cast"><figure class="big"><div class="panel">${koro("normal")}</div><figcaption>Koro-sensei</figcaption></figure>
         <figure><div class="panel">${CAST.nagisa.svg}</div><figcaption>Nagisa</figcaption></figure>
         <figure><div class="panel">${CAST.karma.svg}</div><figcaption>Karma</figcaption></figure>
