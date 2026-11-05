@@ -68,7 +68,7 @@ button{font:inherit;color:inherit}
 .dpad button:active,.abtn:active{background:var(--koro);color:var(--ink)}
 .abtn{width:84px;height:84px;border-radius:50%;font-size:22px;background:var(--maru);color:var(--ink)}
 .controls-help{font-size:13px;color:var(--chalk-2);text-align:center;flex:1}
-/* cartes piège */
+/* cartes d’éthique */
 .dwrap{display:flex;justify-content:center;perspective:900px;margin-top:10px}
 .dcard{width:min(280px,80vw);aspect-ratio:5/7;border:4px solid var(--ink);border-radius:18px;background:linear-gradient(155deg,#7A3FA0,#3A1E50 70%);color:var(--chalk);box-shadow:0 10px 0 rgba(0,0,0,.45),inset 0 0 0 6px rgba(245,197,24,.55);display:flex;flex-direction:column;align-items:center;padding:16px;text-align:center;animation:flipIn .7s cubic-bezier(.2,.8,.3,1.2)}
 .dc-top{width:100%;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;color:var(--koro);letter-spacing:.08em}
@@ -715,44 +715,44 @@ c4a: { no: 4, title: "Le temps de l’éthique", label: "Chapitre 4", scored: tr
       why: "La loi sur le devoir de vigilance (2017) oblige les grandes entreprises (5 000 salariés en France ou 10 000 dans le monde) à prévenir les atteintes graves aux droits humains chez leurs fournisseurs. ISO 20400 guide les achats responsables." },
     { t: "say", who: "irina", txt: "Pas mal. Ah, et le directeur Asano te cherche. Il n’a pas l’air de bonne humeur. Son bureau est en bas à droite." }
   ] },
-/* ----- cartes « piège » d'éthique : une carte se pioche après certains chapitres, ou depuis le Menu.
+/* ----- cartes d’éthique : une carte se pioche après certains chapitres, ou depuis le Menu.
    Chaque choix modifie la jauge de Confiance (cardFx). ----- */
-k1: { title: "L’invitation", label: "Carte piège · Conflit d’intérêts",
+k1: { title: "L’invitation", label: "Carte · Conflit d’intérêts",
   steps: [
     { t: "draw", n: 1, ico: "🍽️", rule: "Conflit d’intérêts" },
-    { t: "quiz", who: "lefort", practice: true, card: "Carte piège · Conflit d’intérêts", q: "L’appel d’offres démarre la semaine prochaine. Un fournisseur t’invite dans un grand restaurant « pour faire connaissance ». Tu acceptes ?",
+    { t: "quiz", who: "lefort", practice: true, card: "Carte · Conflit d’intérêts", q: "L’appel d’offres démarre la semaine prochaine. Un fournisseur t’invite dans un grand restaurant « pour faire connaissance ». Tu acceptes ?",
       opts: ["Oui, ce n’est qu’un repas, ça ne m’engage à rien.", "Non merci : je décline poliment et je propose un rendez-vous de travail dans nos locaux.", "J’accepte, mais je n’en parle à personne."], ok: 1,
       fx: { 0: () => cardFx("k1", -2, false), 1: () => cardFx("k1", 1, true), 2: () => cardFx("k1", -3, false) },
       why: "Accepter un avantage (repas, cadeau, voyage) pendant une consultation crée un conflit d’intérêts, ou au moins son apparence : ton jugement n’est plus perçu comme neutre. La plupart des chartes achats l’interdisent, et la loi Sapin II impose aux grandes entreprises un code de conduite anticorruption. En cas de doute : on refuse, et on le déclare." }
   ] },
-k2: { title: "Le prix de A", label: "Carte piège · Confidentialité",
+k2: { title: "Le prix de A", label: "Carte · Confidentialité",
   steps: [
     { t: "draw", n: 2, ico: "🔒", rule: "Confidentialité" },
-    { t: "quiz", who: "karma", practice: true, card: "Carte piège · Confidentialité", q: "Pour faire baisser le fournisseur B, tu pourrais lui révéler le prix exact proposé par le fournisseur A. Tu le fais ?",
+    { t: "quiz", who: "karma", practice: true, card: "Carte · Confidentialité", q: "Pour faire baisser le fournisseur B, tu pourrais lui révéler le prix exact proposé par le fournisseur A. Tu le fais ?",
       opts: ["Oui, c’est le meilleur moyen de le faire baisser.", "Non : je lui dis seulement que son offre n’est pas la mieux placée, sans donner ni chiffre ni nom.", "Je laisse traîner le devis de A sur la table, « par erreur »."], ok: 1,
       fx: { 0: () => cardFx("k2", -3, false), 1: () => cardFx("k2", 1, true), 2: () => cardFx("k2", -3, false) },
       why: "Les offres reçues sont confidentielles. Les divulguer trahit la confiance du fournisseur A et peut violer le secret des affaires (loi n° 2018-670). Tu peux dire à B que son offre n’est pas compétitive, sans révéler les informations de A. Le faux « oubli » du devis, c’est la même faute." }
   ] },
-k3: { title: "Tout seul", label: "Carte piège · Séparation des tâches",
+k3: { title: "Tout seul", label: "Carte · Séparation des tâches",
   steps: [
     { t: "draw", n: 3, ico: "🧾", rule: "Séparation des tâches" },
-    { t: "quiz", who: "karasuma", practice: true, card: "Carte piège · Séparation des tâches", q: "Pour gagner du temps, on te propose de choisir le fournisseur, de valider la commande ET de lancer le paiement toi-même. Où est le problème ?",
+    { t: "quiz", who: "karasuma", practice: true, card: "Carte · Séparation des tâches", q: "Pour gagner du temps, on te propose de choisir le fournisseur, de valider la commande ET de lancer le paiement toi-même. Où est le problème ?",
       opts: ["Aucun problème : moins d’intermédiaires, c’est plus efficace.", "Une seule personne ne doit pas tout contrôler : il faut séparer le choix, la validation et le paiement.", "Le seul problème, c’est que ça me fait plus de travail."], ok: 1,
       fx: { 0: () => cardFx("k3", -2, false), 1: () => cardFx("k3", 1, true), 2: () => cardFx("k3", -1, false) },
       why: "La séparation des tâches est un contrôle interne de base : celui qui choisit le fournisseur ne valide pas seul le paiement. Sinon, une erreur ou une fraude (faux fournisseur, surfacturation, commande fictive) peut passer sans que personne ne la voie. Ce n’est pas de la méfiance envers toi : c’est une protection pour tout le monde." }
   ] },
-k4: { title: "Le petit coup de pouce", label: "Carte piège · Équité de traitement",
+k4: { title: "Le petit coup de pouce", label: "Carte · Équité de traitement",
   steps: [
     { t: "draw", n: 4, ico: "⚖️", rule: "Équité de traitement" },
-    { t: "quiz", who: "asano", practice: true, card: "Carte piège · Équité de traitement", q: "Un fournisseur que tu apprécies a raté la date limite de l’appel d’offres. Il te demande deux jours de plus, sans prévenir les autres candidats. Que fais-tu ?",
+    { t: "quiz", who: "asano", practice: true, card: "Carte · Équité de traitement", q: "Un fournisseur que tu apprécies a raté la date limite de l’appel d’offres. Il te demande deux jours de plus, sans prévenir les autres candidats. Que fais-tu ?",
       opts: ["J’accepte : il est sérieux, et ça ne fait de mal à personne.", "Je refuse : tous les candidats ont les mêmes règles, les mêmes informations et les mêmes délais.", "J’accepte, et je lui donne au passage quelques infos sur les autres offres."], ok: 1,
       fx: { 0: () => cardFx("k4", -2, false), 1: () => cardFx("k4", 1, true), 2: () => cardFx("k4", -3, false) },
       why: "L’équité de traitement veut que tous les candidats reçoivent les mêmes informations et respectent les mêmes délais. Favoriser l’un d’eux fausse la concurrence ; dans les marchés publics, c’est même un délit (favoritisme). Si un délai doit être prolongé, il l’est pour tout le monde, et tout le monde est prévenu." }
   ] },
-k5: { title: "Le moins cher", label: "Carte piège · Achats responsables (RSE)",
+k5: { title: "Le moins cher", label: "Carte · Achats responsables (RSE)",
   steps: [
     { t: "draw", n: 5, ico: "🌱", rule: "Achats responsables (RSE)" },
-    { t: "quiz", who: "nagisa", practice: true, card: "Carte piège · Achats responsables", q: "L’offre A est 5 % moins chère, mais le fournisseur ne publie rien sur ses conditions de travail ni sur son impact environnemental. L’offre B est un peu plus chère, avec des engagements sociaux et environnementaux vérifiés. Que fais-tu ?",
+    { t: "quiz", who: "nagisa", practice: true, card: "Carte · Achats responsables", q: "L’offre A est 5 % moins chère, mais le fournisseur ne publie rien sur ses conditions de travail ni sur son impact environnemental. L’offre B est un peu plus chère, avec des engagements sociaux et environnementaux vérifiés. Que fais-tu ?",
       opts: ["Je prends A : mon seul objectif, c’est le prix.", "Je compare le coût global et les critères RSE annoncés dans l’appel d’offres, puis je décide : B peut l’emporter.", "Je prends B sans rien vérifier : l’étiquette « verte » suffit."], ok: 1,
       fx: { 0: () => cardFx("k5", -1, false), 1: () => cardFx("k5", 1, true), 2: () => cardFx("k5", -1, false) },
       why: "Un achat responsable (norme ISO 20400) ne regarde pas que le prix : coût global (transport, durée de vie, recyclage), impacts sociaux et environnementaux, éthique du fournisseur. Les grandes entreprises ont aussi un devoir de vigilance sur leurs fournisseurs (loi n° 2017-399). Ces critères doivent être annoncés à l’avance et vérifiés, pas seulement affichés." }
@@ -955,7 +955,7 @@ R.say = s => {
 };
 R.draw = s => {
   sfx("flip");
-  paint(`<section class="act"><div class="kicker">Une carte est piochée…</div><div class="dwrap"><div class="dcard"><div class="dc-top"><span>CARTE PIÈGE</span><span>${s.n} / ${CARDS.length}</span></div><div class="dc-ico" aria-hidden="true">${s.ico}</div><div class="dc-rule">${esc(s.rule)}</div><div class="dc-sub">Une situation se présente. Ton choix changera la jauge de Confiance.</div></div></div></section>${SPLIT}<section class="act"><div class="row end"><span class="pad-hint">Entrée pour continuer</span><button class="btn primary" id="nx">Retourner la carte ▸</button></div></section>`);
+  paint(`<section class="act"><div class="kicker">Une carte est piochée…</div><div class="dwrap"><div class="dcard"><div class="dc-top"><span>CARTE</span><span>${s.n} / ${CARDS.length}</span></div><div class="dc-ico" aria-hidden="true">${s.ico}</div><div class="dc-rule">${esc(s.rule)}</div><div class="dc-sub">Une situation se présente. Ton choix changera la jauge de Confiance.</div></div></div></section>${SPLIT}<section class="act"><div class="row end"><span class="pad-hint">Entrée pour continuer</span><button class="btn primary" id="nx">Retourner la carte ▸</button></div></section>`);
   $("#nx").onclick = next; $("#nx").focus({ preventScroll: true });
 };
 R.narr = s => {
@@ -1517,7 +1517,7 @@ const QUESTS = [
   { npc: null, ch: null, obj: "Année terminée ! Explore l’école, ou rejoue depuis le menu." }
 ];
 const NEXT_Q = { c1: 1, c2: 2, c3a: 3, c3b: 4, c4a: 5, c4b: 6, c5pre: 7 };
-/* cartes piège : piochées après ces chapitres (dans l'ordre), ou à la demande depuis le Menu */
+/* cartes d’éthique : piochées après ces chapitres (dans l'ordre), ou à la demande depuis le Menu */
 const CARDS = ["k1", "k2", "k3", "k4", "k5"];
 const CARD_AFTER = ["c1", "c2", "c3a", "c3b", "c4b"];
 function cardFx(id, d, ok){
@@ -2094,6 +2094,8 @@ const TUTO = [
     txt: "En haut : ton <b>objectif</b> du moment, la jauge de <b>Koro-sensei</b> (chaque bonne réponse lui fait perdre des points de vie) et la <b>Confiance</b> (tes choix éthiques). <b>Carnet</b> = tes fiches de révision · <b>Guide</b> = les règles · <b>Son</b> = couper le son · <b>Menu</b> = options." },
   { id: "stars", title: "Les étoiles cachées",
     txt: "4 <b style=\"color:var(--koro)\">★ étoiles</b> sont cachées dans l’école. Chacune te donne un <b>jeton d’indice</b> gratuit : pendant une question, il te donne un coup de pouce sans perdre de points." },
+  { id: "cards", title: "Les cartes", glow: ".gauge.trust",
+    txt: "Pendant le jeu, des <b style=\"color:var(--koro)\">cartes</b> vont apparaître, par exemple après un chapitre. Chacune décrit une situation que vit un acheteur au travail. Lis-la bien et choisis ce que tu ferais <b>vraiment</b>. Chaque choix fait monter ou descendre ta jauge de <b>Confiance</b>, qui clignote en haut. À la fin de l’année, c’est elle qui décide de ta fin parmi les 5 possibles." },
   { id: "talk", title: "Parler aux personnages", glow: "#abtn",
     txt: "Approche-toi d’un personnage : une bulle <kbd>E</kbd> « Parler à… » apparaît. Appuie sur <kbd>E</kbd>, <kbd>Espace</kbd> ou <kbd>Entrée</kbd>, ou sur le bouton rond orange. Dans les dialogues, <kbd>Entrée</kbd> ou « Suite » fait avancer ; clique la bulle pour afficher tout le texte d’un coup.",
     todo: "À toi : va parler à un camarade qui a un « ! »." }
@@ -2254,7 +2256,7 @@ function renderMenu(){
     <div class="memo"><h3>Aller à un chapitre (animateur)</h3><p>Pratique pour gérer le temps de la séance ou reprendre une partie précise.</p>
       <div class="row" style="margin-top:10px">${QUESTS.slice(0, 8).map((q, i) => `<button class="btn small" data-jump="${i}">${["Chap. 1", "Chap. 2", "Échauffement", "Négociation", "Éthique", "Directeur", "Karasuma", "Examen"][i]}</button>`).join("")}</div></div>
     <div class="memo"><h3>Accessibilité</h3><div class="row"><label class="toggle"><input type="checkbox" id="m-notimer" ${S.noTimer ? "checked" : ""}> Sans chrono (questions et patience)</label><label class="toggle"><input type="checkbox" id="m-assist" ${S.assist ? "checked" : ""}> Tir assisté</label></div></div>
-    <div class="memo"><h3>Cartes piège · éthique</h3><p>Une carte se pioche automatiquement après les chapitres 1, 2, l’échauffement, la négociation et la convocation du directeur. Tu peux aussi en piocher une à tout moment (${CARDS.filter(k => (S.cards || {})[k]).length} / ${CARDS.length} déjà jouées).</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-card">Piocher une carte</button></div></div>
+    <div class="memo"><h3>Cartes · éthique</h3><p>Une carte se pioche automatiquement après les chapitres 1, 2, l’échauffement, la négociation et la convocation du directeur. Tu peux aussi en piocher une à tout moment (${CARDS.filter(k => (S.cards || {})[k]).length} / ${CARDS.length} déjà jouées).</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-card">Piocher une carte</button></div></div>
     <div class="memo"><h3>Comment jouer</h3><p>Revois pas à pas les touches, la mini-carte, les étoiles et la façon de parler aux personnages.</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-tuto">Revoir le tutoriel</button></div></div>
     <div class="row end"><button class="btn ghost" id="m-title">Écran titre</button><button class="btn ghost" id="m-reset">Recommencer à zéro</button><button class="btn primary" id="m-back">Reprendre</button></div></section>`);
   $$("[data-jump]").forEach(b => b.onclick = () => {
