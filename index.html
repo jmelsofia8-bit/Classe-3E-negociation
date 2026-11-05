@@ -68,6 +68,22 @@ button{font:inherit;color:inherit}
 .dpad button:active,.abtn:active{background:var(--koro);color:var(--ink)}
 .abtn{width:84px;height:84px;border-radius:50%;font-size:22px;background:var(--maru);color:var(--ink)}
 .controls-help{font-size:13px;color:var(--chalk-2);text-align:center;flex:1}
+/* tutoriel de démarrage */
+.tuto{position:absolute;left:12px;bottom:12px;width:min(380px,calc(100% - 24px));background:rgba(14,14,18,.92);color:var(--chalk);border:3px solid var(--koro);border-radius:14px;padding:12px 14px 12px;box-shadow:0 8px 0 rgba(0,0,0,.4);animation:tutoIn .3s;z-index:5}
+@keyframes tutoIn{from{opacity:0;transform:translateY(12px)}}
+.tuto .tk{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:12px;color:var(--koro);margin-bottom:4px}
+.tuto .dots{display:flex;gap:4px}.tuto .dots i{width:8px;height:8px;border-radius:50%;background:var(--shell-2)}.tuto .dots i.on{background:var(--koro)}
+.tuto h3{font-size:17px;margin-bottom:6px}
+.tuto p{font-size:14px;line-height:1.5}
+.tuto .todo{margin-top:8px;font-size:13px;font-weight:700;color:var(--koro)}
+.tuto .todo.ok{color:#7BD99B}
+.tuto .row{margin-top:10px;justify-content:flex-end}
+kbd{display:inline-block;min-width:22px;padding:1px 6px;margin:0 1px;border:2px solid var(--chalk-2);border-bottom-width:4px;border-radius:6px;background:var(--shell);font-family:var(--f-mono);font-size:12px;font-weight:600;text-align:center;line-height:1.4;color:var(--chalk)}
+.glow{animation:glow 1.1s ease-in-out infinite;border-radius:12px}
+@keyframes glow{50%{box-shadow:0 0 0 4px var(--koro),0 0 18px var(--koro)}}
+@media (max-width:700px){.tuto{position:static;width:auto;margin:0;border-radius:0 0 10px 10px;border-width:3px 0 0}}
+@media (max-width:560px){.hud{grid-template-columns:1fr}.hud .tools{justify-content:flex-start}}
+@media (prefers-reduced-motion:reduce){.glow{animation:none;box-shadow:0 0 0 4px var(--koro)}}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:10px 16px;font-weight:900;box-shadow:0 6px 0 rgba(0,0,0,.4);max-width:min(560px,calc(100vw - 32px));animation:toastIn .3s}
 @keyframes toastIn{from{transform:translate(-50%,20px);opacity:0}}
 
@@ -840,6 +856,7 @@ function closeMission(done){
   cur = null; ov.hidden = true; app.innerHTML = "";
   if (done && id) advanceQuest(id);
   save(); drawHud();
+  if (id === "c0" && !S.tutoDone && $(".stage")) startTuto();
 }
 function startChapter(id){
   const ch = CH[id];
@@ -1933,6 +1950,7 @@ function updateWorld(dt){
   const rm = roomAt(S.px, S.py), rn = rm ? rm.n : "";
   if (rn && rn !== curRoom){ if (curRoom){ banner = { txt: rn, t: 2.6 }; sfx("room"); } curRoom = rn; }
   findNear();
+  tutoTick();
   STARS.forEach(sr => {
     if (S.found[sr.id]) return;
     const p = T2P(sr.c, sr.r);
@@ -1960,6 +1978,7 @@ function findNear(){
 }
 function interact(){
   if (!ov.hidden || !findNear()) return;
+  if (tuto && TUTO[tuto.i].id === "talk") endTuto(true);
   const qd = quest(), les = lessonFor(near.id);
   if (les){ sfx("open"); startChapter(les); return; }
   if (qd && qd.npc === near.id && qd.ch){ sfx("open"); startChapter(qd.ch); return; }
@@ -1976,6 +1995,66 @@ function interact(){
   cur = { id: "talk", i: 0 };
   CH.talk = { title: "Discussion", label: "École", steps: [{ t: "say", who: near.id, txt: txt + (qd && qd.obj ? " (Objectif : " + qd.obj + ")" : "") }] };
   startChapter("talk");
+}
+
+/* ----- tutoriel de démarrage : une étape à la fois, certaines se valident en faisant l'action ----- */
+const TUTO = [
+  { id: "move", title: "Se déplacer", glow: ".dpad",
+    txt: "Utilise les flèches <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> ou <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> (<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> marche aussi). Sur téléphone ou tablette, utilise la croix sous l’écran.",
+    todo: "À toi : fais quelques pas." },
+  { id: "click", title: "Aller quelque part en un clic",
+    txt: "Tu peux aussi <b>cliquer</b> (ou toucher) le sol ou un personnage : ton élève y va tout seul, par le plus court chemin.",
+    todo: "À toi : clique un endroit de l’école." },
+  { id: "where", title: "Où aller ?",
+    txt: "Le <b style=\"color:var(--koro)\">« ! » jaune</b> montre qui aller voir. Si la personne est hors de l’écran, une <b style=\"color:var(--koro)\">flèche jaune</b> au bord t’indique la direction. La <b>mini-carte</b> en haut à droite montre toute l’école : le point blanc, c’est toi." },
+  { id: "hud", title: "Ton tableau de bord", glow: "#hud",
+    txt: "En haut : ton <b>objectif</b> du moment, la jauge de <b>Koro-sensei</b> (chaque bonne réponse lui fait perdre des points de vie) et la <b>Confiance</b> (tes choix éthiques). <b>Carnet</b> = tes fiches de révision · <b>Guide</b> = les règles · <b>Son</b> = couper le son · <b>Menu</b> = options." },
+  { id: "stars", title: "Les étoiles cachées",
+    txt: "4 <b style=\"color:var(--koro)\">★ étoiles</b> sont cachées dans l’école. Chacune te donne un <b>jeton d’indice</b> gratuit : pendant une question, il te donne un coup de pouce sans perdre de points." },
+  { id: "talk", title: "Parler aux personnages", glow: "#abtn",
+    txt: "Approche-toi d’un personnage : une bulle <kbd>E</kbd> « Parler à… » apparaît. Appuie sur <kbd>E</kbd>, <kbd>Espace</kbd> ou <kbd>Entrée</kbd>, ou sur le bouton rond orange. Dans les dialogues, <kbd>Entrée</kbd> ou « Suite » fait avancer ; clique la bulle pour afficher tout le texte d’un coup.",
+    todo: "À toi : va parler à un camarade qui a un « ! »." }
+];
+let tuto = null;
+function startTuto(){
+  tuto = { i: 0, x: S.px, y: S.py, dist: 0, clicked: false, done: false };
+  paintTuto();
+}
+function endTuto(finished){
+  tuto = null; S.tutoDone = true; save();
+  $$(".glow").forEach(el => el.classList.remove("glow"));
+  const el = $("#tuto"); if (el) el.remove();
+  if (finished) toast("Tutoriel terminé ! Tu peux le revoir à tout moment depuis le Menu.");
+}
+function nextTuto(){
+  if (!tuto) return;
+  sfx("talk");
+  if (tuto.i >= TUTO.length - 1) return endTuto(true);
+  tuto.i++; tuto.x = S.px; tuto.y = S.py; tuto.dist = 0; tuto.clicked = false; tuto.done = false;
+  paintTuto();
+}
+function paintTuto(){
+  const stage = $(".stage"); if (!stage || !tuto) return;
+  const st = TUTO[tuto.i];
+  $$(".glow").forEach(el => el.classList.remove("glow"));
+  if (st.glow && $(st.glow)) $(st.glow).classList.add("glow");
+  let el = $("#tuto"); if (!el){ el = document.createElement("div"); el.id = "tuto"; el.className = "tuto"; el.setAttribute("role", "status"); stage.appendChild(el); }
+  const action = !!st.todo, last = tuto.i === TUTO.length - 1;
+  el.innerHTML = `<div class="tk"><span>TUTORIEL · ${tuto.i + 1} / ${TUTO.length}</span><span class="dots">${TUTO.map((_, k) => `<i class="${k <= tuto.i ? "on" : ""}"></i>`).join("")}</span></div>
+    <h3>${st.title}</h3><p>${st.txt}</p>${action ? `<div class="todo ${tuto.done ? "ok" : ""}">${tuto.done ? "✔ Bravo !" : st.todo}</div>` : ""}
+    <div class="row"><button class="btn small ghost" id="t-skip">Passer le tutoriel</button>${last && !tuto.done ? "" : `<button class="btn small primary" id="t-next">${last ? "Terminer" : action && !tuto.done ? "Passer cette étape" : "Compris ▸"}</button>`}</div>`;
+  $("#t-skip").onclick = () => endTuto(false);
+  if ($("#t-next")) $("#t-next").onclick = nextTuto;
+}
+function tutoTick(){
+  if (!tuto || tuto.done) return;
+  const st = TUTO[tuto.i];
+  if (st.id === "move"){ tuto.dist += Math.hypot(S.px - tuto.x, S.py - tuto.y); tuto.x = S.px; tuto.y = S.py; if (tuto.dist > 90) tutoOk(); }
+  else if (st.id === "click" && tuto.clicked && (path.length || autoTalk)) tutoOk();
+}
+function tutoOk(){
+  tuto.done = true; sfx("room"); paintTuto();
+  const i = tuto.i; setTimeout(() => { if (tuto && tuto.i === i) nextTuto(); }, 1100);
 }
 
 function drawHud(){
@@ -2010,12 +2089,14 @@ function renderWorld(){
   cv.onclick = e => {
     const r = cv.getBoundingClientRect(), x = cam.x + (e.clientX - r.left) * VW / r.width / ZOOM, y = cam.y + (e.clientY - r.top) * VH / r.height / ZOOM;
     const n = npcs().find(n => Math.hypot(n.x - x, n.y - 10 - y) < 26);
+    if (tuto) tuto.clicked = true;
     if (n && findNear() && n.id === near.id) interact();
     else goTo(x, y, n || null);
   };
   curRoom = (roomAt(S.px, S.py) || {}).n || "";
   drawHud(); updCam(0, true);
   cancelAnimationFrame(rafW); lastT = null; rafW = requestAnimationFrame(loopW);
+  tuto = null; if (S.started && !S.tutoDone) startTuto();
 }
 
 /* ---------- carnet, guide, menu ---------- */
@@ -2089,6 +2170,7 @@ function renderMenu(){
     <div class="memo"><h3>Aller à un chapitre (animateur)</h3><p>Pratique pour gérer le temps de la séance ou reprendre une partie précise.</p>
       <div class="row" style="margin-top:10px">${QUESTS.slice(0, 8).map((q, i) => `<button class="btn small" data-jump="${i}">${["Chap. 1", "Chap. 2", "Échauffement", "Négociation", "Éthique", "Directeur", "Karasuma", "Examen"][i]}</button>`).join("")}</div></div>
     <div class="memo"><h3>Accessibilité</h3><div class="row"><label class="toggle"><input type="checkbox" id="m-notimer" ${S.noTimer ? "checked" : ""}> Sans chrono (questions et patience)</label><label class="toggle"><input type="checkbox" id="m-assist" ${S.assist ? "checked" : ""}> Tir assisté</label></div></div>
+    <div class="memo"><h3>Comment jouer</h3><p>Revois pas à pas les touches, la mini-carte, les étoiles et la façon de parler aux personnages.</p><div class="row" style="margin-top:10px"><button class="btn small primary" id="m-tuto">Revoir le tutoriel</button></div></div>
     <div class="row end"><button class="btn ghost" id="m-title">Écran titre</button><button class="btn ghost" id="m-reset">Recommencer à zéro</button><button class="btn primary" id="m-back">Reprendre</button></div></section>`);
   $$("[data-jump]").forEach(b => b.onclick = () => {
     S.q = +b.dataset.jump;
@@ -2099,6 +2181,7 @@ function renderMenu(){
   $("#m-notimer").onchange = e => { S.noTimer = e.target.checked; save(); };
   $("#m-assist").onchange = e => { S.assist = e.target.checked; save(); };
   $("#m-back").onclick = () => closeMission(false);
+  $("#m-tuto").onclick = () => { closeMission(false); startTuto(); };
   $("#m-title").onclick = () => { closeMission(false); renderTitle(); };
   $("#m-reset").onclick = () => {
     if (!armed){ armed = true; $("#m-reset").textContent = "Confirmer : tout effacer"; return; }
