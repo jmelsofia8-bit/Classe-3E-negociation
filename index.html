@@ -320,7 +320,7 @@ const root = $("#root"), ov = $("#ov"), app = $("#app");
 const HP_MAX = 150;
 
 const FRESH = () => ({ name: "Élève", mode: "solo", answerMode: "all", teams: [], turn: 0, results: {}, best: {}, noTimer: false, assist: false,
-  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 20 * 32, py: 16 * 32 + 16, map: "out", mapV: 2, tokens: 0, found: {}, lessons: {}, cards: {}, started: false, nego: null, examWin: null, ending: null });
+  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 20 * 32, py: 16 * 32 + 16, map: "out", mapV: 2, tokens: 0, found: {}, lessons: {}, cards: {}, met: {}, started: false, nego: null, examWin: null, ending: null });
 let S = FRESH();
 let cur = null;
 function load(){ try { const r = localStorage.getItem(SAVE_KEY); if (r) Object.assign(S, JSON.parse(r)); } catch(e){} }
@@ -511,6 +511,93 @@ const CAST = {
     `<path d="M48 79 Q60 86 72 79" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`, "Directeur Asano") },
   lefort: { name: "Claire Lefort · Pixelia", svg: lefort(3) }
 };
+/* ----- élèves de la 3-E rencontrés dehors : chacun explique une notion AVANT les questions des chapitres -----
+   pre : index de la quête (QUESTS) avant laquelle il faut l'avoir écouté. Les répliques ex: true sont des exemples (retirables). */
+function student(bg, skin, hair, style, label, acc){
+  const back = style === "long" ? `<path d="M28 60 Q22 96 30 116 Q36 96 36 80 L84 80 Q84 96 90 116 Q98 96 92 60Z" fill="${hair}" ${st}/>`
+    : style === "twin" ? `<path d="M30 58 Q18 80 22 100 Q30 88 36 74Z" fill="${hair}" ${st}/><path d="M90 58 Q102 80 98 100 Q90 88 84 74Z" fill="${hair}" ${st}/>` : "";
+  const top = style === "spiky" ? `<path d="M28 60 Q24 22 60 20 Q96 22 92 60 L86 46 L80 54 L74 40 L64 48 L56 36 L46 50 L40 42 L34 54Z" fill="${hair}" ${st}/>`
+    : style === "cap" ? `<path d="M30 52 Q30 24 60 24 Q90 24 90 52Z" fill="${hair}" ${st}/><path d="M28 50 H98 Q100 56 92 56 H28Z" fill="${hair}" ${st}/><circle cx="60" cy="38" r="5" fill="#fff" stroke="${INK}" stroke-width="2"/>`
+    : `<path d="M31 56 Q30 24 60 24 Q90 24 89 56 Q84 36 66 38 L60 32 L54 38 Q38 38 31 56Z" fill="${hair}" ${st}/>`;
+  return frame(bg, back + neck(skin) + torso("#F4F4F4") + `<path d="M58 100 L60 126 L62 100Z" fill="#2C3A63"/><path d="M8 132 Q14 108 34 102 L40 132Z M112 132 Q106 108 86 102 L80 132Z" fill="#3B3F4A"/>` + head(skin) + top + eyes(4) +
+    `<path d="M52 79 Q60 85 68 79" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>` + (acc || ""), label);
+}
+const GLASSES = `<circle cx="48" cy="62" r="8.5" fill="none" stroke="${INK}" stroke-width="2"/><circle cx="72" cy="62" r="8.5" fill="none" stroke="${INK}" stroke-width="2"/><path d="M56.5 62 H63.5" stroke="${INK}" stroke-width="2"/>`;
+const STUDENTS = {
+  kayano: { name: "Kaede Kayano", short: "Kayano", f: true, pre: 1, at: [14, 9], hair: "#4FAF6A", style: "twin", skin: "#F3D7C0", svg: student("#E2F2E4", "#F3D7C0", "#4FAF6A", "twin", "Kayano"),
+    title: "Lire le non-verbal",
+    lines: [
+      { txt: "Salut @name ! Avant les questions de Nagisa, écoute bien. On entend partout que « 93 % de la communication est non verbale ». C’est faux en négociation : la règle 7-38-55 de Mehrabian ne vaut que quand on exprime une émotion et que les mots et le ton se contredisent." },
+      { txt: "Pour lire un signal, il faut d’abord la ligne de base : comment la personne se comporte d’habitude. Ce qui compte, c’est un changement par rapport à cette ligne de base, et un ensemble de signaux, pas un geste isolé." },
+      { ex: true, txt: "Exemple : des bras croisés dans une salle climatisée à 19 °C, ça peut juste vouloir dire qu’elle a froid !" },
+      { txt: "Et un signal n’est jamais une preuve : c’est une hypothèse. On la vérifie avec une question ouverte, sans accuser." }
+    ],
+    memo: ["Mehrabian (7-38-55) : seulement pour l’expression d’émotions quand les mots et le ton se contredisent.", "On lit un signal par rapport à la ligne de base, avec un ensemble de signaux et le contexte.", "Un signal est une hypothèse : on la vérifie par une question ouverte."] },
+  nakamura: { name: "Rio Nakamura", short: "Nakamura", f: true, pre: 1, at: [25, 9], hair: "#F0D27A", style: "bob", skin: "#F5DCC6", svg: student("#FBF1D8", "#F5DCC6", "#F0D27A", "short", "Nakamura"),
+    title: "Distances, silence et cultures",
+    lines: [
+      { txt: "Psst ! Nagisa va te parler des distances. Edward T. Hall en distingue quatre : intime (moins de 45 cm), personnelle (45 cm à 1,20 m), sociale (1,20 à 3,60 m) et publique (plus de 3,60 m)." },
+      { txt: "En réunion d’affaires, en France, on se tient à distance sociale : entre 1,20 et 3,60 m, souvent de part et d’autre d’une table." },
+      { txt: "Le silence est une arme : après ton offre, tais-toi. Celui qui comble le silence fait souvent une concession inutile." },
+      { ex: true, txt: "Exemple : tu annonces ton prix, puis tu comptes jusqu’à dix dans ta tête. C’est long… mais c’est souvent l’autre qui reprend la parole en premier." },
+      { txt: "Et attention aux cultures : au Japon, « hai » veut souvent dire « je vous écoute », pas « j’accepte ». Vérifie toujours par écrit ce qui est vraiment accepté." }
+    ],
+    memo: ["Proxémie de Hall : intime < 45 cm, personnelle 45 cm–1,20 m, sociale 1,20–3,60 m (réunions d’affaires), publique > 3,60 m.", "Après une offre, on laisse le silence travailler.", "Codes culturels : au Japon, « hai » signifie souvent « je vous écoute »."] },
+  sugino: { name: "Tomohito Sugino", short: "Sugino", f: false, pre: 2, at: [30, 4], hair: "#2C3E6B", style: "short", skin: "#EBCDB0", svg: student("#DCE4F2", "#EBCDB0", "#2C3E6B", "cap", "Sugino"),
+    title: "Ouvrir et observer",
+    lines: [
+      { txt: "Au baseball, le premier lancer donne le rythme du match. En négociation aussi : commence par poser le cadre, avec un ordre du jour et une durée." },
+      { txt: "Quand tu annonces ton prix, c’est ton ancrage : ambitieux mais crédible, et toujours justifié par des chiffres, comme les prix constatés sur le marché." },
+      { txt: "Pendant la négociation avec Claire Lefort, surveille son visage : quand une expression passe, appuie sur O ou sur « Observer ». C’est comme ça qu’on découvre ses vrais intérêts." },
+      { txt: "Et ne traîne pas trop : si tu hésites longtemps, sa patience baisse, et la relation aussi." }
+    ],
+    memo: ["Ouverture : accueil, ordre du jour et durée.", "Ancrage : ambitieux mais crédible, justifié par des données du marché.", "Pendant la négociation : observer le visage (touche O) et ne pas trop hésiter."] },
+  kataoka: { name: "Megu Kataoka", short: "Kataoka", f: true, pre: 2, at: [27, 11], hair: "#1A1A1E", style: "long", skin: "#EBCDB0", svg: student("#EDE3F2", "#EBCDB0", "#1A1A1E", "long", "Kataoka"),
+    title: "Questions et concessions",
+    lines: [
+      { txt: "Je suis déléguée de classe, alors je négocie souvent. Mon secret : les questions ouvertes. « Qu’est-ce qui est important pour vous ? », « Comment voyez-vous la suite ? » Elles font parler l’autre de ses intérêts." },
+      { txt: "Une question fermée, comme « c’est votre dernier prix ? », n’appelle qu’un oui ou un non : tu n’apprends rien." },
+      { txt: "L’écoute active, c’est reformuler : « Si je comprends bien, ce qui compte pour vous, c’est… » L’autre se sent compris et en dit davantage." },
+      { txt: "Et ne donne jamais une concession gratuitement. Toujours au conditionnel : « Si vous faites ceci, alors nous pouvons faire cela. »" }
+    ],
+    memo: ["Les questions ouvertes révèlent les intérêts ; les questions fermées n’apprennent rien.", "Écoute active : reformuler ce que l’autre a dit.", "Concessions conditionnelles : « si… alors… », jamais gratuites."] },
+  takebayashi: { name: "Kotaro Takebayashi", short: "Takebayashi", f: false, pre: 2, at: [36, 10], hair: "#2A2A30", style: "short", skin: "#F1D3B3", svg: student("#E4E4EA", "#F1D3B3", "#2A2A30", "short", "Takebayashi", GLASSES),
+    title: "Les tactiques adverses",
+    lines: [
+      { txt: "D’après mes calculs, Claire Lefort utilisera des tactiques classiques. Apprends à les reconnaître avant l’échauffement de Karma." },
+      { txt: "La fausse date limite : « ce prix n’est valable que jusqu’à ce soir ». Réponse : demander une justification écrite, et rappeler calmement que tu as une autre offre." },
+      { txt: "Le grignotage : tout à la fin, un « petit détail » en plus, comme des frais de livraison. Réponse : rouvrir le donnant-donnant au lieu d’accepter." },
+      { ex: true, txt: "Exemple : tu achètes une voiture, et au moment de signer, le vendeur ajoute « juste » 300 € de frais de dossier. C’est du grignotage." },
+      { txt: "« Coupons la poire en deux » : c’est rapide, mais tu concèdes sans rien obtenir en échange. Et ne révèle jamais ton prix limite." }
+    ],
+    memo: ["Fausse date limite : demander une justification écrite et rappeler sa MESORE.", "Grignotage : refuser l’ajout de dernière minute ou rouvrir le donnant-donnant.", "« Couper la poire en deux » : une concession sans contrepartie."] },
+  terasaka: { name: "Ryoma Terasaka", short: "Terasaka", f: false, pre: 4, at: [8, 15], hair: "#6B4423", style: "spiky", skin: "#E6C4A6", svg: student("#F2E4D8", "#E6C4A6", "#6B4423", "spiky", "Terasaka"),
+    title: "Cadeaux et confidentialité",
+    lines: [
+      { txt: "Ouais, écoute. Pendant un appel d’offres, un fournisseur peut t’offrir un cadeau, un repas, des places de match. Tu refuses poliment et tu le déclares. Sinon, c’est un conflit d’intérêts." },
+      { txt: "Si un proche travaille chez un fournisseur, un cousin ou un ami, tu le dis tout de suite et tu te retires de l’évaluation." },
+      { txt: "Les offres des fournisseurs sont confidentielles : on ne montre jamais le devis de l’un à l’autre. C’est protégé par le secret des affaires." },
+      { ex: true, txt: "Exemple : un arbitre qui accepte un cadeau d’une équipe avant le match… plus personne ne croirait à ses décisions." }
+    ],
+    memo: ["Cadeau ou repas pendant une consultation : on refuse et on déclare.", "Conflit d’intérêts (un proche chez un fournisseur) : on le déclare et on se retire.", "Confidentialité : jamais le devis d’un fournisseur à un autre (secret des affaires)."] },
+  okuda: { name: "Manami Okuda", short: "Okuda", f: true, pre: 4, at: [13, 21], hair: "#7A4FA0", style: "twin", skin: "#F3D7C0", svg: student("#ECE2F4", "#F3D7C0", "#7A4FA0", "twin", "Okuda", GLASSES),
+    title: "Bluff, manipulation et achats responsables",
+    lines: [
+      { txt: "Euh… j’ai étudié la différence entre bluffer et mentir. Taire ton prix limite, c’est permis. Inventer une fausse offre (« on a 1 000 € ailleurs »), c’est un mensonge, et ça peut même être un dol : une tromperie qui peut faire annuler le contrat (Code civil, art. 1137)." },
+      { txt: "Persuader, c’est convaincre avec des arguments vrais. Manipuler, c’est jouer sur la flatterie, la culpabilité ou une fausse urgence : on ne le fait pas." },
+      { txt: "Et un prix très bas peut cacher un problème grave : travail forcé, pollution… Les grandes entreprises ont un devoir de vigilance sur leurs fournisseurs (loi de 2017)." }
+    ],
+    memo: ["Taire son prix limite : permis. Inventer une fausse offre : mensonge, voire dol (Code civil, art. 1137).", "Persuader avec des arguments vrais, oui ; manipuler, non.", "Prix anormalement bas : vérifier, devoir de vigilance (loi n° 2017-399)."] },
+  isogai: { name: "Yuma Isogai", short: "Isogai", f: false, pre: 5, at: [28, 20], hair: "#5A3E2B", style: "short", skin: "#EBCDB0", svg: student("#E4EEE6", "#EBCDB0", "#5A3E2B", "short", "Isogai"),
+    title: "Résister à la pression",
+    lines: [
+      { txt: "Le directeur Asano va sûrement te mettre la pression. Mon conseil : reste poli, mais ne cède pas sur les règles, même face à un supérieur." },
+      { txt: "Par exemple, payer un fournisseur très en retard pour garder la trésorerie, c’est interdit. En France, le délai de paiement est de 60 jours maximum après la date de la facture (Code de commerce, art. L441-10)." },
+      { txt: "Si on te demande quelque chose de contraire à l’éthique, propose une solution conforme et, si besoin, alerte : la loi Sapin II prévoit des dispositifs d’alerte dans les grandes entreprises." }
+    ],
+    memo: ["Face à la pression d’un supérieur : rester poli, mais ne pas céder sur les règles.", "Délais de paiement : 60 jours maximum après la facture (art. L441-10).", "Proposer une solution conforme ; alerter si besoin (loi Sapin II)."] }
+};
+Object.keys(STUDENTS).forEach(id => { CAST[id] = { name: STUDENTS[id].name, svg: STUDENTS[id].svg }; });
 
 /* ---------- contenu pédagogique ---------- */
 const W = { quiz: 1, order: 3, nego: 6, blitz: 2 };
@@ -1587,6 +1674,14 @@ function finishChapter(){
   $("#nx").onclick = () => closeMission(true);
 }
 
+/* conversations des élèves (une par élève), construites à partir de STUDENTS */
+Object.keys(STUDENTS).forEach(id => {
+  const s = STUDENTS[id];
+  CH["e_" + id] = { title: s.title, label: "Conseil de " + s.short, mentor: id, memo: s.memo,
+    steps: s.lines.map(l => ({ t: "say", who: id, ex: l.ex, txt: l.txt })).concat([{ t: "say", who: id, txt: "Voilà ! Je l’ai noté dans ton carnet. Bonne chance pour la suite !" }]) };
+});
+CH.ex = { title: "Les conseils des élèves", mentor: "kayano", memo: [], steps: [] };
+
 /* ---------- quêtes ---------- */
 const QUESTS = [
   { npc: "koro", ch: "c1", obj: "Koro-sensei t’attend devant la porte du bâtiment de la 3-E." },
@@ -1624,9 +1719,26 @@ function lessonFor(npcId){ return S.q === 0 ? lessonsLeft().find(id => LESSON_NP
 function quest(){
   const left = lessonsLeft();
   if (S.q === 0 && left.length) return { npc: null, npcs: left.map(id => LESSON_NPC[id]), obj: `Avant le test de Koro-sensei, fais le tour de tes camarades : ${LESSONS.length - left.length} / ${LESSONS.length} leçons. Il reste : ${left.map(id => SHORT[LESSON_NPC[id]]).join(", ")}.` };
+  const pre = prereqLeft();
+  if (pre.length){
+    const q = QUESTS[S.q], allF = pre.every(id => STUDENTS[id].f), who = pre.length > 1 ? (allF ? "elles t’expliquent" : "ils t’expliquent") : (STUDENTS[pre[0]].f ? "elle t’explique" : "il t’explique");
+    return { npc: null, npcs: pre, obj: `Avant de retrouver ${WHO[q.npc] || "la suite"}, écoute d’abord ${listFr(pre.map(id => STUDENTS[id].short))} : ${who} ce qu’il faut savoir pour réussir les questions.` };
+  }
   return QUESTS[S.q];
 }
+/* élèves à écouter avant la quête en cours */
+function prereqLeft(){ return Object.keys(STUDENTS).filter(id => STUDENTS[id].pre === S.q && !(S.met || {})[id]); }
+const WHO = { nagisa: "Nagisa", karma: "Karma", lefort: "Claire Lefort", irina: "Irina", asano: "le directeur Asano", karasuma: "Karasuma-sensei", koro: "Koro-sensei" };
+function listFr(a){ return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " et " + a[a.length - 1]; }
 function advanceQuest(id){
+  if (id.startsWith("e_") && STUDENTS[id.slice(2)]){
+    if (!S.met) S.met = {};
+    const sid = id.slice(2); if (S.met[sid]) return;
+    S.met[sid] = 1; const n = Object.keys(S.met).length, tot = Object.keys(STUDENTS).length;
+    if (n < tot){ save(); toast(`Conseil noté dans le carnet : ${n} / ${tot} élèves écoutés.`); }
+    else { S.tokens += 2; save(); toast("Tu as écouté tous les élèves ! +2 jetons d’indice."); }
+    return;
+  }
   if (CARDS.includes(id)){ const n = CARDS.filter(k => (S.cards || {})[k]).length; toast(`Carte rangée dans le carnet : ${n} / ${CARDS.length} · Confiance ${S.trust} / 10`); return; }
   if (LESSONS.includes(id)){
     if (!S.lessons) S.lessons = {};
@@ -1712,6 +1824,7 @@ function makeOutside(){
     else if (k < 0.12) m[r][c] = "f";
   }
   // cases à garder libres (personnages, étoiles, abords)
+  Object.keys(STUDENTS).forEach(id => { const [c, r] = STUDENTS[id].at; [[c, r], [c, r + 1], [c - 1, r], [c + 1, r]].forEach(([cc, rr]) => { if ("tTr".includes(m[rr][cc])) m[rr][cc] = "."; }); });
   [[22, 7], [16, 9], [33, 5], [22, 22], [12, 18], [35, 21], [5, 8], [3, 3], [38, 9], [2, 23], [38, 22], [20, 7], [19, 7], [21, 8], [15, 9], [17, 9], [12, 19], [11, 18], [36, 21], [34, 21], [23, 22], [21, 22]].forEach(([c, r]) => { if ("tTr".includes(m[r][c])) m[r][c] = "."; });
   return m.map(row => row.join(""));
 }
@@ -1745,6 +1858,7 @@ const LOOK = {
   asano: { body: "#2F2F35", vest: "#2F2F35", hair: "#6E5E52", style: "slick", skin: "#EBCDB0" },
   lefort: { body: "#1F6E68", vest: "#1F6E68", hair: "#4A2F25", style: "bob", skin: "#E9C3A2" }
 };
+Object.keys(STUDENTS).forEach(id => { const s = STUDENTS[id]; LOOK[id] = { body: "#F4F4F4", vest: "#3B3F4A", hair: s.hair, style: s.style, skin: s.skin }; });
 const STARS = [{ id: "s1", c: 3, r: 3 }, { id: "s2", c: 38, r: 9 }, { id: "s3", c: 2, r: 23 }, { id: "s4", c: 38, r: 22 }];
 const T2P = (c, r) => ({ x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 });
 const DOOR_OUT = { x: 20 * TILE, y: 7 * TILE + 8 }, ENTRY_IN = { x: 28 * TILE + 16, y: 9 * TILE };
@@ -1756,6 +1870,7 @@ function npcs(){
     { id: "karasuma", ...T2P(5, 8) }, { id: "asano", ...T2P(35, 21) }
   ];
   if (S.q === 0) list.push({ id: "koro", ...T2P(22, 7) });
+  Object.keys(STUDENTS).forEach(id => list.push({ id, ...T2P(STUDENTS[id].at[0], STUDENTS[id].at[1]) }));
   return list;
 }
 function buildingOpen(){ return S.q >= 7; }
@@ -2125,6 +2240,7 @@ function drawWorld(t){
     else if (e.kind === "player") drawChar(e.x, e.y, LOOK.player, walk, facing, faceY, t);
     else { const dx = S.px - e.x, dy = S.py - e.y, close = Math.hypot(dx, dy) < 120; drawChar(e.x, e.y, LOOK[e.id], 0, close ? (dx > 0 ? 1 : -1) : 0, close && Math.abs(dy) > Math.abs(dx) && dy < 0 ? -1 : 1, t); }
     if (e.kind === "npc" && tids.includes(e.id)){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
+    else if (e.kind === "npc" && STUDENTS[e.id] && !(S.met || {})[e.id]){ const by = e.y - 46 + (RM ? 0 : Math.sin(t / 300 + e.x) * 2); g.fillStyle = "#FFFDF6"; g.strokeStyle = INK; g.lineWidth = 2; roundRect(e.x - 12, by - 8, 24, 15, 6); g.fill(); g.stroke(); g.beginPath(); g.moveTo(e.x - 3, by + 7); g.lineTo(e.x, by + 12); g.lineTo(e.x + 3, by + 7); g.fill(); g.fillStyle = INK; [-5, 0, 5].forEach(d => { g.beginPath(); g.arc(e.x + d, by, 1.6, 0, 7); g.fill(); }); }
   });
   // « ! » sur les lieux à atteindre (porte du bâtiment, porte scellée)
   tg.filter(p => p.id === "door" || p.id === "gate").forEach(p => { const by = p.y - 34 + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(p.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(p.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", p.x, by + 5); });
@@ -2367,13 +2483,19 @@ function findNear(){
   npcs().forEach(n => { const d = Math.hypot(n.x - S.px, n.y - S.py); if (d < best){ best = d; near = n; } });
   return near;
 }
+function talkLine(who, txt){ sfx("talk"); cur = { id: "talk", i: 0 }; CH.talk = { title: "Discussion", label: "École", steps: [{ t: "say", who, txt }] }; startChapter("talk"); }
 function interact(){
   if (!ov.hidden) return;
   if (!findNear()){ const sp = nearSpot(); if (sp) useSpot(sp); return; }
   if (tuto && TUTO[tuto.i].id === "talk") endTuto(true);
   const qd = quest(), les = lessonFor(near.id);
   if (les){ sfx("open"); startChapter(les); return; }
+  const stu = STUDENTS[near.id];
+  if (stu && !(S.met || {})[near.id]){ sfx("open"); startChapter("e_" + near.id); return; }
+  if (stu){ talkLine(near.id, "Je te rappelle l’essentiel : " + stu.memo.join(" ")); return; }
   if (qd && qd.npc === near.id && qd.ch){ sfx("open"); startChapter(qd.ch); return; }
+  const pre = prereqLeft();
+  if (pre.length && QUESTS[S.q] && QUESTS[S.q].npc === near.id){ talkLine(near.id, `Pas si vite ! Avant mes questions, va écouter ${listFr(pre.map(id => STUDENTS[id].short))}. Suis les « ! » jaunes.`); return; }
   if (near.id === "koro" && S.q === 0 && lessonsLeft().length){
     sfx("talk"); const left = lessonsLeft();
     cur = { id: "talk", i: 0 };
@@ -2404,7 +2526,7 @@ const TUTO = [
   { id: "stars", title: "Les étoiles cachées",
     txt: "4 <b style=\"color:var(--koro)\">★ étoiles</b> sont cachées dans l’école. Chacune te donne un <b>jeton d’indice</b> gratuit : pendant une question, il te donne un coup de pouce sans perdre de points." },
   { id: "quest", title: "Ton aventure",
-    txt: "Dehors, fais le tour des élèves et des professeurs : chacun t’apprend quelque chose (la cour, la forêt, le terrain de sport, l’étang, le portail, le pavillon du directeur). Koro-sensei va se cacher dans le <b>bâtiment de la 3-E</b> : il ne s’ouvrira que quand tu auras tout appris. Dedans, il faudra franchir des portes scellées pour l’affronter." },
+    txt: "Dehors, fais le tour des élèves et des professeurs : chacun t’apprend quelque chose (la cour, la forêt, le terrain de sport, l’étang, le portail, le pavillon du directeur). Une bulle <b>« … »</b> au-dessus d’un élève veut dire qu’il a un conseil pour toi : écoute-le avant de passer les questions ! Koro-sensei va se cacher dans le <b>bâtiment de la 3-E</b> : il ne s’ouvrira que quand tu auras tout appris. Dedans, il faudra franchir des portes scellées pour l’affronter." },
   { id: "cards", title: "Les cartes", glow: ".gauge.trust",
     txt: "Dans le bâtiment, chaque porte scellée s’ouvre avec une <b style=\"color:var(--koro)\">carte</b>. Chacune décrit une situation que vit un acheteur au travail. Lis-la bien et choisis ce que tu ferais <b>vraiment</b>. Chaque choix fait monter ou descendre ta jauge de <b>Confiance</b>, qui clignote en haut. À la fin de l’année, c’est elle qui décide de ta fin parmi les 5 possibles." },
   { id: "talk", title: "Parler aux personnages", glow: "#abtn",
@@ -2460,7 +2582,7 @@ function drawHud(){
     <div class="tools"><button class="btn small" id="b-carnet">Carnet</button><button class="btn small" id="b-guide">Guide</button><button class="btn small ghost" id="b-sound" aria-pressed="${!S.mute}">${S.mute ? "Son : non" : "Son : oui"}</button><button class="btn small ghost" id="b-menu">Menu</button></div>
     <div class="gauges"><div class="gauge hp"><span class="nm">Koro-sensei</span><div class="tr"><span style="width:${S.hp / HP_MAX * 100}%"></span></div><span class="v">${Math.ceil(S.hp)} PV</span></div>
       <div class="gauge trust"><span class="nm">Confiance</span><div class="tr"><span style="width:${S.trust * 10}%"></span></div><span class="v">${S.trust} / 10</span></div>
-      <span class="tokens" title="Jetons d’indice">★ ${S.tokens}</span></div>
+      <span class="tokens" title="Jetons d’indice">★ ${S.tokens}</span><span class="tokens" title="Élèves écoutés" style="color:var(--chalk)">Élèves ${Object.keys(S.met || {}).length} / ${Object.keys(STUDENTS).length}</span></div>
     <div class="objective"><b>Objectif</b><span>${esc(qd ? qd.obj : "")}</span></div>${teamBar()}`;
   $("#b-carnet").onclick = renderCarnet;
   $("#b-guide").onclick = renderGuide;
@@ -2506,6 +2628,7 @@ const MENTOR_LINE = {
   l3: "Karasuma-sensei : « Sans solution de rechange, tu ne sais pas quand dire non. »",
   l4: "Irina : « Le premier chiffre fixe la partie. Ne révèle jamais ta limite. »",
   kx: "Irina : « Persuader, oui. Tricher, jamais : ni cadeau, ni fuite, ni passe-droit. »",
+  ex: "Kayano : « Écoute tes camarades avant les questions : tout est là. »",
   c1:"Koro-sensei : « Préparez-vous comme pour un assassinat : rien au hasard. »",
   c2: "Nagisa : « J’observe, puis je vérifie par une question. »",
   c3b: "Karma : « Je voulais la provoquer. J’ai appris à échanger plutôt qu’à attaquer. »",
@@ -2524,12 +2647,14 @@ const SOURCES = [
   "Loi n° 2018-670 du 30 juillet 2018 relative au secret des affaires.",
   "Code de commerce, art. L441-10 (délais de paiement) et L442-1 (pratiques restrictives) ; Code civil, art. 1137 (dol) — sur Légifrance."
 ];
-const CARNET_IDS = ["l1", "l2", "l3", "l4", "c1", "c2", "c3b", "c4a", "kx", "c5"];
+const CARNET_IDS = ["l1", "l2", "l3", "l4", "ex", "c1", "c2", "c3b", "c4a", "kx", "c5"];
 function renderCarnet(){
   cur = null;
+  CH.ex.memo = Object.keys(STUDENTS).filter(id => (S.met || {})[id]).flatMap(id => STUDENTS[id].memo.map(m => STUDENTS[id].short + " : " + m));
+  if (!CH.ex.memo.length) CH.ex.memo = ["Parle aux élèves dehors (bulle « … » au-dessus de leur tête) : leurs conseils apparaîtront ici."];
   const plain = CARNET_IDS.map(id => `${CH[id].title.toUpperCase()}\n` + CH[id].memo.map(m => "- " + m).join("\n")).join("\n\n") + "\n\nSOURCES\n" + SOURCES.map(s => "- " + s).join("\n");
   paint(`<section class="act"><div class="act-head">${portraitHead("nagisa")}<div><div class="kicker">Fiche de révision</div><h1 style="font-size:30px">Le carnet de Nagisa</h1><p style="color:var(--chalk-2)">Nagisa note tout ce qui peut aider la classe à atteindre Koro-sensei.</p></div></div></section>${SPLIT}<section class="act">
-    <div class="carnet">${CARNET_IDS.map(id => { const c = CH[id], done = S.results[id] || (S.lessons || {})[id] || (id === "kx" && Object.keys(S.cards || {}).length) || (id === "c5" && S.ending); return `<div class="memo" ${done ? "" : 'style="opacity:.6"'}><div class="who">${portraitHead(c.mentor)}<div><h3 style="margin:0">${esc(c.title)}</h3><p style="font-size:14px;color:var(--ink-2)">${esc(MENTOR_LINE[id])}</p></div></div><ul>${c.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul><p class="maxim" style="margin-top:12px;font-size:16px">« ${esc(c.maxim)} »</p></div>`; }).join("")}</div>
+    <div class="carnet">${CARNET_IDS.map(id => { const c = CH[id], done = S.results[id] || (S.lessons || {})[id] || (id === "ex" && Object.keys(S.met || {}).length) || (id === "kx" && Object.keys(S.cards || {}).length) || (id === "c5" && S.ending); return `<div class="memo" ${done ? "" : 'style="opacity:.6"'}><div class="who">${portraitHead(c.mentor)}<div><h3 style="margin:0">${esc(c.title)}</h3><p style="font-size:14px;color:var(--ink-2)">${esc(MENTOR_LINE[id])}</p></div></div><ul>${c.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul><p class="maxim" style="margin-top:12px;font-size:16px">« ${esc(c.maxim)} »</p></div>`; }).join("")}</div>
     <div class="memo"><h3>Sources</h3><ul>${SOURCES.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
     <div class="memo copybox"><h3>Copier la fiche en texte</h3><textarea id="fiche-txt" readonly>${esc(plain)}</textarea><div class="row"><button class="btn small primary" id="copy">Copier le texte</button><span id="copied" style="font-size:14px"></span></div></div></section>`);
   $("#copy").onclick = () => {
