@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classe 3-E : Opération Négociation</title>
+<meta name="description" content="Fan-jeu ludopédagogique non commercial (Master GPLA) : processus de négociation, communication non verbale et éthique des achats.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout : une école à explorer (canevas) sous un bandeau d'état ; les missions s'ouvrent dans une console à deux écrans par-dessus. Un seul thème, volontairement sombre (tableau noir). */
+:root{
+  --board:#1D3A2E; --board-2:#16302A; --shell:#26262E; --shell-2:#3B3B48;
+  --chalk:#F1F0E8; --chalk-2:#B9C7BE;
+  --paper:#FFFDF6; --paper-2:#EDEAE0; --ink:#17171C; --ink-2:#575763;
+  --koro:#F5C518; --maru:#E8741E; --batsu:#7A3FA0; --ok:#1D7A4C; --ok-soft:#DCF0E4; --bad:#B3261E; --bad-soft:#F7DEDC;
+  --f-display:"Mochiy Pop One","Arial Rounded MT Bold","Segoe UI",sans-serif;
+  --f-body:"Zen Maru Gothic","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--board);color:var(--chalk)}
+body{font-family:var(--f-body);font-weight:500;font-size:16px;line-height:1.55;min-height:100vh}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;line-height:1.2}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--koro);outline-offset:3px}
+[hidden]{display:none!important}
+.wrap{max-width:1000px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top,0px)) 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* boutons */
+.btn{font-family:var(--f-display);font-size:15px;padding:10px 18px;border:3px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:12px;box-shadow:0 4px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 5px 0 var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.primary{background:var(--koro)}
+.btn.small{font-size:13px;padding:6px 12px;box-shadow:0 3px 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--chalk);border-color:var(--chalk-2);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-end}
+
+/* ---------- monde ---------- */
+.hud{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:center;margin-bottom:10px}
+.hud .brand{font-family:var(--f-display);font-size:15px}
+.hud .brand small{display:block;font-family:var(--f-body);font-weight:700;font-size:12px;color:var(--chalk-2);letter-spacing:.08em;text-transform:uppercase}
+.hud .tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.gauges{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:14px;align-items:center}
+.gauge{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.gauge .nm{font-family:var(--f-display);font-size:13px}
+.gauge .tr{height:12px;border:2px solid var(--chalk);border-radius:999px;overflow:hidden;background:var(--board-2)}
+.gauge .tr span{display:block;height:100%;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.gauge.hp .nm{color:var(--koro)} .gauge.hp .tr span{background:linear-gradient(90deg,var(--maru),var(--koro))}
+.gauge.trust .nm{color:#8FD3A8} .gauge.trust .tr span{background:linear-gradient(90deg,#3E8E5E,#8FD3A8)}
+.gauge .v{font-family:var(--f-mono);font-size:12px;font-weight:600;white-space:nowrap}
+.gauge.hit .tr{animation:shake .4s}
+.tokens{font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--koro);white-space:nowrap}
+.objective{grid-column:1/-1;display:flex;gap:10px;align-items:center;background:var(--board-2);border:2px solid var(--koro);border-radius:10px;padding:8px 12px;font-weight:700}
+.objective b{font-family:var(--f-display);font-weight:400;color:var(--koro);font-size:13px;white-space:nowrap}
+.teambar{display:flex;flex-wrap:wrap;gap:8px;grid-column:1/-1}
+.teambar span{border:2px solid var(--chalk-2);border-radius:999px;padding:2px 12px;font-size:13px;font-variant-numeric:tabular-nums}
+.teambar span.turn{background:var(--koro);color:var(--ink);border-color:var(--koro);font-weight:900}
+.stage{position:relative;border:4px solid #0E0E12;border-radius:14px;overflow:hidden;background:#111;box-shadow:0 10px 0 rgba(0,0,0,.35)}
+#world{display:block;width:100%;height:auto;touch-action:none;cursor:pointer}
+.pads{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:12px}
+.dpad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px}
+.dpad button,.abtn{border:3px solid var(--ink);background:var(--shell-2);color:var(--chalk);border-radius:12px;font-family:var(--f-display);font-size:18px;cursor:pointer;touch-action:none;user-select:none}
+.dpad button:active,.abtn:active{background:var(--koro);color:var(--ink)}
+.abtn{width:84px;height:84px;border-radius:50%;font-size:22px;background:var(--maru);color:var(--ink)}
+.controls-help{font-size:13px;color:var(--chalk-2);text-align:center;flex:1}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:10px 16px;font-weight:900;box-shadow:0 6px 0 rgba(0,0,0,.4);max-width:min(560px,calc(100vw - 32px));animation:toastIn .3s}
+@keyframes toastIn{from{transform:translate(-50%,20px);opacity:0}}
+
+/* ---------- console de mission (deux écrans) ---------- */
+#ov{position:fixed;inset:0;z-index:40;overflow-y:auto;background:rgba(8,18,14,.86);backdrop-filter:blur(2px)}
+#ov .wrap{padding-block:max(16px,env(safe-area-inset-top,0px)) 40px}
+.console{background:linear-gradient(160deg,var(--shell-2),var(--shell));border-radius:26px;padding:14px;box-shadow:0 12px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.08)}
+.screen{background:var(--board);border:4px solid #0E0E12;border-radius:12px;padding:16px;min-width:0}
+.screen.up{background-image:radial-gradient(circle at 20% 0%,rgba(255,255,255,.06),transparent 50%)}
+.screen.down{background:var(--board-2);display:flex;flex-direction:column;gap:14px}
+.hinge{display:flex;justify-content:space-between;align-items:center;height:26px;margin:0 8%}
+.hinge i{width:30%;height:10px;border-radius:999px;background:linear-gradient(var(--shell-2),#16161B)}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.top .brand{font-family:var(--f-display);font-size:15px}
+.top .brand small{display:block;font-family:var(--f-body);font-weight:700;font-size:12px;color:var(--chalk-2);letter-spacing:.08em;text-transform:uppercase}
+.top .right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pips{display:flex;gap:4px}
+.pips i{width:9px;height:9px;border:2px solid var(--chalk);border-radius:50%}
+.pips i.on{background:var(--koro);border-color:var(--koro)}
+.hp{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:12px}
+.hp-name{font-family:var(--f-display);font-size:13px;color:var(--koro)}
+.hp-track{height:14px;border:2px solid var(--chalk);border-radius:999px;overflow:hidden;background:var(--board-2)}
+.hp-track span{display:block;height:100%;background:linear-gradient(90deg,var(--maru),var(--koro));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.hp-val{font-family:var(--f-mono);font-size:13px;font-weight:600}
+.hp.hit .hp-track{animation:shake .4s}
+.pad-hint{margin-right:auto;font-size:13px;color:var(--chalk-2)}
+
+.panel{border:3px solid var(--ink);background:var(--paper);border-radius:6px;box-shadow:5px 5px 0 rgba(0,0,0,.45);overflow:hidden}
+.panel svg{display:block;width:100%;height:auto}
+.scene{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;align-items:start}
+.talk{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tag{align-self:flex-start;font-family:var(--f-display);font-size:14px;background:var(--koro);color:var(--ink);padding:3px 12px;border-radius:6px}
+.bubble{position:relative;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:26px;padding:18px 22px;font-size:18px;line-height:1.6;min-height:96px;cursor:pointer}
+.bubble::before{content:"";position:absolute;left:-19px;top:28px;border:10px solid transparent;border-right:16px solid var(--ink)}
+.bubble::after{content:"";position:absolute;left:-12px;top:31px;border:7px solid transparent;border-right:12px solid var(--paper)}
+.narr{font-family:var(--f-display);font-size:19px;line-height:1.6;padding:20px 24px;border:2px dashed var(--chalk-2);border-radius:10px;cursor:pointer}
+.scene.shock .panel{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+.act{display:flex;flex-direction:column;gap:16px}
+.act-head{display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;align-items:center}
+.kicker{font-weight:900;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--koro)}
+.memo .kicker,.sheet .kicker{color:var(--batsu)}
+.q{font-size:19px;font-weight:700;line-height:1.45}
+.cue{border-left:5px solid var(--koro);background:var(--board-2);padding:10px 14px;font-style:italic;border-radius:0 8px 8px 0}
+.cue b{font-style:normal;color:var(--koro);font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;display:block}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;padding:12px 16px;border:3px solid var(--ink);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer;font-weight:700;font-size:16px;display:flex;gap:12px;align-items:flex-start}
+.opt b{font-family:var(--f-mono);font-weight:600;min-width:1.4em;color:var(--batsu)}
+.opt:hover:not(:disabled){background:#FFF3C4}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--ok-soft);border-color:var(--ok)}
+.opt.bad{background:var(--bad-soft);border-color:var(--bad)}
+.opt.bonus{border-color:var(--maru);background:#FFE9D6}
+.feedback{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:14px 18px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center}
+.feedback .face{border:2px solid var(--ink);border-radius:50%;overflow:hidden;background:var(--paper)}
+.feedback .face svg{display:block;width:100%;height:auto}
+.feedback.ok{border-color:var(--maru)} .feedback.bad{border-color:var(--batsu)}
+.feedback strong{font-family:var(--f-display);font-weight:400;font-size:17px;display:block;margin-bottom:4px}
+.hint{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;align-items:center;border:2px dashed var(--chalk-2);border-radius:10px;padding:10px 14px}
+.hint .mini{border:2px solid var(--ink);border-radius:50%;overflow:hidden;background:var(--paper)}
+.hint .mini svg{display:block;width:100%;height:auto}
+
+.order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.list{display:flex;flex-direction:column;gap:8px;min-width:0}
+.list h3{font-size:15px}
+.chip{text-align:left;padding:9px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;font-size:15px;font-weight:700;display:flex;gap:10px;align-items:baseline}
+.chip[draggable="true"]{cursor:grab}
+.chip .n{font-family:var(--f-mono);font-weight:600;color:var(--batsu)}
+.chip.ok{border-color:var(--ok);background:var(--ok-soft)} .chip.bad{border-color:var(--bad);background:var(--bad-soft)}
+.slot{border:2px dashed var(--chalk-2);border-radius:10px;padding:9px 12px;color:var(--chalk-2);font-size:14px}
+.slot.over,.chip.over{outline:3px dashed var(--koro);outline-offset:2px}
+
+.tablewrap{overflow-x:auto;border:3px solid var(--ink);border-radius:8px;background:var(--paper);color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:520px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--paper-2);text-align:left;font-variant-numeric:tabular-nums;vertical-align:top}
+thead th{background:var(--ink);color:var(--paper);font-family:var(--f-display);font-weight:400;font-size:14px}
+
+.sheet{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:18px 22px}
+.lab{display:flex;flex-direction:column;gap:14px}
+.lab .sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.lab label{font-weight:900;display:flex;justify-content:space-between;gap:10px}
+.lab input[type=range]{width:100%;accent-color:#E8741E}
+.zbar{position:relative;height:64px;margin-top:8px}
+.zbar .axis{position:absolute;left:0;right:0;top:30px;height:4px;background:var(--ink-2);border-radius:4px}
+.zbar .zone{position:absolute;top:22px;height:20px;background:rgba(29,122,76,.35);border:2px solid var(--ok);border-radius:6px}
+.zbar .mk{position:absolute;top:0;transform:translateX(-50%);font-family:var(--f-mono);font-size:12px;font-weight:600;white-space:nowrap;text-align:center}
+.zbar .mk i{display:block;width:3px;height:30px;margin:2px auto 0;background:currentColor}
+.zbar .mk.s{color:var(--batsu)} .zbar .mk.b{color:var(--ok)} .zbar .mk.o{color:var(--maru)}
+.zres{font-weight:900}
+
+/* négociation */
+.phases{display:flex;flex-wrap:wrap;gap:6px}
+.phases span{font-size:12px;font-weight:900;padding:4px 10px;border-radius:999px;border:2px solid var(--chalk-2);color:var(--chalk-2)}
+.phases span.done{border-color:var(--chalk);color:var(--chalk)}
+.phases span.now{background:var(--koro);border-color:var(--koro);color:var(--ink)}
+.nego-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{border:2px solid var(--chalk-2);border-radius:10px;padding:10px 12px}
+.stat .lbl{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk-2)}
+.stat .val{font-family:var(--f-mono);font-weight:600;font-size:20px}
+.dots{display:flex;gap:4px;margin-top:6px}
+.dots i{width:14px;height:14px;border:2px solid var(--chalk);border-radius:50%}
+.dots i.on{background:var(--koro);border-color:var(--koro)}
+.patience{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
+.patience .lbl{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--chalk-2)}
+.micro{position:relative}
+.micro.flash .panel{outline:4px solid var(--maru);outline-offset:3px}
+.micro .spark{position:absolute;top:6px;right:6px;background:var(--maru);color:var(--ink);font-weight:900;font-size:12px;padding:3px 8px;border-radius:999px}
+.insight{border:2px solid var(--maru);background:rgba(232,116,30,.14);border-radius:10px;padding:10px 14px;font-weight:700}
+.debrief{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+
+.timer{height:14px;border:2px solid var(--chalk);border-radius:999px;position:relative;overflow:hidden}
+.timer span{position:absolute;inset:0 auto 0 0;background:var(--koro);transition:width .25s linear}
+.timer.low span{background:var(--bad)}
+.phase-banner{font-family:var(--f-display);text-align:center;padding:6px 12px;border-radius:8px;background:var(--koro);color:var(--ink)}
+.phase-banner.p1{background:#5FAF3A} .phase-banner.p2{background:var(--bad);color:var(--paper)}
+
+/* équipes */
+.grid-teams{display:flex;flex-direction:column;gap:8px}
+.grid-teams h3{font-size:15px}
+.tg{display:grid;grid-template-columns:minmax(0,1fr) auto 110px;gap:12px;align-items:center;border:2px solid var(--chalk-2);border-radius:12px;padding:8px 12px}
+.tg .tn{font-weight:900;min-width:0}
+.tg .tn small{display:block;font-weight:500;color:var(--chalk-2)}
+.tg .tl{display:flex;gap:6px}
+.tg .tr{font-family:var(--f-mono);font-weight:600;text-align:right}
+.lt{width:40px;height:40px;border-radius:50%;border:2px solid var(--chalk);background:transparent;color:var(--chalk);font-family:var(--f-display);cursor:pointer}
+.lt.on{background:var(--koro);border-color:var(--koro);color:var(--ink)}
+.tg.good{border-color:var(--maru);background:rgba(232,116,30,.14)} .tg.wrong{border-color:var(--batsu);background:rgba(122,63,160,.16)}
+
+/* combat et assaut */
+.arena-wrap{position:relative;border:3px solid var(--chalk);border-radius:14px;overflow:hidden;background:#2B2118}
+#arena{display:block;width:100%;height:auto;cursor:crosshair;touch-action:none}
+.ammo{font-family:var(--f-mono);font-weight:600;font-size:18px;color:var(--koro)}
+.track{position:relative;height:76px;border:3px solid var(--chalk);border-radius:14px;background:var(--board-2);overflow:hidden}
+.track .zone{position:absolute;top:0;bottom:0;background:rgba(232,116,30,.28);border-left:3px dashed var(--maru);border-right:3px dashed var(--maru)}
+.track .crit{position:absolute;top:0;bottom:0;background:rgba(245,197,24,.45)}
+.track .target{position:absolute;top:6px;width:64px;height:64px;margin-left:-32px;border-radius:50%;overflow:hidden;border:2px solid var(--ink);background:var(--paper)}
+.track .target svg{display:block;width:100%;height:auto}
+.strike-btn{font-size:22px;padding:16px 28px}
+.blitz-card{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:18px 20px;font-size:19px;font-weight:700;min-height:90px}
+.blitz-card.flash-ok{border-color:var(--ok);background:var(--ok-soft)} .blitz-card.flash-bad{border-color:var(--bad);background:var(--bad-soft)}
+.blitz-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.combo{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:70;background:rgba(10,20,15,.5);animation:fade 1.7s forwards}
+.combo div{text-align:center;transform:rotate(-4deg);animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.combo b{display:block;font-family:var(--f-display);font-weight:400;font-size:clamp(40px,10vw,96px);color:var(--koro);-webkit-text-stroke:3px var(--ink);text-shadow:6px 6px 0 var(--maru)}
+.combo span{display:inline-block;margin-top:10px;background:var(--paper);color:var(--ink);font-weight:900;padding:6px 14px;border-radius:8px}
+@keyframes pop{from{transform:rotate(-4deg) scale(2.4);opacity:0}to{transform:rotate(-4deg) scale(1);opacity:1}}
+@keyframes fade{0%,75%{opacity:1}100%{opacity:0}}
+
+/* résultats, carnet, titre */
+.result{display:grid;grid-template-columns:170px minmax(0,1fr);gap:24px;align-items:center}
+.memo{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:18px 22px}
+.memo h3{font-size:18px;margin-bottom:10px}
+.memo ul,.memo ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.maxim{font-family:var(--f-display);font-size:19px;line-height:1.4;border-left:6px solid var(--koro);padding-left:16px}
+.verdict{font-family:var(--f-display);font-size:26px;color:var(--koro)}
+.carnet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.carnet .who{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:10px}
+.carnet .who .panel{box-shadow:none;border-width:2px}
+.copybox textarea{width:100%;min-height:120px;font-family:var(--f-mono);font-size:13px;border:2px solid var(--ink);border-radius:8px;padding:10px;background:var(--paper);color:var(--ink)}
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center;padding-block:10px 4px}
+.hero h1{font-size:clamp(34px,6.5vw,60px)}
+.hero h1 em{font-style:normal;color:var(--koro)}
+.hero .lede{font-size:18px;max-width:56ch;margin-top:14px}
+.chalkline{height:4px;background:var(--chalk);opacity:.6;border-radius:4px;margin-top:14px;width:70%;transform:rotate(-.6deg)}
+.cast{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cast figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.cast figcaption{font-weight:700;font-size:13px;color:var(--chalk-2)}
+.cast .big{grid-column:1/-1}
+.setup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:22px}
+.setup fieldset{border:2px solid var(--chalk-2);border-radius:12px;padding:14px 16px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.setup legend{font-family:var(--f-display);padding:0 6px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700}
+.field input:not([type=radio]):not([type=checkbox]),.field select{font-family:var(--f-body);font-weight:700;font-size:16px;padding:9px 12px;border:2px solid var(--ink);border-radius:8px;background:var(--paper);color:var(--ink);width:100%}
+.radio{display:flex;gap:8px;align-items:flex-start;font-weight:700;cursor:pointer}
+.radio input{margin-top:5px;flex:none}
+.team-rows{display:flex;flex-direction:column;gap:8px}
+.team-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.toggle{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:700}
+.credits{margin-top:24px;font-size:13px;color:var(--chalk-2);max-width:80ch}
+.ending{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.ending h1{font-size:clamp(28px,5vw,44px);color:var(--koro)}
+.ending .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%}
+
+@media (max-width:720px){
+  .scene{grid-template-columns:92px minmax(0,1fr);gap:14px}
+  .bubble{font-size:16px;padding:14px 16px}
+  .bubble::before,.bubble::after{top:18px}
+  .act-head{grid-template-columns:64px minmax(0,1fr)}
+  .order-grid,.carnet,.setup,.hero,.lab .sliders{grid-template-columns:1fr}
+  .result{grid-template-columns:1fr;justify-items:start}
+  .result .panel{width:130px}
+  .nego-stats{grid-template-columns:1fr 1fr}
+  .feedback{grid-template-columns:52px minmax(0,1fr)}
+  .gauges{grid-template-columns:1fr}
+  .tg{grid-template-columns:minmax(0,1fr) 70px}
+  .tg .tl{grid-column:1/-1;grid-row:2}
+  .team-row{grid-template-columns:1fr}
+  .ending .stats{grid-template-columns:1fr}
+  .dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px)}
+  .abtn{width:72px;height:72px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="ov" hidden><div class="wrap" id="app" aria-live="polite"></div></div>
+
+<script>
+(function(){
+"use strict";
+const INK = "#17171C";
+const SAVE_KEY = "classe-3e-rpg-v1";
+const RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const root = $("#root"), ov = $("#ov"), app = $("#app");
+const HP_MAX = 150;
+
+const FRESH = () => ({ name: "Élève", mode: "solo", answerMode: "all", teams: [], turn: 0, results: {}, best: {}, noTimer: false, assist: false,
+  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 7 * 32 + 16, py: 8 * 32 + 20, tokens: 0, found: {}, started: false, nego: null, examWin: null, ending: null });
+let S = FRESH();
+let cur = null;
+function load(){ try { const r = localStorage.getItem(SAVE_KEY); if (r) Object.assign(S, JSON.parse(r)); } catch(e){} }
+function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e){} }
+function esc(t){ return String(t).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
+function tx(t){ return String(t).replace(/@name/g, teamsOn() ? "la classe" : S.name); }
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function eur(n){ return Math.round(n).toLocaleString("fr-FR") + " €"; }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function trustAdd(d){ S.trust = clamp(S.trust + d, 0, 10); save(); }
+
+/* ---------- équipes ---------- */
+function teamsOn(){ return S.mode === "teams" && S.teams.length > 1; }
+function simul(){ return teamsOn() && S.answerMode !== "turns"; }
+function award(p){ if (teamsOn() && !simul()){ S.teams[S.turn].pts = Math.round((S.teams[S.turn].pts + p) * 10) / 10; save(); } }
+function rotate(){ if (teamsOn() && !simul()){ S.turn = (S.turn + 1) % S.teams.length; save(); } }
+function teamBar(){
+  if (!teamsOn()) return "";
+  const turn = i => !simul() && i === S.turn;
+  return `<div class="teambar" aria-label="Scores des équipes">${S.teams.map((t, i) => `<span class="${turn(i) ? "turn" : ""}">${turn(i) ? "▶ " : ""}${esc(t.name)} · ${t.pts.toLocaleString("fr-FR")} pt${t.pts >= 2 ? "s" : ""}</span>`).join("")}</div>`;
+}
+function turnLine(collective){
+  if (!teamsOn()) return "";
+  const m = t => `<p style="color:var(--koro);font-weight:900">${t}</p>`;
+  if (!simul()) return m(`Au tour de ${esc(S.teams[S.turn].name)} de répondre.`);
+  return collective ? m("Activité collective : la classe décide ensemble, sans points d’équipe.") : m("Toutes les équipes répondent : chaque groupe se concerte, puis l’animateur note la lettre de chaque équipe.");
+}
+function gridHTML(order){
+  return `<div class="grid-teams"><h3>Réponses des équipes</h3>${S.teams.map((t, ti) => `<div class="tg" data-t="${ti}"><span class="tn">${esc(t.name)}${t.members ? `<small>${esc(t.members)}</small>` : ""}</span><div class="tl">${order.map((o, k) => `<button class="lt" data-t="${ti}" data-i="${o.i}" aria-label="${esc(t.name)} répond ${"ABCD"[k]}">${"ABCD"[k]}</button>`).join("")}</div><span class="tr"></span></div>`).join("")}</div>`;
+}
+function wireGrid(picks){
+  $$(".lt").forEach(b => b.onclick = () => {
+    const ti = +b.dataset.t; picks[ti] = +b.dataset.i;
+    $$(`.lt[data-t="${ti}"]`).forEach(x => x.classList.toggle("on", x === b));
+  });
+}
+function revealGrid(picks, ok, pts){
+  const res = S.teams.map((t, ti) => {
+    const good = picks[ti] === ok;
+    if (good) t.pts = Math.round((t.pts + pts) * 10) / 10;
+    const row = document.querySelector(`.tg[data-t="${ti}"]`);
+    row.classList.add(good ? "good" : "wrong");
+    row.querySelector(".tr").textContent = good ? `+${String(pts).replace(".", ",")} pt` : picks[ti] === undefined ? "sans réponse" : "raté";
+    return good;
+  });
+  $$(".lt").forEach(x => x.disabled = true);
+  save();
+  const tb = $("#app .teambar"); if (tb) tb.outerHTML = teamBar();
+  return res;
+}
+/* le choix « de la classe » en mode affrontement : la réponse la plus donnée */
+function majority(picks){
+  const c = {}; picks.forEach(p => { if (p !== undefined) c[p] = (c[p] || 0) + 1; });
+  let best = null; Object.keys(c).forEach(k => { if (best === null || c[k] > c[best]) best = k; });
+  return best === null ? null : +best;
+}
+
+/* ---------- PV de Koro-sensei ---------- */
+function hpBar(){
+  const pct = Math.max(0, S.hp) / HP_MAX * 100;
+  return `<div class="hp" aria-label="Points de vie de Koro-sensei"><span class="hp-name">Koro-sensei</span><div class="hp-track"><span style="width:${pct}%"></span></div><span class="hp-val">${S.hp > 0 ? Math.ceil(S.hp) + " / " + HP_MAX + " PV" : "K.O. !"}</span></div>`;
+}
+function refreshHp(){ const el = $("#app .hp"); if (el){ el.outerHTML = hpBar(); $("#app .hp").classList.add("hit"); } }
+function strike(frac, w, collective){
+  if (frac <= 0) return;
+  let dmg = 2 * frac * (w || 1);
+  const combo = simul() && !collective && frac === 1;
+  if (combo) dmg += 1 * (w || 1);
+  if (!teamsOn()) dmg *= 1.5;
+  S.hp = Math.max(0, Math.round((S.hp - dmg) * 10) / 10);
+  save(); refreshHp();
+  if (combo) flash("COMBO 3-E !", "Toutes les équipes ont trouvé : coup critique !");
+}
+function flash(big, small){
+  const o = document.createElement("div");
+  o.className = "combo"; o.setAttribute("role", "status");
+  o.innerHTML = `<div><b>${esc(big)}</b><span>${esc(small)}</span></div>`;
+  document.body.appendChild(o);
+  setTimeout(() => o.remove(), RM ? 1200 : 1700);
+}
+function toast(t){
+  const o = document.createElement("div"); o.className = "toast"; o.setAttribute("role", "status"); o.textContent = t;
+  document.body.appendChild(o); setTimeout(() => o.remove(), 3200);
+}
+
+/* ---------- portraits (dessins originaux en SVG) ---------- */
+const st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+function frame(bg, inner, label){ return `<svg viewBox="0 0 120 130" role="img" aria-label="${label}"><rect width="120" height="130" fill="${bg}"/>${inner}</svg>`; }
+function neck(c){ return `<rect x="52" y="84" width="16" height="16" fill="${c}" ${st}/>`; }
+function torso(c){ return `<path d="M8 132 Q12 100 60 96 Q108 100 112 132Z" fill="${c}" ${st}/>`; }
+function head(c){ return `<ellipse cx="60" cy="60" rx="29" ry="33" fill="${c}" ${st}/>`; }
+function eyes(r){ r = r || 4; return `<ellipse cx="48" cy="62" rx="${r}" ry="${r + 1.5}" fill="${INK}"/><ellipse cx="72" cy="62" rx="${r}" ry="${r + 1.5}" fill="${INK}"/><circle cx="49.5" cy="60" r="1.5" fill="#fff"/><circle cx="73.5" cy="60" r="1.5" fill="#fff"/>`; }
+function koro(mood){
+  mood = mood || "normal";
+  const face = { normal: "#F5C518", ok: "#E8741E", ko: "#7A3FA0", mock: "#F5C518", angry: "#2A1616" }[mood];
+  let over = "";
+  if (mood === "ok") over = `<circle cx="60" cy="66" r="30" fill="none" stroke="#fff" stroke-width="7"/>`;
+  if (mood === "ko") over = `<path d="M34 40 L86 92 M86 40 L34 92" stroke="#fff" stroke-width="7" stroke-linecap="round"/>`;
+  if (mood === "mock") over = `<path d="M24 50 H96 M22 62 H98 M24 74 H96 M30 86 H90" stroke="#5FAF3A" stroke-width="6" stroke-linecap="round"/>`;
+  const eyeC = mood === "angry" ? "#E33" : INK;
+  return frame("#FFF6D6",
+    `<path d="M10 132 Q14 104 60 100 Q106 104 110 132Z" fill="#26222E" ${st}/>` +
+    `<path d="M20 128 Q24 116 30 128 M40 130 Q44 116 50 130 M70 130 Q76 116 80 130 M90 128 Q96 116 100 128" fill="none" stroke="#F5C518" stroke-width="5" stroke-linecap="round"/>` +
+    `<path d="M50 100 L60 112 L70 100 L60 104Z" fill="#E8C34A" stroke="${INK}" stroke-width="2"/>` +
+    `<circle cx="60" cy="64" r="38" fill="${face}" ${st}/>` + over +
+    `<circle cx="47" cy="56" r="4" fill="${eyeC}"/><circle cx="73" cy="56" r="4" fill="${eyeC}"/>` +
+    `<path d="M32 70 Q60 100 88 70 Q60 82 32 70Z" fill="#fff" ${st}/><path d="M40 75 V82 M50 78 V87 M60 79 V89 M70 78 V87 M80 75 V82" stroke="${INK}" stroke-width="1.5"/>` +
+    `<path d="M26 34 L60 18 L94 34 L60 46Z" fill="#26222E" ${st}/><path d="M42 36 Q60 30 78 36 L78 42 Q60 36 42 42Z" fill="#26222E" ${st}/><path d="M86 31 L92 48" stroke="#E8C34A" stroke-width="3"/><circle cx="92" cy="50" r="3" fill="#E8C34A"/>`,
+    "Koro-sensei");
+}
+function lefort(rel, micro){
+  const line = d => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
+  let brows, mouth, extra = "", label;
+  if (micro){ brows = line("M41 50 Q47 46 54 50 M66 50 Q73 46 79 50"); mouth = `<ellipse cx="60" cy="82" rx="5" ry="4" fill="${INK}"/>`; label = "Claire Lefort, micro-expression"; }
+  else if (rel >= 4){ brows = line("M41 53 Q47 49 54 52 M66 52 Q73 49 79 53"); mouth = `<path d="M48 77 Q60 91 72 77Z" fill="#fff" ${st}/>`; extra = `<ellipse cx="41" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".6"/><ellipse cx="79" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".6"/>`; label = "Claire Lefort, détendue et souriante"; }
+  else if (rel >= 2){ brows = line("M41 54 H54 M66 54 H79"); mouth = line("M50 80 Q60 85 70 80"); label = "Claire Lefort, neutre"; }
+  else { brows = line("M41 52 L54 57 M66 57 L79 52"); mouth = line("M51 84 Q60 78 69 84"); extra = `<path d="M88 46 Q92 54 88 58 Q84 54 88 46Z" fill="#9AD0F5" stroke="${INK}" stroke-width="1.5"/><path d="M22 132 L50 112 L72 120 L98 104 L104 132Z" fill="#1F6E68" ${st}/>`; label = "Claire Lefort, crispée, bras croisés"; }
+  return frame("#D8ECE8",
+    `<path d="M28 62 Q24 22 60 20 Q96 22 92 62 Q94 80 86 86 L34 86 Q26 80 28 62Z" fill="#4A2F25" ${st}/>` +
+    neck("#E9C3A2") + torso("#1F6E68") + `<path d="M46 98 L60 116 L74 98" fill="#fff" ${st}/>` + head("#E9C3A2") +
+    `<path d="M31 54 Q34 28 62 28 Q84 28 89 50 Q70 36 50 40 Q38 44 31 54Z" fill="#4A2F25" ${st}/>` +
+    brows + eyes(micro ? 4.5 : 3.6) + mouth + extra, label);
+}
+const CAST = {
+  koro: { name: "Koro-sensei", svg: koro("normal") },
+  nagisa: { name: "Nagisa Shiota", svg: frame("#DCE7F7",
+    `<path d="M30 60 Q20 80 22 98 Q28 86 34 76Z" fill="#4C7BD9" ${st}/><path d="M90 60 Q100 80 98 98 Q92 86 86 76Z" fill="#4C7BD9" ${st}/>` +
+    neck("#F3D7C0") + torso("#F4F4F4") + `<path d="M58 100 L60 126 L62 100Z" fill="#2C3A63"/><path d="M8 132 Q14 108 34 102 L40 132Z M112 132 Q106 108 86 102 L80 132Z" fill="#3B3F4A"/>` + head("#F3D7C0") +
+    `<path d="M30 58 Q26 24 60 22 Q94 24 90 58 Q84 40 72 42 L66 32 L58 42 L48 34 L40 46 Q34 48 30 58Z" fill="#4C7BD9" ${st}/>` +
+    `<ellipse cx="48" cy="63" rx="5" ry="7" fill="#24346B"/><ellipse cx="72" cy="63" rx="5" ry="7" fill="#24346B"/><circle cx="50" cy="60" r="2" fill="#fff"/><circle cx="74" cy="60" r="2" fill="#fff"/>` +
+    `<path d="M54 80 Q60 84 66 80" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`, "Nagisa") },
+  karma: { name: "Karma Akabane", svg: frame("#F7DEDA",
+    neck("#F1D2B6") + torso("#1E1E24") + `<path d="M46 98 L60 118 L74 98" fill="#F4F4F4" ${st}/>` + head("#F1D2B6") +
+    `<path d="M28 60 Q24 22 60 20 Q96 22 92 60 L86 46 L80 54 L74 40 L64 48 L56 36 L46 50 L40 42 L34 54Z" fill="#C8322F" ${st}/>` +
+    `<path d="M40 56 L55 60 M65 60 L80 56" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M42 64 Q48 59 55 63 Q48 67 42 64Z" fill="#B8871F" stroke="${INK}" stroke-width="2"/><path d="M65 63 Q72 59 78 64 Q72 67 65 63Z" fill="#B8871F" stroke="${INK}" stroke-width="2"/>` +
+    `<path d="M50 80 Q62 84 72 74" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`, "Karma") },
+  karasuma: { name: "Karasuma-sensei", svg: frame("#E1E3E8",
+    neck("#E6C4A6") + torso("#22252E") + `<path d="M46 98 L60 120 L74 98Z" fill="#fff" ${st}/><path d="M57 104 L60 126 L63 104Z" fill="#20304F"/>` + head("#E6C4A6") +
+    `<path d="M31 54 Q30 24 60 24 Q90 24 89 54 Q86 36 60 34 Q38 34 31 54Z" fill="#111" ${st}/>` +
+    `<path d="M40 54 L55 56 M65 56 L80 54" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M43 63 H53 M67 63 H77" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>` +
+    `<path d="M52 81 H68" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`, "Karasuma") },
+  irina: { name: "Irina Jelavić", svg: frame("#F6E7D2",
+    `<path d="M26 60 Q20 18 60 18 Q100 18 94 60 Q104 96 92 118 Q84 96 86 76 L34 76 Q36 96 28 118 Q16 96 26 60Z" fill="#E8C25A" ${st}/>` +
+    neck("#F5DCC6") + torso("#8C1D3A") + head("#F5DCC6") +
+    `<path d="M31 56 Q30 26 60 24 Q84 24 90 48 Q74 30 56 36 Q40 40 31 56Z" fill="#E8C25A" ${st}/>` +
+    eyes(4) + `<path d="M40 56 L46 54 M74 54 L80 56" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/><path d="M52 79 Q60 85 68 79" fill="#C2334D" stroke="${INK}" stroke-width="2"/>`, "Irina") },
+  asano: { name: "Le directeur Asano", svg: frame("#E4E2DA",
+    neck("#EBCDB0") + torso("#2F2F35") + `<path d="M46 98 L60 120 L74 98Z" fill="#fff" ${st}/><path d="M57 104 L60 126 L63 104Z" fill="#6B1E1E"/>` + head("#EBCDB0") +
+    `<path d="M30 56 Q28 22 62 22 Q92 24 90 54 Q84 32 64 34 Q44 32 30 56Z" fill="#6E5E52" ${st}/>` +
+    `<path d="M42 62 Q48 59 54 62 M66 62 Q72 59 78 62" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M48 79 Q60 86 72 79" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`, "Directeur Asano") },
+  lefort: { name: "Claire Lefort · Pixelia", svg: lefort(3) }
+};
+
+/* ---------- contenu pédagogique ---------- */
+const W = { quiz: 1, order: 3, nego: 6, blitz: 2 };
+const C1_TABLE = { t: "table", title: "Fiche de préparation · 30 ordinateurs portables",
+  head: ["Information", "Valeur", "Source"],
+  rows: [["Offre de Datalis, conditions identiques", "1 190 € HT / poste", "Devis reçu"], ["Offre d’ouverture de Pixelia", "1 250 € HT / poste", "Devis reçu"], ["Coût de revient estimé chez Pixelia", "≈ 980 € / poste", "Étude de marché"], ["Marge minimale d’un revendeur (secteur)", "≈ 8 %", "Étude de marché"], ["Prix constaté pour ce modèle par lots de 25 à 50", "1 020 à 1 120 € HT", "Comparateurs B2B"]],
+  note: "Toutes ces données sont fictives, construites pour l’exercice." };
+
+const CH = {
+c0: { title: "Prologue", label: "Prologue",
+  steps: [
+    { t: "narr", txt: "Collège Kunugigaoka. Le bâtiment de la classe 3-E, perdu en haut de la colline. Ce matin, un professeur jaune écrit au tableau à Mach 20 : NÉGOCIATION." },
+    { t: "say", who: "koro", fx: "shock", txt: "Nurufufu ! Bonjour, chers élèves ! Cette année, en plus des maths, je vous apprends l’art de la négociation d’achat." },
+    { t: "say", who: "koro", txt: "Notre accord : à l’examen final, au gymnase, vous pourrez m’attaquer. Chaque leçon réussie me fait perdre des forces. Si vous me mettez K.O., je me laisse atteindre." },
+    { t: "say", who: "karasuma", txt: "Et voici un vrai dossier. Une filiale française d’un groupe partenaire doit acheter 30 ordinateurs portables. Budget : 36 000 € HT. Vous menez l’achat de bout en bout." },
+    { t: "say", who: "nagisa", txt: "Déplace-toi avec les flèches (ou Z Q S D), et parle aux gens avec E ou Espace. Commence par Koro-sensei, devant le tableau." }
+  ] },
+c1: { no: 1, title: "Le temps de la préparation", label: "Chapitre 1", scored: true, mentor: "koro",
+  maxim: "Une négociation se gagne avant d’entrer dans la salle. Nurufufu.",
+  memo: [
+    "Les 7 étapes : préparation → ouverture → découverte → argumentation et propositions → échange de concessions → conclusion → formalisation et suivi.",
+    "Méthode raisonnée de Harvard (Fisher et Ury, 1981) : séparer les personnes du problème, viser les intérêts et non les positions, inventer des options à bénéfice mutuel, s’appuyer sur des critères objectifs.",
+    "MESORE (BATNA en anglais) : la meilleure solution de rechange si l’accord échoue. Elle fixe ton prix limite.",
+    "ZOPA : zone d’accord possible, entre le prix limite du vendeur et celui de l’acheteur.",
+    "On ouvre de façon ambitieuse mais crédible, avec une justification chiffrée. On ne révèle jamais son prix limite."
+  ],
+  steps: [
+    { t: "say", who: "koro", txt: "Par le chemin ! Une négociation suit des étapes. Celui qui les saute se fait dévorer. Remettez-les dans l’ordre." },
+    { t: "order", who: "koro", q: "Remets les 7 étapes du processus de négociation dans l’ordre.",
+      items: ["Préparation : objectifs, MESORE, prix limite, informations sur l’interlocuteur", "Ouverture : accueil, présentation, ordre du jour et durée", "Découverte : questions ouvertes, écoute active, reformulation", "Argumentation et premières propositions", "Échange de concessions (« si… alors »)", "Conclusion : récapitulatif et validation de l’accord", "Formalisation et suivi : compte rendu écrit, contrat, évaluation"],
+      hint: "On ne fait pas de proposition avant d’avoir compris ce que veut l’autre. Et un accord oral sans écrit, ça s’envole !" },
+    { t: "quiz", who: "koro", q: "Dans la méthode de négociation raisonnée de Harvard (Fisher et Ury, 1981), sur quoi faut-il se concentrer ?",
+      opts: ["Sur les intérêts de chacun, pas sur les positions affichées.", "Sur sa position de départ, qu’il ne faut jamais lâcher.", "Sur la relation personnelle, quitte à oublier le contrat."], ok: 0,
+      why: "Les quatre principes : séparer les personnes du problème, viser les intérêts plutôt que les positions, inventer des options à bénéfice mutuel, s’appuyer sur des critères objectifs. Une position, c’est « je veux 1 250 € ». Un intérêt, c’est la raison derrière : « j’ai besoin d’un client de référence »." },
+    { t: "quiz", who: "nagisa", q: "La commerciale du fournisseur dit : « Je ne descendrai pas sous 1 150 € par poste. » Quelle question révèle son intérêt ?",
+      cue: "Elle parle d’un ton ferme, mais garde les mains ouvertes sur la table.",
+      opts: ["« C’est votre dernier mot ? »", "« Qu’est-ce qui est le plus important pour vous dans ce contrat ? »", "« C’est trop cher, baissez. »"], ok: 1,
+      why: "Une question ouverte (quoi, comment, qu’est-ce qui…) fait parler l’autre de ses besoins. « C’est votre dernier mot ? » est fermée : la réponse sera « oui ».",
+      hint: "Une question à laquelle on ne peut pas répondre par oui ou par non…" },
+    C1_TABLE,
+    { t: "quiz", who: "koro", q: "Quelle est ta MESORE, et donc ton prix limite ?", table: true,
+      opts: ["1 250 €, le prix de Pixelia", "1 190 €, l’offre de Datalis : au-dessus, mieux vaut acheter chez Datalis", "1 200 €, le budget divisé par 30", "980 €, le coût de revient de Pixelia"], ok: 1,
+      why: "Ta MESORE, c’est l’offre Datalis. Au-delà de 1 190 €, signer chez Pixelia serait pire que ta solution de rechange : c’est ton prix limite. Le budget de 1 200 € est un plafond, pas une MESORE." },
+    { t: "quiz", who: "koro", q: "Le prix limite de Pixelia est estimé à environ 980 € + 8 % ≈ 1 060 €. Où se situe la ZOPA ?", table: true,
+      opts: ["Entre 980 € et 1 250 €", "Entre 1 060 € et 1 190 €", "Entre 1 190 € et 1 250 €", "Il n’y a pas de ZOPA"], ok: 1,
+      why: "La ZOPA va du prix limite du vendeur (≈ 1 060 €) au prix limite de l’acheteur (1 190 €). Tout accord dans cette zone vaut mieux, pour les deux, que leur solution de rechange.",
+      hint: "Le vendeur ne descend pas sous son prix limite. L’acheteur ne monte pas au-dessus du sien." },
+    { t: "calc" },
+    { t: "quiz", who: "karma", q: "Karma propose d’ouvrir à 700 €, « pour les choquer ». Quel prix d’ouverture choisis-tu ?",
+      opts: ["700 €, comme le dit Karma", "1 040 €, justifié par les prix constatés sur le marché", "1 190 €, pour aller vite", "1 250 €, on accepte leur prix"], ok: 1,
+      why: "L’ancrage marche s’il est ambitieux mais crédible. 1 040 € est sous la ZOPA, ce qui laisse de la marge, et il s’appuie sur les prix du marché (1 020 à 1 120 €). 700 € n’est pas crédible et abîme la relation dès la première minute." },
+    { t: "say", who: "koro", txt: "Excellent ! Votre arme principale n’est pas le couteau, c’est la préparation. Allez voir Nagisa : il a des choses à vous apprendre sur ce que le corps ne dit pas." }
+  ] },
+c2: { no: 2, title: "Le temps de l’observation", label: "Chapitre 2", scored: true, mentor: "nagisa",
+  maxim: "Un geste n’est pas une preuve. C’est une question à poser.",
+  memo: [
+    "La « règle des 7-38-55 » d’Albert Mehrabian (1967) ne vaut que pour l’expression d’émotions quand les mots et le ton se contredisent.",
+    "Lire un signal : comparer à la ligne de base, chercher un ensemble de signaux, tenir compte du contexte.",
+    "Un signal donne une hypothèse, que l’on vérifie par une question ouverte. On détecte le mensonge à environ 54 % (Bond et DePaulo, 2006).",
+    "Proxémie (Edward T. Hall, 1966) : intime < 45 cm, personnelle 45 cm–1,20 m, sociale 1,20–3,60 m (réunions d’affaires), publique > 3,60 m.",
+    "Émotions de base d’Ekman : joie, tristesse, colère, peur, surprise, dégoût, mépris. Une micro-expression dure une fraction de seconde.",
+    "Le silence est un outil. Au Japon, « hai » signifie souvent « je vous écoute »."
+  ],
+  steps: [
+    { t: "say", who: "nagisa", txt: "J’observe beaucoup les gens. Aujourd’hui, je t’apprends à lire ce que le corps dit… et surtout ce qu’il ne dit PAS." },
+    { t: "quiz", who: "koro", q: "On entend partout : « 93 % de la communication est non verbale : 7 % les mots, 38 % la voix, 55 % le visage. » Qu’en est-il vraiment ?",
+      opts: ["C’est prouvé pour toutes les situations, y compris une négociation.", "Ces chiffres d’Albert Mehrabian ne concernent que l’expression d’émotions, quand les mots et le ton se contredisent.", "C’est l’inverse : 93 % passe par les mots."], ok: 1,
+      why: "Les expériences de Mehrabian (1967) portaient sur des mots isolés exprimant une attitude, avec un ton contradictoire. Mehrabian lui-même rappelle que ces chiffres ne s’appliquent pas à la communication en général." },
+    { t: "quiz", who: "nagisa", q: "Tu annonces 1 040 €. Ton interlocutrice croise les bras. Qu’en conclus-tu ?",
+      cue: "La salle est climatisée à 19 °C. Elle avait déjà les bras croisés en entrant, avant même que tu parles de prix.",
+      opts: ["Elle refuse ton offre, c’est certain.", "Ce signal seul ne prouve rien : le contexte (le froid) et sa ligne de base (bras déjà croisés) l’expliquent. Tu continues d’observer.", "Elle ment sur ses prix."], ok: 1,
+      why: "Un geste isolé ne veut rien dire. On compare à la ligne de base, on cherche un ensemble de signaux qui vont dans le même sens, et on tient compte du contexte." },
+    { t: "quiz", who: "nagisa", q: "Quand tu évoques les délais de livraison, son comportement change. Que fais-tu ?",
+      cue: "Jusqu’ici calme et le regard posé, elle touche son cou, détourne les yeux et parle plus vite.",
+      opts: ["Tu l’accuses de cacher un problème de livraison.", "Tu ignores : ce n’est que du non-verbal.", "Plusieurs signaux changent par rapport à sa ligne de base : tu formes une hypothèse (gêne sur les délais) et tu la vérifies : « Comment se passe votre approvisionnement en ce moment ? »"], ok: 2,
+      why: "Les gestes d’auto-contact accompagnent souvent le stress ou la gêne. Ce n’est pas une preuve de mensonge : on vérifie par une question ouverte, sans accuser." },
+    { t: "quiz", who: "karma", q: "Tu parles d’un contrat sur trois ans. Que signifient ses réactions ?",
+      cue: "Elle se penche en avant, ouvre les mains, sourit avec les yeux et note quelque chose.",
+      opts: ["Des signaux d’intérêt convergents : c’est probablement un levier, tu explores cette piste.", "Elle s’ennuie.", "Elle prépare une objection, il faut changer de sujet."], ok: 0,
+      why: "Se pencher en avant, ouvrir les mains, prendre des notes, un sourire qui plisse les yeux : plusieurs signaux d’intérêt vont dans le même sens. Retiens ce levier." },
+    { t: "quiz", who: "koro", q: "Tu fais ton offre. Ton interlocuteur se tait. Dix secondes passent. Que fais-tu ?",
+      cue: "Il te regarde calmement, sans bouger.",
+      opts: ["Tu baisses ta demande pour combler le silence.", "Tu supportes le silence, posture calme, et tu attends sa réponse.", "Tu changes de sujet."], ok: 1,
+      why: "Le silence est souvent une tactique : beaucoup de négociateurs le comblent par une concession. Supporter le silence montre ta solidité." },
+    { t: "quiz", who: "nagisa", q: "En France, à quelle distance se tient-on habituellement pour une réunion d’affaires ?",
+      opts: ["Distance intime : moins de 45 cm", "Distance personnelle : 45 cm à 1,20 m", "Distance sociale : 1,20 m à 3,60 m", "Distance publique : plus de 3,60 m"], ok: 2,
+      why: "Edward T. Hall (La dimension cachée, 1966) a décrit ces zones. La réunion d’affaires se tient à distance sociale, souvent la largeur d’une table. Ces distances varient selon les cultures." },
+    { t: "quiz", who: "karasuma", q: "Négociation avec M. Sato, fournisseur japonais. Pendant toute ta proposition, il hoche la tête et dit « hai ». Que fais-tu ?",
+      cue: "Karma te glisse : « Il a dit oui dix fois, on signe ! »",
+      opts: ["Tu signes : il a dit oui.", "« Hai » veut souvent dire « je vous écoute ». Tu demandes une confirmation des points d’accord, de préférence par écrit.", "Tu parles plus fort pour être sûr qu’il comprend."], ok: 1,
+      why: "Au Japon, « hai » et le hochement de tête marquent souvent l’écoute et la politesse, pas l’accord. La carte de visite (meishi) se tend et se reçoit à deux mains, et le silence est mieux accepté qu’en France." },
+    { t: "quiz", who: "koro", q: "Paul Ekman a décrit des émotions de base reconnues dans de nombreuses cultures. Laquelle n’en fait PAS partie ?",
+      opts: ["La joie", "Le mépris", "La surprise", "L’ennui"], ok: 3,
+      why: "Joie, tristesse, colère, peur, surprise, dégoût, et le mépris. Le mépris se lit souvent dans un coin de la bouche qui se relève d’un seul côté. Une micro-expression dure moins d’une demi-seconde : il faut être attentif." },
+    { t: "blitz", who: "nagisa", title: "Signal ou certitude ?", q: "40 secondes : vrai ou faux ? La classe crie sa réponse, l’animateur clique.", time: 40, choices: ["Vrai", "Faux"],
+      items: [
+        { t: "Des bras croisés prouvent un refus.", a: 1, why: "Un geste isolé ne prouve rien : contexte et ligne de base d’abord." },
+        { t: "Un changement par rapport à la ligne de base mérite une question ouverte.", a: 0, why: "C’est une hypothèse à vérifier, sans accuser." },
+        { t: "La règle des 7-38-55 s’applique à toute négociation.", a: 1, why: "Elle ne concerne que l’expression d’émotions quand les mots et le ton se contredisent." },
+        { t: "Un sourire qui plisse les yeux est souvent plus sincère qu’un sourire de la bouche seule.", a: 0, why: "C’est le sourire dit « de Duchenne »." },
+        { t: "En France, une réunion d’affaires se tient à moins de 45 cm.", a: 1, why: "C’est la distance intime ; en réunion, on est à distance sociale (1,20 à 3,60 m)." },
+        { t: "Après ton offre, il faut vite combler le silence.", a: 1, why: "Le combler mène souvent à une concession inutile." },
+        { t: "Au Japon, « hai » veut toujours dire « j’accepte ».", a: 1, why: "Il signifie souvent « je vous écoute »." },
+        { t: "En observant le corps, on détecte un mensonge 9 fois sur 10.", a: 1, why: "Environ 54 % seulement (Bond et DePaulo, 2006)." }
+      ] },
+    { t: "say", who: "nagisa", txt: "Retiens : un geste n’est pas une preuve, c’est une question à poser. Karma veut t’entraîner avant ta vraie négociation. Il traîne au fond de la classe." }
+  ] },
+c3a: { title: "L’échauffement de Karma", label: "Chapitre 3",
+  steps: [
+    { t: "say", who: "karma", txt: "Claire Lefort, de Pixelia, est en salle de réunion. Avant d’y aller, échauffement : je te lance ses répliques favorites. Dis-moi quelle tactique elle utilise. Vite." },
+    { t: "blitz", who: "karma", title: "Repère la tactique", q: "45 secondes : quelle tactique se cache derrière chaque réplique ?", time: 45, choices: ["Fausse date limite", "Grignotage", "Ancrage", "Silence", "Menace"],
+      items: [
+        { t: "« Ce prix ne tient que jusqu’à ce soir 18 h. »", a: 0, why: "Urgence sans justification : demande-la par écrit." },
+        { t: "« Ah, et la livraison, c’est 900 € de plus, d’accord ? » (en rangeant ses papiers)", a: 1, why: "Petit ajout de dernière minute : rouvre le donnant-donnant." },
+        { t: "« Le marché est à 1 400 € pour ce modèle, nous sommes à 1 250 €. »", a: 2, why: "Elle fixe un point de référence haut : réponds avec tes propres chiffres." },
+        { t: "(Après ton offre, elle se tait et te regarde dix secondes.)", a: 3, why: "Supporte le silence sans concéder." },
+        { t: "« Si vous ne signez pas aujourd’hui, nous servons d’abord vos concurrents. »", a: 4, why: "Pression : rappelle ta MESORE, calmement." },
+        { t: "« Pendant qu’on y est, la formation de vos équipes est en option, 40 € par poste. »", a: 1, why: "Encore un ajout en fin de discussion : rien sans contrepartie." }
+      ] },
+    { t: "say", who: "karma", txt: "Pas mal. Dans la salle, garde un œil sur son visage : ses vraies réactions passent en un éclair. Appuie sur « Observer » au bon moment. Et ne traîne pas : elle n’aime pas attendre." }
+  ] },
+c3b: { no: 3, title: "Le temps de la négociation", label: "Chapitre 3", scored: true, mentor: "karma",
+  maxim: "Ne donne jamais sans recevoir. « Si vous…, alors nous… »",
+  memo: [
+    "Ouverture : poser le cadre (ordre du jour, durée) installe la confiance.",
+    "Découverte : les questions ouvertes révèlent les intérêts de l’autre (ici, devenir fournisseur de référence).",
+    "Ne jamais révéler son prix limite ; ancrer avec un chiffre justifié.",
+    "Concessions conditionnelles : « Si vous…, alors nous… ». Jamais de concession sans contrepartie.",
+    "Tactiques à reconnaître : fausse date limite, grignotage, silence, menace.",
+    "Une micro-expression (une fraction de seconde) peut révéler une émotion cachée : on la vérifie par une question.",
+    "Cadeaux pendant une consultation : on refuse et on déclare (loi Sapin II).",
+    "Conclure : récapituler chaque point et envoyer un compte rendu écrit sous 24 h."
+  ],
+  steps: [
+    { t: "say", who: "lefort", txt: "Bonjour ! Claire Lefort, Pixelia. Avant de commencer, un petit cadeau de la maison : deux places pour la finale de la coupe samedi. Valeur 400 €. Pour vous remercier de nous consulter !" },
+    { t: "quiz", who: "lefort", card: "Décision éthique · Le cadeau", q: "La consultation est en cours. Que fais-tu des deux places à 400 € ?",
+      opts: ["J’accepte avec plaisir : c’est un geste commercial normal.", "J’accepte, mais je n’en parle à personne.", "Je refuse poliment et je le déclarerai à mon responsable, selon la politique cadeaux."], ok: 2,
+      fx: { 0: () => { S.flags.gift = true; trustAdd(-3); }, 1: () => { S.flags.gift = true; S.flags.hidden = true; trustAdd(-4); }, 2: () => { S.flags.refusedGift = true; trustAdd(1); } },
+      why: "Pendant une consultation, un cadeau de cette valeur peut influencer ta décision ou en donner l’apparence. Beaucoup d’entreprises fixent un seuil et tiennent un registre. La loi Sapin II (2016) impose un programme anticorruption aux entreprises d’au moins 500 salariés et 100 M€ de chiffre d’affaires." },
+    { t: "say", who: "lefort", cond: () => S.flags.gift, txt: "Parfait ! On se verra peut-être au match, alors. Bon… je suis sûre que nous allons bien nous entendre sur le prix." },
+    { t: "say", who: "lefort", cond: () => !S.flags.gift, txt: "Je comprends, c’est tout à votre honneur. Alors, parlons affaires." },
+    { t: "nego" }
+  ] },
+c4a: { no: 4, title: "Le temps de l’éthique", label: "Chapitre 4", scored: true, mentor: "irina",
+  maxim: "Un acheteur engage la parole de son entreprise. La confiance perdue ne se rachète pas.",
+  memo: [
+    "Cadeaux et invitations : suivre la politique de l’entreprise, refuser ce qui peut influencer une décision en cours, déclarer (loi Sapin II, 2016).",
+    "Conflit d’intérêts : déclarer le lien et se retirer de la décision.",
+    "Confidentialité : ne jamais divulguer l’offre d’un concurrent (secret des affaires, loi du 30 juillet 2018).",
+    "Inventer un fait, c’est mentir : un consentement obtenu par mensonge peut être annulé pour dol (Code civil, art. 1137).",
+    "Délai de paiement plafonné à 60 jours (Code de commerce, art. L441-10) ; déséquilibre significatif et rupture brutale interdits (art. L442-1).",
+    "Persuader, ce n’est pas manipuler : faits, écoute et options, pas de fausse urgence ni de culpabilisation.",
+    "Devoir de vigilance (loi de 2017) et achats responsables (ISO 20400)."
+  ],
+  steps: [
+    { t: "say", who: "irina", txt: "Moi, je suis une professionnelle de la persuasion. Et justement : une professionnelle connaît la frontière entre influencer et manipuler. Cinq dossiers. À chaque fois, une décision." },
+    { t: "say", who: "irina", cond: () => S.flags.gift, txt: "Au fait… j’ai vu ta photo au match de samedi, dans la loge Pixelia. Tout le monde l’a vue. On en reparlera." },
+    { t: "quiz", who: "karma", card: "Dossier 1 · Le cousin", q: "Le directeur commercial de Datalis est le cousin de Karma. Karma évalue les offres. Que faut-il faire ?",
+      opts: ["Karma garde le dossier : personne ne le saura.", "Karma déclare le lien et se retire de l’évaluation des offres.", "On exclut Datalis de la consultation."], ok: 1,
+      fx: { 0: () => { S.flags.conflict = true; trustAdd(-3); }, 1: () => trustAdd(1), 2: () => trustAdd(-1) },
+      why: "Un conflit d’intérêts ne rend pas Karma coupable : c’est le cacher qui pose problème. On déclare et on se déporte. Exclure Datalis serait injuste pour un fournisseur qui n’a rien fait." },
+    { t: "quiz", who: "karma", card: "Dossier 2 · Le devis du concurrent", q: "Pour faire baisser Pixelia, Karma veut lui montrer le devis détaillé de Datalis. Ta réponse ?",
+      opts: ["Bonne idée, montrons-le.", "On donne juste le nom et le prix de Datalis.", "Les offres restent confidentielles. On peut dire qu’on a une offre plus compétitive, sans la divulguer."], ok: 2,
+      fx: { 0: () => { S.flags.leak = true; trustAdd(-3); }, 1: () => trustAdd(-1), 2: () => trustAdd(1) },
+      why: "Le contenu d’une offre appartient à celui qui l’a faite : le divulguer trahit sa confiance et peut violer le secret des affaires (loi du 30 juillet 2018). Dire, si c’est vrai, « nous avons une offre plus compétitive » reste loyal." },
+    { t: "quiz", who: "koro", card: "Dossier 3 · Bluff ou mensonge ?", q: "Peux-tu dire « nous avons une offre à 1 000 € » alors que c’est faux ?",
+      opts: ["Oui, c’est le jeu de la négociation.", "Non : inventer un fait est un mensonge. Il peut rompre la confiance et rendre le contrat contestable.", "Oui, si le fournisseur ne peut pas vérifier."], ok: 1,
+      fx: { 0: () => trustAdd(-1), 1: () => trustAdd(1), 2: () => trustAdd(-1) },
+      why: "Garder pour soi son prix limite, c’est légitime. Inventer une offre, c’est tromper. Un consentement obtenu par des manœuvres ou des mensonges peut être annulé pour dol (Code civil, art. 1137)." },
+    { t: "quiz", who: "irina", card: "Dossier 4 · Persuader ou manipuler", q: "Irina te propose ses techniques : flatter, toucher le bras, inventer une urgence, faire culpabiliser. Lesquelles gardes-tu ?",
+      opts: ["Toutes : seul le résultat compte.", "Aucune de celles-là : tu persuades avec des faits, de l’écoute et des options, sans exploiter les faiblesses de l’autre.", "Seulement la fausse urgence : elle est très efficace."], ok: 1,
+      fx: { 0: () => trustAdd(-2), 1: () => trustAdd(1), 2: () => trustAdd(-1) },
+      why: "Persuader, c’est donner de bonnes raisons. Manipuler, c’est contourner le jugement de l’autre. La manipulation peut gagner une fois, mais elle détruit la relation et ta réputation." },
+    { t: "quiz", who: "karasuma", card: "Dossier 5 · Le prix trop bas", q: "Un troisième fournisseur propose 850 €. Une ONG signale du travail forcé dans l’usine qui assemble ses ordinateurs. Que fais-tu ?",
+      opts: ["Tu signes : ce n’est pas ton usine.", "Tu demandes des preuves (audit indépendant, certifications), tu ajoutes un critère RSE, et tu écartes l’offre si le risque est confirmé.", "Tu demandes un prix encore plus bas."], ok: 1,
+      fx: { 0: () => { S.flags.forced = true; trustAdd(-3); }, 1: () => trustAdd(1), 2: () => trustAdd(-2) },
+      why: "La loi sur le devoir de vigilance (2017) oblige les grandes entreprises (5 000 salariés en France ou 10 000 dans le monde) à prévenir les atteintes graves aux droits humains chez leurs fournisseurs. ISO 20400 guide les achats responsables." },
+    { t: "say", who: "irina", txt: "Pas mal. Ah, et le directeur Asano te cherche. Il n’a pas l’air de bonne humeur. Son bureau est en bas à droite." }
+  ] },
+c4b: { title: "La convocation du directeur", label: "Chapitre 4",
+  steps: [
+    { t: "say", who: "asano", txt: "Assieds-toi. La petite PME qui nous fournit les câbles dépend de nous à 60 %. Tu vas exiger −20 % sans contrepartie, et la payer à 120 jours." },
+    { t: "say", who: "asano", cond: () => S.flags.gift, txt: "Et avant que tu refuses : j’ai une photo de toi dans la loge Pixelia. Un acheteur qui accepte des cadeaux… ce serait dommage pour ta carrière." },
+    { t: "quiz", who: "asano", card: "Décision éthique · La pression", q: "Que réponds-tu au directeur ?",
+      opts: ["J’obéis : c’est le directeur.", "Je propose 90 jours en échange du −20 %.", "Je refuse et j’explique : le délai est plafonné à 60 jours, et abuser de la dépendance d’un fournisseur est sanctionné."], ok: 2,
+      fx: { 0: () => { S.flags.obey = true; trustAdd(-3); }, 1: () => trustAdd(-1), 2: () => { S.flags.stood = true; trustAdd(2); } },
+      why: "En France, le délai de paiement entre entreprises ne peut pas dépasser 60 jours à compter de la facture, ou 45 jours fin de mois (Code de commerce, art. L441-10). Imposer un déséquilibre significatif ou rompre brutalement une relation établie engage la responsabilité de l’entreprise (art. L442-1). 90 jours reste illégal." },
+    { t: "say", who: "asano", cond: () => S.flags.stood, txt: "… Intéressant. Tu as du cran. Va voir Karasuma, il a des nouvelles pour toi." },
+    { t: "say", who: "asano", cond: () => !S.flags.stood, txt: "Bien. Je savais qu’on pouvait compter sur toi. Va voir Karasuma, il a des nouvelles." }
+  ] },
+c5pre: { title: "Les nouvelles de Karasuma", label: "Chapitre 5",
+  steps: [
+    { t: "say", who: "karasuma", cond: () => S.flags.obey, txt: "J’ai appris pour les 120 jours imposés à la PME. Le service juridique a tout annulé : c’était illégal. Retiens la leçon." },
+    { t: "say", who: "karasuma", cond: () => S.flags.stood, txt: "Le directeur m’a parlé de ton refus. Il ne l’avouera jamais, mais il était impressionné. Moi aussi." },
+    { t: "say", who: "karasuma", txt: "Le gymnase est ouvert. Koro-sensei vous y attend pour l’examen final. Répondez bien pour gagner des munitions, puis visez quand il se moque de vous : c’est là qu’il est vulnérable." }
+  ] },
+c5: { no: 5, title: "Le temps de l’examen final", label: "Chapitre 5", final: true, mentor: "karasuma",
+  maxim: "Vous ne m’avez pas battu avec un couteau. Vous m’avez battu avec une MESORE.",
+  memo: [
+    "Tous les acquis réunis : processus de négociation, préparation, communication non verbale, tactiques et éthique des achats.",
+    "Le carnet de Nagisa reprend l’essentiel de chaque chapitre, avec les sources."
+  ],
+  steps: [
+    { t: "say", who: "koro", txt: "Nurufufu ! Bienvenue au gymnase. Règles : je pose des questions, chaque bonne réponse vous donne des billes anti-sensei. Puis vous tirez. Je n’ai qu’un défaut : quand je me moque de vous, je ralentis." },
+    { t: "combat" },
+    { t: "ending" }
+  ] }
+};
+
+const DUEL = [
+  { q: "Quelle est la première étape d’une négociation ?", opts: ["La préparation", "L’ouverture", "La découverte", "La conclusion"], ok: 0 },
+  { q: "La MESORE, c’est…", opts: ["la meilleure solution de rechange si l’accord échoue", "le prix d’ouverture", "une clause du contrat", "la marge du fournisseur"], ok: 0 },
+  { q: "Prix limite vendeur 1 060 €, prix limite acheteur 1 190 €. La ZOPA est…", opts: ["entre 1 060 € et 1 190 €", "entre 980 € et 1 060 €", "au-dessus de 1 190 €", "inexistante"], ok: 0 },
+  { q: "Quelle formulation respecte la règle des concessions ?", opts: ["« Si vous allongez la garantie, alors nous signons sur deux ans. »", "« D’accord, on accepte votre délai. »", "« Coupons la poire en deux. »", "« Faites un effort, s’il vous plaît. »"], ok: 0 },
+  { q: "« Ce prix n’est valable que jusqu’à ce soir », sans justification. C’est probablement…", opts: ["une fausse date limite", "une obligation légale", "une marque de confiance", "une concession"], ok: 0 },
+  { q: "La règle des 7-38-55 de Mehrabian s’applique…", opts: ["aux émotions, quand les mots et le ton se contredisent", "à toute communication", "uniquement au téléphone", "aux négociations écrites"], ok: 0 },
+  { q: "Un interlocuteur croise les bras. La bonne attitude ?", opts: ["Comparer à sa ligne de base et chercher d’autres signaux", "Conclure qu’il refuse", "Conclure qu’il ment", "Croiser les bras aussi"], ok: 0 },
+  { q: "Distance habituelle d’une réunion d’affaires (Hall) ?", opts: ["Sociale : 1,20 à 3,60 m", "Intime : moins de 45 cm", "Personnelle : 45 cm à 1,20 m", "Publique : plus de 3,60 m"], ok: 0 },
+  { q: "Un fournisseur offre une invitation de 400 € pendant la consultation. On…", opts: ["refuse poliment et on déclare", "accepte discrètement", "accepte si le chef accepte aussi", "demande un plus gros cadeau"], ok: 0 },
+  { q: "Un acheteur a un lien familial avec un fournisseur consulté. Il doit…", opts: ["déclarer le lien et se retirer de la décision", "ne rien dire", "exclure ce fournisseur", "favoriser ce fournisseur"], ok: 0 },
+  { q: "Délai de paiement maximal entre entreprises en France (règle générale) ?", opts: ["60 jours à compter de la facture", "90 jours", "120 jours", "Aucune limite"], ok: 0 },
+  { q: "Montrer le devis d’un concurrent à un fournisseur, c’est…", opts: ["une faute : les offres sont confidentielles", "une bonne pratique", "obligatoire", "conseillé si le prix est bas"], ok: 0 }
+];
+const BOSS = [
+  { label: "Phase 1 · Koro-sensei s’échauffe", big: "PHASE 1", time: 25, mood: "normal", v: 230, pause: 0.85, p: 0.5 },
+  { label: "Phase 2 · Mach 10 : il accélère !", big: "PHASE 2", time: 20, mood: "mock", v: 340, pause: 0.65, p: 0.42 },
+  { label: "Phase 3 · Mach 20 : dernier assaut !", big: "PHASE 3", time: 15, mood: "angry", v: 470, pause: 0.5, p: 0.36 }
+];
+
+/* ---------- négociation en temps réel ---------- */
+const PHASES = ["Ouverture", "Découverte", "Proposition", "Concessions", "Tactique adverse", "Grignotage", "Conclusion"];
+const NEGO = {
+  open: { ph: 0, line: "Commençons. Je vous écoute.", cue: "Elle te tend la main avec un sourire franc et s’assoit en face de toi, de l’autre côté de la table.",
+    micro: { cue: "Un éclair d’inquiétude passe sur son visage quand tu poses ton dossier épais sur la table.", insight: "Elle craint une négociation dure : rassure-la en posant un cadre clair." },
+    opts: [
+      { t: "Poignée de main ferme, puis tu poses le cadre : « Je propose : vos questions sur notre besoin, votre offre, les conditions, puis les prochaines étapes. Nous avons 45 minutes. »", f: s => { s.rel++; s.proc++; s.node = "disc"; s.note.push("Ouverture maîtrisée : un ordre du jour et une durée posent le cadre."); return "Parfait, c’est clair. Allons-y."; } },
+      { t: "Tu attaques directement : « Votre prix est beaucoup trop élevé. »", f: s => { s.rel--; s.node = "disc"; s.note.push("Ouverture brutale : attaquer le prix avant d’avoir compris l’autre crispe la relation."); return "Ah. Bonjour quand même. … Je vous présente notre offre ?"; } },
+      { t: "Tu parles dix minutes de ton week-end pour créer du lien.", f: s => { s.node = "disc"; s.note.push("Brise-glace trop long : un peu de lien, oui, mais pas au détriment du temps de la réunion."); return "Ha ha, sympa. (Elle jette un œil discret à sa montre.) Bon, on regarde l’offre ?"; } }
+    ] },
+  disc: { ph: 1, line: "Notre offre : 30 Pixelia Pro 14 à 1 250 € HT l’unité, garantie 1 an, livraison sous 6 semaines.", cue: "Débit calme, regard posé. Elle pose son stylo et attend ta réaction.",
+    micro: { cue: "Un sourire très bref quand elle prononce le nom de ton groupe.", insight: "Ton groupe l’intéresse plus que ce contrat : il y a un intérêt caché à explorer." ,
+      bonus: { t: "« J’ai l’impression que notre groupe vous intéresse au-delà de ce contrat. Qu’est-ce qu’un partenariat pourrait vous apporter ? »", f: s => { s.proc++; s.rel++; s.interest = true; s.node = "prop"; s.note.push("Micro-expression repérée et vérifiée par une question : son intérêt (entrer dans le groupe) est révélé et la relation progresse."); return "Vous êtes observateur… Oui. Être référencés dans votre groupe changerait tout pour nous. (Elle se penche en avant.)"; } } },
+    opts: [
+      { t: "Question ouverte : « Qu’est-ce qui est le plus important pour vous dans ce contrat ? »", f: s => { s.proc++; s.interest = true; s.node = "prop"; s.note.push("Découverte réussie : la question ouverte a révélé son intérêt, devenir fournisseur de référence du groupe."); return "Honnêtement ? Entrer dans votre groupe. Un premier contrat de référence, et de la visibilité sur les renouvellements."; } },
+      { t: "Question fermée : « C’est votre dernier prix ? »", f: s => { s.node = "prop"; s.note.push("Question fermée : tu n’as rien appris sur ses intérêts."); return "Oui, c’est notre prix."; } },
+      { t: "Comme le suggère Karma : « Datalis nous fait 900 €. » (C’est faux.)", f: s => { s.rel--; s.lie = true; S.flags.lie = true; trustAdd(-2); s.node = "prop"; s.note.push("Mensonge sur l’offre concurrente : c’est déloyal, et elle a immédiatement demandé une preuve."); return "900 € pour ce modèle ? (Elle hausse un sourcil, un coin de la bouche se relève.) Vous pouvez me montrer le devis ?"; } }
+    ] },
+  prop: { ph: 2, line: "Alors, quelle est votre proposition ?", cue: "Elle croise les mains sous le menton et te regarde attentivement.",
+    micro: { cue: "Ses sourcils se lèvent une fraction de seconde : de la surprise.", insight: "Elle s’attendait à un prix plus haut : un ancrage chiffré la fera bouger." },
+    opts: [
+      { t: "Ancrage justifié : « Pour ce modèle, les prix constatés par lots de 30 vont de 1 020 à 1 120 €. Nous visons 1 040 € HT. »", f: s => { s.proc++; s.node = "conc"; if (s.rel >= 3){ s.price = 1160; s.note.push("Ancrage crédible et chiffré : elle est descendue à 1 160 €."); return "1 040 €… Vous avez fait vos devoirs. Je ne peux pas aller jusque-là, mais je peux vous proposer 1 160 €."; } s.price = 1200; s.note.push("Ancrage chiffré, mais la relation tendue l’a rendue moins conciliante : 1 200 €."); return "Après ce début de réunion ? Je peux faire 1 200 €, pas plus."; } },
+      { t: "« Faites-nous votre meilleur prix. »", f: s => { s.price = 1210; s.node = "conc"; s.note.push("Tu l’as laissée ancrer : sans chiffre de ta part, elle ne descend qu’à 1 210 €."); return "Mon meilleur prix ? 1 210 €. C’est un vrai effort."; } },
+      { t: "« Nous pouvons monter jusqu’à 1 190 €. »", f: s => { s.price = 1190; s.proc--; s.reveal = true; s.node = "conc"; s.note.push("Prix limite révélé : elle a pris 1 190 € immédiatement. Tu n’as plus de marge."); return "Très bien, 1 190 € alors ! (Ses épaules se relâchent : elle vient d’obtenir son prix.)"; } }
+    ] },
+  conc: { ph: 3, line: "Je peux difficilement aller plus loin.", cue: null,
+    micro: { cue: "Son regard file vers le carnet quand tu prononces « renouvellement ».", insight: "La visibilité sur les renouvellements est sa vraie monnaie d’échange." },
+    opts: [
+      { t: "« Si nous signons un accord-cadre de deux ans pour le renouvellement du parc, alors pouvez-vous aller à 1 080 € et passer la garantie à 3 ans ? »", f: s => { s.proc++; s.warranty = 3; s.node = "tactic"; if (s.interest){ s.price = Math.max(1080, s.price - 80); s.rel++; s.note.push("Concession conditionnelle qui répond à son intérêt : prix en baisse et garantie 3 ans."); return "Deux ans de visibilité… c’est exactement ce qu’il nous faut. D’accord pour la garantie 3 ans, et je descends de 80 €."; } s.price -= 40; s.note.push("Concession conditionnelle : bonne méthode, mais sans connaître son intérêt, le gain est plus faible."); return "Hmm. La garantie 3 ans, oui. Sur le prix, je peux faire 40 € de moins."; } },
+      { t: "« Coupons la poire en deux. »", f: s => { s.price = Math.round((s.price + 1040) / 2 / 10) * 10; s.node = "tactic"; s.note.push("Couper la poire en deux : rapide, mais sans contrepartie ni garantie supplémentaire."); return `Va pour ${eur(s.price)}. Mais la garantie reste à 1 an.`; } },
+      { t: "« Bon, nous acceptons votre délai de 6 semaines et nous payons à la commande. »", f: s => { s.proc--; s.node = "tactic"; s.note.push("Concessions offertes sans rien demander en échange : la règle d’or est cassée."); return "Merci, c’est très aimable ! (Elle note, sans rien proposer en retour.)"; } }
+    ] },
+  tactic: { ph: 4, line: "Je dois vous prévenir : ce prix n’est valable que jusqu’à ce soir 18 h. Après, les composants augmentent.", cue: "Elle regarde sa montre et commence à se lever à moitié de sa chaise.",
+    micro: { cue: "Un coin de sa bouche se relève d’un seul côté en annonçant l’échéance.", insight: "Sourire asymétrique : souvent du mépris ou de l’assurance. L’urgence est peut-être un bluff.",
+      bonus: { t: "« Votre échéance de 18 h… pouvez-vous me montrer l’avis de hausse de votre fournisseur de composants ? »", f: s => { s.proc++; s.price -= 10; s.node = "nibble"; s.note.push("Bluff démasqué grâce à la micro-expression : tu as demandé une preuve, l’échéance a disparu et elle a lâché 10 € de plus."); return "(Elle rit.) Bien joué. Il n’y a pas d’avis. Disons que je retire l’échéance… et 10 € par poste."; } } },
+    opts: [
+      { t: "« Je comprends. Pouvez-vous nous l’envoyer par écrit, avec la justification de la hausse ? Nous avons un processus de validation, et une autre offre à l’étude. »", f: s => { s.proc++; s.node = "nibble"; s.note.push("Fausse date limite repérée : tu as demandé une justification écrite et rappelé ta MESORE, calmement."); return "(Elle se rassoit.) … Bon. L’offre peut tenir jusqu’à vendredi."; } },
+      { t: "« D’accord, on signe tout de suite ! »", f: s => { s.rush = true; s.proc--; s.node = "nibble"; s.note.push("Pris par la fausse urgence : tu as accepté de signer sans la validation prévue."); return "Parfait, je prépare le bon de commande."; } },
+      { t: "« Vous bluffez, et vous le savez. »", f: s => { s.rel -= 2; s.node = "nibble"; s.note.push("Accuser de bluff abîme la relation. Mieux vaut demander une preuve."); return "(Ses lèvres se pincent.) Je ne bluffe pas. Je vous informe."; } }
+    ] },
+  nibble: { ph: 5, line: "Parfait. Ah, un petit détail : la livraison et l’installation sur site, c’est 900 € en plus. D’accord ?", cue: "Ton léger, presque distrait. Elle range déjà ses papiers.",
+    micro: { cue: "Elle évite ton regard une demi-seconde en annonçant les frais.", insight: "Elle sait que c’est un ajout de dernière minute : tu peux le refuser." },
+    opts: [
+      { t: "« Nous parlions d’un prix rendu sur site. Si vous ajoutez des frais, alors nous revenons aussi sur la durée de l’accord-cadre. »", f: s => { s.proc++; s.node = "close"; s.note.push("Grignotage repoussé : tu as rouvert le donnant-donnant au lieu d’accepter un ajout de dernière minute."); return "(Elle sourit.) Bien vu. Livraison incluse, n’en parlons plus."; } },
+      { t: "« D’accord, ce n’est que 900 €. »", f: s => { s.price += 30; s.nibble = true; s.node = "close"; s.note.push("Grignotage accepté : 900 € de plus, soit 30 € par poste."); return "Merci ! Je l’ajoute."; } },
+      { t: "« Inacceptable ! Nous arrêtons tout ! »", f: s => { s.rel -= 2; s.node = "close"; s.note.push("Réaction disproportionnée : elle a retiré les frais, mais la relation en a souffert."); return "Du calme ! Bon… je retire les frais de livraison."; } }
+    ] },
+  close: { ph: 6, line: "Alors, nous sommes d’accord ?", cue: "Elle se détend dans son fauteuil, stylo en main.",
+    opts: [
+      { t: "Tu récapitules chaque point (prix, garantie, délai, livraison, paiement à 30 jours fin de mois) et tu annonces un compte rendu écrit sous 24 h.", f: s => { s.proc++; s.recap = true; s.end = true; s.note.push("Conclusion solide : récapitulatif oral et compte rendu écrit, rien ne pourra être oublié."); return "Parfait, c’est carré. J’attends votre compte rendu."; } },
+      { t: "Une poignée de main : « Pour les détails, on verra par mail. »", f: s => { s.end = true; s.note.push("Conclusion floue : sans récapitulatif, les malentendus arrivent vite."); return "D’accord… on se fait un mail."; } },
+      { t: "« Et pour moi, vous avez prévu un petit geste ? »", f: s => { s.bribe = true; S.flags.bribe = true; trustAdd(-4); s.rel -= 2; s.end = true; s.note.push("Demande d’avantage personnel : c’est de la corruption passive. Faute grave."); return "Pardon ? (Elle recule sur sa chaise.) Je vais faire comme si je n’avais rien entendu."; } }
+    ] }
+};
+
+/* ---------- moteur des missions ---------- */
+let typing = null;
+function stopType(){ if (typing){ clearInterval(typing.t); typing = null; } }
+function typeInto(node, text){
+  stopType();
+  node.setAttribute("aria-label", text);
+  if (RM){ node.textContent = text; return; }
+  node.textContent = "";
+  let i = 0;
+  typing = { node, text, t: setInterval(() => { i += 2; node.textContent = text.slice(0, i); if (i >= text.length) stopType(); }, 16) };
+}
+function finishType(){ if (!typing) return false; const t = typing; stopType(); t.node.textContent = t.text; return true; }
+
+const SPLIT = "<!--SPLIT-->";
+const timers = new Set();
+function every(fn, ms){ const id = setInterval(fn, ms); timers.add(id); return id; }
+function clearTimers(){ timers.forEach(id => clearInterval(id)); timers.clear(); }
+
+function chap(){ return CH[cur.id]; }
+function shell(inner){
+  stopType();
+  let label = "Mission";
+  let right = `<button class="btn small ghost" id="quit">Retour à l’école</button>`;
+  if (cur){
+    const ch = chap();
+    label = `${ch.label} · ${ch.title}`;
+    right = `<div class="pips" aria-label="Avancement">${ch.steps.map((_, i) => `<i class="${i <= cur.i ? "on" : ""}"></i>`).join("")}</div>` + right;
+  }
+  const head = `<header class="top"><div class="brand">Classe 3-E : Opération Négociation<small>${esc(label)}</small></div><div class="right">${right}</div></header>${hpBar()}${teamBar()}`;
+  const cut = inner.indexOf(SPLIT);
+  if (cut < 0) return `<div class="console"><div class="screen up">${head}${inner}</div></div>`;
+  return `<div class="console"><div class="screen up">${head}${inner.slice(0, cut)}</div><div class="hinge" aria-hidden="true"><i></i><i></i></div><div class="screen down">${inner.slice(cut + SPLIT.length)}</div></div>`;
+}
+function paint(html, keepScroll){
+  const y = ov.scrollTop;
+  ov.hidden = false;
+  app.innerHTML = shell(html);
+  const q = $("#quit"); if (q) q.onclick = () => closeMission(false);
+  ov.scrollTop = keepScroll ? y : 0;
+}
+function closeMission(done){
+  clearTimers(); stopType();
+  const id = cur && cur.id;
+  cur = null; ov.hidden = true; app.innerHTML = "";
+  if (done && id) advanceQuest(id);
+  save(); drawHud();
+}
+function startChapter(id){
+  const ch = CH[id];
+  clearTimers();
+  cur = { id, i: 0, pts: 0, max: ch.steps.reduce((a, s) => a + (W[s.t] || 0), 0), result: null, nego: null, duel: null, assaulted: false };
+  step();
+}
+function step(){
+  const ch = chap();
+  let s = ch.steps[cur.i];
+  while (s && ((s.if && s.if !== cur.result) || (s.cond && !s.cond()))){ cur.i++; s = ch.steps[cur.i]; }
+  if (!s) return finishChapter();
+  clearTimers();
+  R[s.t](s);
+}
+function next(){ cur.i++; step(); }
+
+function portraitHead(who, mood){ return `<div class="panel">${who === "koro" ? koro(mood) : CAST[who].svg}</div>`; }
+function hintBox(text){ return `<div class="hint"><div class="mini">${CAST.nagisa.svg}</div><p><b>Nagisa :</b> ${esc(tx(text))}</p></div>`; }
+function feedback(ok, title, body){ return `<div class="feedback ${ok ? "ok" : "bad"}"><div class="face">${koro(ok ? "ok" : "ko")}</div><div><strong>${esc(title)}</strong>${body ? `<p>${esc(tx(body))}</p>` : ""}</div></div>`; }
+function cueBox(c){ return c ? `<div class="cue"><b>Ce que tu observes</b>${esc(tx(c))}</div>` : ""; }
+function tableHTML(t){
+  return `<div class="tablewrap"><table><thead><tr>${t.head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${t.rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>${t.note ? `<p style="color:var(--chalk-2);font-size:14px">${esc(t.note)}</p>` : ""}`;
+}
+function hintButton(){ return S.tokens > 0 ? `Utiliser un jeton d’indice (${S.tokens})` : "Demander un indice à Nagisa"; }
+
+const R = {};
+R.say = s => {
+  const c = CAST[s.who];
+  paint(`<section class="scene ${s.fx || ""}"><div class="panel">${c.svg}</div><div class="talk"><div class="tag">${esc(c.name)}</div><div class="bubble" id="bub"></div></div></section>${SPLIT}<div class="row end"><span class="pad-hint">Touche la bulle pour tout afficher · Entrée pour continuer</span><button class="btn primary" id="nx">Suite ▸</button></div>`);
+  typeInto($("#bub"), tx(s.txt));
+  $("#bub").onclick = () => finishType();
+  $("#nx").onclick = () => { if (!finishType()) next(); };
+  $("#nx").focus({ preventScroll: true });
+};
+R.narr = s => {
+  paint(`<div class="narr" id="bub"></div>${SPLIT}<div class="row end"><span class="pad-hint">Entrée pour continuer</span><button class="btn primary" id="nx">Suite ▸</button></div>`);
+  typeInto($("#bub"), tx(s.txt));
+  $("#bub").onclick = () => finishType();
+  $("#nx").onclick = () => { if (!finishType()) next(); };
+  $("#nx").focus({ preventScroll: true });
+};
+R.table = s => {
+  paint(`<section class="act"><div class="kicker">Document de travail</div><h2>${esc(s.title)}</h2></section>${SPLIT}<section class="act">${tableHTML(s)}<div class="row end"><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+  $("#nx").onclick = next; $("#nx").focus({ preventScroll: true });
+};
+R.calc = () => {
+  const lo = 900, hi = 1300, x = v => clamp((v - lo) / (hi - lo) * 100, 0, 100);
+  const v = { cost: 980, margin: 8, batna: 1190, open: 1040 };
+  paint(`<section class="act">${turnLine(true)}<div class="act-head">${portraitHead("koro")}<div><div class="kicker">Laboratoire de Koro-sensei</div><p class="q">Fais varier les hypothèses et regarde la ZOPA bouger.</p></div></div></section>${SPLIT}<section class="act">
+    <div class="sheet lab">
+      <div class="sliders">
+        <div><label for="c-cost">Coût de revient Pixelia <span id="v-cost"></span></label><input type="range" id="c-cost" min="900" max="1100" step="10" value="${v.cost}"></div>
+        <div><label for="c-margin">Marge minimale du vendeur <span id="v-margin"></span></label><input type="range" id="c-margin" min="0" max="20" step="1" value="${v.margin}"></div>
+        <div><label for="c-batna">Ta MESORE (offre Datalis) <span id="v-batna"></span></label><input type="range" id="c-batna" min="1000" max="1300" step="10" value="${v.batna}"></div>
+        <div><label for="c-open">Ton prix d’ouverture <span id="v-open"></span></label><input type="range" id="c-open" min="900" max="1250" step="10" value="${v.open}"></div>
+      </div>
+      <div class="zbar" aria-hidden="true"><div class="axis"></div><div class="zone" id="z-zone"></div><div class="mk s" id="m-s"></div><div class="mk b" id="m-b"></div><div class="mk o" id="m-o"></div></div>
+      <p style="font-size:14px;color:var(--ink-2)"><b style="color:var(--batsu)">Violet</b> : limite du vendeur · <b style="color:var(--ok)">vert</b> : ta limite (MESORE) · <b style="color:var(--maru)">orange</b> : ton prix d’ouverture</p>
+      <p class="zres" id="z-res"></p><p id="z-open"></p>
+    </div>
+    <div class="row end"><button class="btn ghost" id="reset-lab">Revenir au cas</button><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+  function upd(){
+    const sell = Math.round(v.cost * (1 + v.margin / 100)), buy = v.batna;
+    $("#v-cost").textContent = eur(v.cost); $("#v-margin").textContent = v.margin + " %"; $("#v-batna").textContent = eur(v.batna); $("#v-open").textContent = eur(v.open);
+    $("#m-s").style.left = x(sell) + "%"; $("#m-s").innerHTML = `Limite vendeur<br>${eur(sell)}<i></i>`;
+    $("#m-b").style.left = x(buy) + "%"; $("#m-b").innerHTML = `<i></i>`;
+    $("#m-o").style.left = x(v.open) + "%"; $("#m-o").innerHTML = `<i></i>`;
+    const z = $("#z-zone");
+    if (buy > sell){ z.hidden = false; z.style.left = x(sell) + "%"; z.style.width = (x(buy) - x(sell)) + "%";
+      $("#z-res").textContent = `ZOPA : de ${eur(sell)} à ${eur(buy)}, soit ${eur(buy - sell)} de marge de manœuvre par poste (${eur((buy - sell) * 30)} sur 30 postes).`; }
+    else { z.hidden = true; $("#z-res").textContent = `Pas de ZOPA : le vendeur ne descend pas sous ${eur(sell)} et ta MESORE est à ${eur(buy)}. Aucun accord n’est possible : achète chez Datalis.`; }
+    $("#z-open").textContent = v.open >= buy ? "Ouverture au niveau de ta limite (ou au-dessus) : tu n’as plus aucune marge pour négocier."
+      : v.open < sell - 120 ? "Ouverture très basse, loin sous la limite du vendeur : peu crédible, elle risque de braquer ton interlocuteur."
+      : v.open < sell ? "Ouverture ambitieuse, juste sous la limite du vendeur : bon ancrage, à condition de la justifier par des chiffres."
+      : "Ouverture dans la ZOPA : crédible, mais tu laisses de la valeur sur la table.";
+  }
+  ["cost", "margin", "batna", "open"].forEach(k => { $("#c-" + k).oninput = e => { v[k] = +e.target.value; upd(); }; });
+  $("#reset-lab").onclick = () => { Object.assign(v, { cost: 980, margin: 8, batna: 1190, open: 1040 }); ["cost", "margin", "batna", "open"].forEach(k => $("#c-" + k).value = v[k]); upd(); };
+  $("#nx").onclick = next;
+  upd();
+};
+
+R.quiz = s => {
+  const who = s.who || "koro";
+  const order = shuffle(s.opts.map((t, i) => ({ t, i })));
+  let hintUsed = false, free = false;
+  const tbl = s.table ? tableHTML(C1_TABLE) : "";
+  const kicker = s.card ? esc(s.card) : `${esc(CAST[who].name)} te pose une question`;
+  const sim = simul();
+  paint(`<section class="act">${turnLine()}<div class="act-head">${portraitHead(who)}<div><div class="kicker">${kicker}</div><p class="q">${esc(tx(s.q))}</p></div></div>
+    ${cueBox(s.cue)}${tbl}</section>${SPLIT}<section class="act">
+    <div class="opts">${order.map((o, k) => `<button class="opt" data-i="${o.i}" ${sim ? "disabled" : ""}><b>${"ABCD"[k]}</b><span>${esc(tx(o.t))}</span></button>`).join("")}</div>
+    ${sim ? gridHTML(order) : ""}
+    <div id="hint"></div><div id="fb"></div>
+    <div class="row end">${s.hint ? `<button class="btn small ghost" id="hb">${hintButton()}</button>` : ""}${sim ? `<button class="btn primary" id="rev">Révéler la réponse</button>` : ""}<button class="btn primary" id="nx" hidden>Suite ▸</button></div></section>`);
+  if (s.hint) $("#hb").onclick = () => {
+    hintUsed = true;
+    if (S.tokens > 0){ S.tokens--; free = true; save(); }
+    $("#hint").innerHTML = hintBox(s.hint + (free ? " (Jeton utilisé : pas de pénalité.)" : sim ? " (Indice pour tout le monde : chaque bonne réponse vaut 0,5 point.)" : ""));
+    $("#hb").disabled = true;
+  };
+  function done(){
+    $$(".opt").forEach(x => { x.disabled = true; if (+x.dataset.i === s.ok) x.classList.add("ok"); });
+    if ($("#hb")) $("#hb").hidden = true;
+    $("#nx").hidden = false; $("#nx").onclick = () => { rotate(); next(); }; $("#nx").focus({ preventScroll: true });
+  }
+  const value = () => hintUsed && !free ? 0.5 : 1;
+  if (sim){
+    const picks = [];
+    wireGrid(picks);
+    $("#rev").onclick = () => {
+      const pts = value();
+      const res = revealGrid(picks, s.ok, pts), n = res.filter(Boolean).length;
+      cur.pts += pts * n / S.teams.length;
+      $("#rev").hidden = true;
+      done();
+      strike(n / S.teams.length, pts);
+      const m = majority(picks);
+      if (s.fx && m !== null && s.fx[m]) s.fx[m]();
+      $("#fb").innerHTML = feedback(n > 0, `${n} équipe${n > 1 ? "s" : ""} sur ${S.teams.length} ${n > 1 ? "ont" : "a"} trouvé.${s.fx && m !== null ? " La classe a choisi la réponse " + "ABCD"[order.findIndex(o => o.i === m)] + " : l’histoire en tiendra compte." : ""}`, s.why);
+    };
+    return;
+  }
+  $$(".opt").forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, ok = i === s.ok;
+    if (!ok) b.classList.add("bad");
+    const g = ok ? value() : 0;
+    cur.pts += g; award(g);
+    done();
+    if (ok) strike(1, g);
+    if (s.fx && s.fx[i]) s.fx[i]();
+    $("#fb").innerHTML = feedback(ok, ok ? "Exact !" : "Raté…", s.why + (s.fx ? " Ton choix aura des conséquences pour la suite." : ""));
+  });
+};
+
+R.order = s => {
+  const pool = shuffle(s.items);
+  const picked = [];
+  let hintUsed = false, done = false, good = 0, first = true;
+  function draw(){
+    paint(`<section class="act">${turnLine(true)}<div class="act-head">${portraitHead(s.who)}<div><div class="kicker">Mini-jeu · Remise en ordre</div><p class="q">${esc(s.q)}</p><p style="color:var(--chalk-2);font-size:14px">Glisse les étapes vers les cases, ou touche-les dans l’ordre. Touche une étape placée pour la retirer.</p></div></div></section>${SPLIT}<section class="act">
+      <div class="order-grid">
+        <div class="list"><h3>Étapes à placer</h3>${pool.filter(p => !picked.includes(p)).map(p => `<button class="chip" data-p="${esc(p)}">${esc(p)}</button>`).join("") || `<p style="color:var(--chalk-2)">Toutes les étapes sont placées.</p>`}</div>
+        <div class="list"><h3>Ton processus</h3>${s.items.map((_, i) => picked[i] ? `<button class="chip ${done ? (picked[i] === s.items[i] ? "ok" : "bad") : ""}" data-r="${i}" data-drop="${i}"><span class="n">${i + 1}</span><span>${esc(picked[i])}${done && picked[i] !== s.items[i] ? `<br><small>Attendu : ${esc(s.items[i])}</small>` : ""}</span></button>` : `<div class="slot" data-drop="${i}">${i + 1}. …</div>`).join("")}</div>
+      </div>
+      <div id="hint">${hintUsed ? hintBox(s.hint) : ""}</div><div id="fb">${done ? feedback(good === s.items.length, `${good} étape${good > 1 ? "s" : ""} sur ${s.items.length} à la bonne place.`, good === s.items.length ? "Processus parfait !" : "Regarde l’ordre attendu sous chaque étape en rouge.") : ""}</div>
+      <div class="row end">${!done && !hintUsed ? `<button class="btn small ghost" id="hb">${hintButton()}</button>` : ""}${!done ? `<button class="btn primary" id="ok" ${picked.length < s.items.length ? "disabled" : ""}>Valider</button>` : `<button class="btn primary" id="nx">Suite ▸</button>`}</div></section>`, !first);
+    first = false;
+    if (done){ $("#nx").onclick = () => { rotate(); next(); }; return; }
+    $$("[data-p]").forEach(b => b.onclick = () => { picked.push(b.dataset.p); draw(); });
+    $$("[data-r]").forEach(b => b.onclick = () => { picked.splice(+b.dataset.r, 1); draw(); });
+    $$("[data-p],[data-r]").forEach(el => {
+      el.draggable = true;
+      el.ondragstart = e => e.dataTransfer.setData("text/plain", el.dataset.p !== undefined ? "p|" + el.dataset.p : "r|" + el.dataset.r);
+    });
+    $$("[data-drop]").forEach(z => {
+      z.ondragover = e => { e.preventDefault(); z.classList.add("over"); };
+      z.ondragleave = () => z.classList.remove("over");
+      z.ondrop = e => {
+        e.preventDefault();
+        const raw = e.dataTransfer.getData("text/plain"), c = raw.indexOf("|");
+        const item = raw.slice(0, c) === "r" ? picked.splice(+raw.slice(c + 1), 1)[0] : raw.slice(c + 1);
+        if (!item) return;
+        picked.splice(Math.min(+z.dataset.drop, picked.length), 0, item);
+        draw();
+      };
+    });
+    if ($("#hb")) $("#hb").onclick = () => { hintUsed = true; if (S.tokens > 0){ S.tokens--; s._free = true; save(); } draw(); };
+    $("#ok").onclick = () => {
+      done = true;
+      good = picked.filter((p, i) => p === s.items[i]).length;
+      const g = Math.max(0, W.order * good / s.items.length - (hintUsed && !s._free ? 0.5 : 0));
+      cur.pts += g; award(Math.round(g * 10) / 10);
+      draw();
+      strike(good / s.items.length, 5 / 3, true);
+    };
+  }
+  draw();
+};
+
+R.blitz = s => {
+  const items = shuffle(s.items);
+  let i = 0, good = 0, left = s.time, over = false, first = true;
+  const log = [];
+  function draw(){
+    const it = items[i];
+    paint(`<section class="act">${turnLine(true)}<div class="act-head">${portraitHead(s.who)}<div><div class="kicker">Entraînement éclair · ${esc(s.title)}</div><p class="q">${esc(s.q)}</p></div></div>
+      <p class="blitz-count" style="font-family:var(--f-mono);font-weight:600">Carte ${i + 1} / ${items.length} · ${good} bonne${good > 1 ? "s" : ""} réponse${good > 1 ? "s" : ""}</p>
+      ${S.noTimer ? "" : `<div class="timer" id="tm"><span style="width:${Math.max(0, left) / s.time * 100}%"></span></div>`}
+      <div class="blitz-card" id="card">${esc(it.t)}</div></section>${SPLIT}<section class="act"><div class="blitz-choices">${s.choices.map((c, k) => `<button class="btn" data-c="${k}">${esc(c)}</button>`).join("")}</div></section>`, !first);
+    first = false;
+    $$("[data-c]").forEach(b => b.onclick = () => answer(+b.dataset.c));
+  }
+  function answer(k){
+    if (over) return;
+    const it = items[i], ok = k === it.a;
+    if (ok) good++;
+    log.push({ it, ok });
+    $("#card").classList.add(ok ? "flash-ok" : "flash-bad");
+    $$("[data-c]").forEach(b => b.disabled = true);
+    setTimeout(() => { if (over) return; i++; if (i < items.length) draw(); else finish(); }, RM ? 250 : 550);
+  }
+  function finish(){
+    if (over) return;
+    over = true; clearTimers();
+    const g = W.blitz * good / items.length;
+    cur.pts += g; award(Math.round(g * 10) / 10);
+    const missed = items.slice(log.length).map(it => ({ it, ok: false }));
+    paint(`<section class="act"><div class="act-head">${portraitHead("koro", good / items.length >= 0.7 ? "ok" : "ko")}<div><div class="kicker">Entraînement éclair · bilan</div><p class="q">${good} / ${items.length} bonnes réponses${log.length < items.length ? " (temps écoulé)" : ""}</p></div></div></section>${SPLIT}<section class="act">
+      <div class="memo"><ul class="debrief">${log.concat(missed).map(l => `<li><b>${l.ok ? "✓" : "✗"} ${esc(l.it.t)}</b><br>Réponse : ${esc(s.choices[l.it.a])}. ${esc(l.it.why)}</li>`).join("")}</ul></div>
+      <div class="row end"><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+    strike(good / items.length, 4 / 3, true);
+    $("#nx").onclick = next;
+  }
+  draw();
+  if (!S.noTimer) every(() => {
+    left -= 0.25;
+    const tm = $("#tm");
+    if (tm){ tm.firstChild.style.width = (Math.max(0, left) / s.time * 100) + "%"; tm.classList.toggle("low", left <= 8); }
+    if (left <= 0) finish();
+  }, 250);
+};
+
+/* Négociation en temps réel : patience, micro-expressions, conséquences */
+R.nego = () => {
+  const s = cur.nego || (cur.nego = { price: 1250, warranty: 1, rel: S.flags.gift ? 4 : 3, proc: 0, node: "open", reply: null, end: false, note: [], scored: false, seen: 0, missed: 0 });
+  const fix = () => { s.rel = clamp(s.rel, 0, 5); };
+  const PAT = teamsOn() ? 35 : 18;
+  function stats(){
+    const ph = s.end ? 7 : NEGO[s.node].ph;
+    return `<div class="phases" aria-label="Phases de la négociation">${PHASES.map((p, i) => `<span class="${i < ph ? "done" : i === ph ? "now" : ""}">${i + 1}. ${p}</span>`).join("")}</div>
+      <div class="nego-stats">
+        <div class="stat"><div class="lbl">Prix par poste</div><div class="val">${eur(s.price)}</div></div>
+        <div class="stat"><div class="lbl">Garantie</div><div class="val">${s.warranty} an${s.warranty > 1 ? "s" : ""}</div></div>
+        <div class="stat"><div class="lbl">Objectif / limite</div><div class="val">1 080 / 1 190</div></div>
+        <div class="stat"><div class="lbl">Relation</div><div class="dots">${[0,1,2,3,4].map(i => `<i class="${i < s.rel ? "on" : ""}"></i>`).join("")}</div></div>
+      </div>`;
+  }
+  function draw(){
+    fix(); clearTimers();
+    if (s.end) return debrief();
+    const n = NEGO[s.node];
+    const cue = s.node === "conc" ? (s.interest ? "Quand tu évoques la suite de la relation, elle se penche en avant et rouvre son carnet." : "Elle s’adosse et repose son stylo.") : n.cue;
+    const said = (s.reply ? s.reply + " " : "") + n.line + (s.node === "close" && S.flags.gift ? " Et on se revoit au match, n’est-ce pas ?" : "");
+    let insight = false, microOn = false, left = PAT, waited = 0;
+    const when = 2 + Math.random() * 4;
+    paint(`<section class="act">${turnLine(true)}${stats()}
+      <div class="patience"${S.noTimer ? " hidden" : ""}><span class="lbl">Patience</span><div class="timer" id="tm"><span style="width:100%"></span></div></div>
+      <div class="scene"><div class="micro" id="mic"><div class="panel" id="lf">${lefort(s.rel)}</div></div><div class="talk"><div class="tag">${esc(CAST.lefort.name)}</div><div class="bubble" id="bub"></div>${cueBox(cue)}<div id="ins"></div></div></div></section>${SPLIT}<section class="act">
+      <div class="row"><div class="kicker" style="margin-right:auto">Ta réplique</div>${n.micro ? `<button class="btn small" id="obs">Observer (O)</button>` : ""}</div>
+      <div class="opts" id="opts">${n.opts.map((o, i) => `<button class="opt" data-o="${i}"><b>${"ABC"[i]}</b><span>${esc(o.t)}</span></button>`).join("")}</div></section>`);
+    typeInto($("#bub"), said);
+    $("#bub").onclick = () => finishType();
+    const choose = f => { finishType(); clearTimers(); s.reply = f(s); rotate(); draw(); };
+    $$("[data-o]").forEach(b => b.onclick = () => choose(n.opts[+b.dataset.o].f));
+    if (n.micro){
+      const obs = () => {
+        if (insight) return;
+        if (microOn){
+          insight = true; s.seen++;
+          $("#ins").innerHTML = `<div class="insight">Bien vu : ${esc(n.micro.cue)} ${esc(n.micro.insight)}</div>`;
+          if (n.micro.bonus){
+            const b = document.createElement("button");
+            b.className = "opt bonus"; b.innerHTML = `<b>★</b><span>${esc(n.micro.bonus.t)}</span>`;
+            b.onclick = () => choose(n.micro.bonus.f);
+            $("#opts").prepend(b);
+          }
+          $("#obs").disabled = true;
+        } else {
+          $("#ins").innerHTML = `<div class="insight" style="border-color:var(--chalk-2);background:transparent">Rien de particulier pour l’instant… Observe son visage et réessaie au bon moment.</div>`;
+        }
+      };
+      $("#obs").onclick = obs;
+      window.__obs = obs;
+    } else window.__obs = null;
+    every(() => {
+      waited += 0.1;
+      if (n.micro && !microOn && !insight && waited >= when && waited < when + 1.4){
+        microOn = true;
+        const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel, true);
+        const m = $("#mic"); if (m){ m.classList.add("flash"); }
+      }
+      if (microOn && waited >= when + 1.4){
+        microOn = false; if (!insight) s.missedNow = true;
+        const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel);
+        const m = $("#mic"); if (m) m.classList.remove("flash");
+      }
+      if (S.noTimer) return;
+      left -= 0.1;
+      const tm = $("#tm"); if (tm){ tm.firstChild.style.width = Math.max(0, left / PAT * 100) + "%"; tm.classList.toggle("low", left <= 5); }
+      if (left <= 0){
+        left = PAT; s.rel--; fix();
+        s.note.push("Hésitation trop longue : elle a tapoté la table, la relation a baissé.");
+        const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel);
+        $("#ins").innerHTML = `<div class="insight" style="border-color:var(--bad)">Elle tapote la table : « Je n’ai pas toute la journée. » La relation baisse.</div>`;
+      }
+    }, 100);
+  }
+  function debrief(){
+    const priceScore = clamp((1190 - s.price) / (1190 - 1080), 0, 1) * 35;
+    let score = priceScore + (s.warranty >= 3 ? 10 : 0) + Math.max(0, s.proc) / 7 * 30 + s.rel * 2 + (s.recap ? 10 : 0) + Math.min(5, s.seen * 2)
+      - (s.lie ? 15 : 0) - (s.bribe ? 25 : 0) - (s.rush ? 10 : 0) - (s.reveal ? 10 : 0);
+    score = clamp(Math.round(score), 0, 100);
+    const first = !s.scored;
+    if (first){ s.scored = true; const g = W.nego * score / 100; cur.pts += g; award(Math.round(g * 10) / 10); S.nego = { price: s.price, score, warranty: s.warranty }; save(); }
+    const verdict = s.price <= 1080 ? "Objectif atteint." : s.price <= 1190 ? "Accord dans la ZOPA, au-dessus de ton objectif." : "Au-dessus de ton prix limite : ta MESORE (Datalis) était meilleure.";
+    if (s.seen) s.note.push(`Micro-expressions repérées : ${s.seen}. Chacune t’a donné une information que les mots ne disaient pas.`);
+    if (S.flags.gift) s.note.push("Le cadeau accepté a rendu Claire plus aimable… mais tu lui dois quelque chose, et ça se verra.");
+    paint(`<section class="act">${stats()}<div class="act-head">${portraitHead("koro", score >= 70 ? "ok" : score >= 45 ? "mock" : "ko")}<div><div class="kicker">Débrief de Koro-sensei</div><p class="q">Score de négociation : ${score} / 100</p><p>Prix final ${eur(s.price)} par poste, soit ${eur(s.price * 30)} HT pour 30 postes. ${verdict}</p></div></div></section>${SPLIT}<section class="act">
+      <div class="memo"><h3>Phase par phase</h3><ul class="debrief">${s.note.map(n => `<li>${esc(n)}</li>`).join("")}</ul></div>
+      <div class="row end"><button class="btn ghost" id="redo">Rejouer la négociation</button><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+    if (first) strike(score / 100, 10 / 3, true);
+    $("#redo").onclick = () => { cur.pts = 0; cur.nego = null; R.nego(); };
+    $("#nx").onclick = next;
+  }
+  draw();
+};
+
+/* Examen final : questions → munitions → tir sur Koro-sensei */
+R.combat = () => {
+  const sim = simul();
+  const d = cur.duel || (cur.duel = { i: -1, ammo: 0, right: 0, ts: S.teams.map(() => 0), hits: 0, qs: DUEL.map(q => ({ ...q, order: shuffle(q.opts.map((t, i) => ({ t, i }))) })) });
+  const phase = () => d.i < 4 ? 0 : d.i < 8 ? 1 : 2;
+  function ranking(){
+    if (!sim) return "";
+    const rows = S.teams.map((t, i) => ({ n: t.name, v: d.ts[i] })).sort((a, b) => b.v - a.v);
+    return `<div class="memo"><h3>Classement de l’examen</h3><ol>${rows.map(r => `<li><b>${esc(r.n)}</b> : ${r.v} / ${DUEL.length}</li>`).join("")}</ol></div>`;
+  }
+  function intro(){
+    paint(`<section class="act"><div class="act-head">${portraitHead("koro", "mock")}<div><div class="kicker">Examen final · gymnase</div><p class="q">12 questions, 6 manches de tir.</p></div></div></section>${SPLIT}<section class="act">
+      <div class="memo"><h3>Règles</h3><ul>
+        <li>Chaque bonne réponse donne des billes anti-sensei${sim ? " : 2 par équipe qui trouve, 3 de bonus si toutes les équipes trouvent" : " : 4 par bonne réponse"}.</li>
+        <li>Toutes les 2 questions, une manche de tir de 8 secondes. Clique (ou touche) Koro-sensei pour tirer.</li>
+        <li>Il esquive tout… sauf quand il s’arrête pour se moquer de vous (rayures vertes) : c’est là qu’il faut tirer.</li>
+        <li>3 phases : il accélère à Mach 10, puis à Mach 20. Mets ses PV à zéro avant la fin pour réussir l’assassinat.</li>
+      </ul></div>
+      <div class="row"><label class="toggle"><input type="checkbox" id="opt-notimer" ${S.noTimer ? "checked" : ""}> Questions sans chrono</label><label class="toggle"><input type="checkbox" id="opt-assist" ${S.assist ? "checked" : ""}> Tir assisté (cible plus grande, pauses plus longues)</label></div>
+      <div class="row end"><button class="btn primary" id="go">Commencer l’examen</button></div></section>`);
+    $("#opt-notimer").onchange = e => { S.noTimer = e.target.checked; save(); };
+    $("#opt-assist").onchange = e => { S.assist = e.target.checked; save(); };
+    $("#go").onclick = () => { d.i = 0; ask(); };
+  }
+  function ask(){
+    const q = d.qs[d.i], ph = phase(), T = BOSS[ph].time;
+    let left = T, answered = false;
+    paint(`<section class="act"><div class="phase-banner p${ph}">${BOSS[ph].label}</div>${turnLine()}
+      <div class="row"><span class="ammo">Billes : ${d.ammo}</span><span style="margin-left:auto;color:var(--chalk-2)">Question ${d.i + 1} / ${d.qs.length}</span></div>
+      <p class="q">${esc(q.q)}</p>
+      ${S.noTimer ? "" : `<div class="timer" id="tm"><span style="width:100%"></span></div>`}</section>${SPLIT}<section class="act">
+      <div class="opts">${q.order.map((o, k) => `<button class="opt" data-i="${o.i}" ${sim ? "disabled" : ""}><b>${"ABCD"[k]}</b><span>${esc(o.t)}</span></button>`).join("")}</div>
+      ${sim ? gridHTML(q.order) : ""}
+      <div id="fb"></div><div class="row end">${sim ? `<button class="btn primary" id="rev">Révéler la réponse</button>` : ""}<button class="btn primary" id="nx" hidden>Suite ▸</button></div></section>`);
+    const picks = [];
+    function resolve(choice){
+      if (answered) return; answered = true; clearTimers();
+      let ok, title, gain = 0;
+      if (sim){
+        const res = revealGrid(picks, q.ok, 1), n = res.filter(Boolean).length;
+        res.forEach((g, i) => { if (g) d.ts[i]++; });
+        gain = n * 2 + (n === S.teams.length ? 3 : 0);
+        if (n === S.teams.length) flash("COMBO 3-E !", "+3 billes de bonus");
+        ok = n > 0; title = `${n} équipe${n > 1 ? "s" : ""} sur ${S.teams.length} ${n > 1 ? "ont" : "a"} trouvé. `;
+        if (n) d.right++;
+        $("#rev").hidden = true;
+      } else {
+        ok = choice === q.ok;
+        if (ok){ gain = 4; d.right++; award(1); }
+        title = choice === null ? "Temps écoulé ! " : ok ? "Bonne réponse ! " : "Raté. ";
+      }
+      d.ammo += gain;
+      $$(".opt").forEach(x => { x.disabled = true; if (+x.dataset.i === q.ok) x.classList.add("ok"); else if (+x.dataset.i === choice) x.classList.add("bad"); });
+      $(".ammo").textContent = `Billes : ${d.ammo}`;
+      $("#fb").innerHTML = feedback(ok, title + (gain ? `+${gain} billes.` : "Pas de billes cette fois."), "");
+      const shootNow = d.i % 2 === 1 || d.i === d.qs.length - 1;
+      $("#nx").hidden = false; $("#nx").textContent = shootNow ? "Manche de tir ▸" : "Question suivante ▸";
+      $("#nx").focus({ preventScroll: true });
+      $("#nx").onclick = () => { rotate(); if (shootNow) shoot(); else { d.i++; ask(); } };
+    }
+    if (sim){ wireGrid(picks); $("#rev").onclick = () => resolve(null); }
+    else $$(".opt").forEach(b => b.onclick = () => resolve(+b.dataset.i));
+    if (!S.noTimer){
+      every(() => {
+        const tm = $("#tm"); if (!tm) return;
+        left -= 0.25; tm.firstChild.style.width = (left / T * 100) + "%"; tm.classList.toggle("low", left <= 4);
+        if (left <= 0) resolve(null);
+      }, 250);
+    }
+    if (d.i === 4 || d.i === 8) flash(BOSS[ph].big, BOSS[ph].label);
+  }
+  function shoot(){
+    const ph = phase(), P = BOSS[ph], A = S.assist ? 1.35 : 1;
+    const Wd = 900, Hd = 380, R0 = 44 * A;
+    paint(`<section class="act"><div class="phase-banner p${ph}">${P.label}</div>
+      <div class="row"><span class="ammo" id="am">Billes : ${d.ammo}</span><span id="tl" style="margin-left:auto;font-family:var(--f-mono)">8,0 s</span></div>
+      <div class="arena-wrap"><canvas id="arena" width="${Wd}" height="${Hd}" aria-label="Arène : Koro-sensei se déplace, clique pour tirer"></canvas></div></section>${SPLIT}<section class="act">
+      <p>Tire quand il s’arrête pour se moquer (rayures vertes). Ailleurs, il esquive à Mach ${[5, 10, 20][ph]}.</p>
+      <div class="row end"><button class="btn ghost" id="skip">Terminer la manche</button></div></section>`);
+    const cv = $("#arena"), g = cv.getContext("2d");
+    const k = { x: Wd / 2, y: Hd / 2, tx: Wd / 2, ty: Hd / 2, mock: 0, hurt: 0 };
+    const ghosts = [], floats = [];
+    let left = 8, last = null, over = false, raf = 0, aim = { x: -99, y: -99 };
+    const pick = () => { k.tx = 80 + Math.random() * (Wd - 160); k.ty = 70 + Math.random() * (Hd - 140); };
+    pick();
+    function drawKoro(x, y, r, alpha, mock, hurt){
+      g.save(); g.globalAlpha = alpha;
+      g.fillStyle = "#26222E"; g.beginPath(); g.moveTo(x - r * 0.9, y + r * 1.6); g.quadraticCurveTo(x, y + r * 0.4, x + r * 0.9, y + r * 1.6); g.fill();
+      g.strokeStyle = "#F5C518"; g.lineWidth = 5; for (let t = -2; t <= 2; t++){ g.beginPath(); g.moveTo(x + t * r * 0.35, y + r * 1.3); g.quadraticCurveTo(x + t * r * 0.45 + Math.sin(performance.now() / 120 + t) * 6, y + r * 1.7, x + t * r * 0.4, y + r * 1.95); g.stroke(); }
+      g.fillStyle = hurt > 0 ? "#E8741E" : "#F5C518"; g.strokeStyle = INK; g.lineWidth = 3;
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.stroke();
+      if (mock){ g.save(); g.beginPath(); g.arc(x, y, r - 2, 0, Math.PI * 2); g.clip(); g.strokeStyle = "#5FAF3A"; g.lineWidth = 7; for (let yy = -r; yy < r; yy += 13){ g.beginPath(); g.moveTo(x - r, y + yy); g.lineTo(x + r, y + yy); g.stroke(); } g.restore(); }
+      g.fillStyle = INK; g.beginPath(); g.arc(x - r * 0.33, y - r * 0.2, r * 0.1, 0, 7); g.arc(x + r * 0.33, y - r * 0.2, r * 0.1, 0, 7); g.fill();
+      g.fillStyle = "#fff"; g.beginPath(); g.moveTo(x - r * 0.65, y + r * 0.15); g.quadraticCurveTo(x, y + r * 0.95, x + r * 0.65, y + r * 0.15); g.quadraticCurveTo(x, y + r * 0.45, x - r * 0.65, y + r * 0.15); g.fill(); g.stroke();
+      g.fillStyle = "#26222E"; g.beginPath(); g.moveTo(x - r * 0.95, y - r * 0.75); g.lineTo(x, y - r * 1.25); g.lineTo(x + r * 0.95, y - r * 0.75); g.lineTo(x, y - r * 0.45); g.closePath(); g.fill(); g.stroke();
+      g.restore();
+    }
+    /* boucle d'animation ; un filet de sécurité la relance si l'onglet ralentit les images */
+    function frameFn(t){ stepArena(t, 0.05); if (!over) raf = requestAnimationFrame(frameFn); }
+    every(() => { if (!over && (last === null || performance.now() - last > 200)) stepArena(performance.now(), 0.25); }, 100);
+    function stepArena(t, maxDt){
+      if (over) return;
+      if (last === null) last = t;
+      const dt = Math.min(maxDt, Math.max(0, (t - last) / 1000)); last = t;
+      left -= dt;
+      if (k.mock > 0){ k.mock -= dt; if (k.mock <= 0) pick(); }
+      else {
+        const dx = k.tx - k.x, dy = k.ty - k.y, dist = Math.hypot(dx, dy), stepv = P.v * dt;
+        if (dist <= stepv){ k.x = k.tx; k.y = k.ty; if (Math.random() < P.p) k.mock = P.pause * A; else pick(); }
+        else { k.x += dx / dist * stepv; k.y += dy / dist * stepv; if (Math.random() < 0.3) ghosts.push({ x: k.x, y: k.y, a: 0.25 }); }
+      }
+      if (k.hurt > 0) k.hurt -= dt;
+      g.fillStyle = "#3A2B1E"; g.fillRect(0, 0, Wd, Hd);
+      g.strokeStyle = "rgba(255,255,255,.06)"; g.lineWidth = 2; for (let x = 0; x < Wd; x += 60){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, Hd); g.stroke(); }
+      g.strokeStyle = "rgba(245,197,24,.35)"; g.lineWidth = 4; g.beginPath(); g.arc(Wd / 2, Hd / 2, 90, 0, 7); g.stroke(); g.beginPath(); g.moveTo(Wd / 2, 0); g.lineTo(Wd / 2, Hd); g.stroke();
+      for (let i = ghosts.length - 1; i >= 0; i--){ const gh = ghosts[i]; gh.a -= dt * 0.8; if (gh.a <= 0){ ghosts.splice(i, 1); continue; } drawKoro(gh.x, gh.y, R0, gh.a, false, 0); }
+      drawKoro(k.x, k.y, R0, 1, k.mock > 0, k.hurt);
+      if (k.mock > 0){ g.fillStyle = "#5FAF3A"; g.font = "bold 20px sans-serif"; g.textAlign = "center"; g.fillText("Nurufufu~", k.x, k.y - R0 * 1.45); }
+      for (let i = floats.length - 1; i >= 0; i--){ const f = floats[i]; f.t -= dt; f.y -= 40 * dt; if (f.t <= 0){ floats.splice(i, 1); continue; } g.globalAlpha = Math.min(1, f.t * 2); g.fillStyle = f.c; g.font = "bold 24px sans-serif"; g.textAlign = "center"; g.fillText(f.s, f.x, f.y); g.globalAlpha = 1; }
+      g.strokeStyle = "#fff"; g.lineWidth = 2; g.beginPath(); g.arc(aim.x, aim.y, 14, 0, 7); g.moveTo(aim.x - 20, aim.y); g.lineTo(aim.x + 20, aim.y); g.moveTo(aim.x, aim.y - 20); g.lineTo(aim.x, aim.y + 20); g.stroke();
+      const tl = $("#tl"); if (tl) tl.textContent = Math.max(0, left).toFixed(1).replace(".", ",") + " s";
+      if (left <= 0 || S.hp <= 0 || (d.ammo <= 0 && floats.length === 0 && left < 7.5)) end();
+    }
+    const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * Wd / r.width, y: (e.clientY - r.top) * Hd / r.height }; };
+    cv.onpointermove = e => { aim = pos(e); };
+    cv.onpointerdown = e => {
+      e.preventDefault();
+      const p = pos(e); aim = p;
+      if (d.ammo <= 0){ floats.push({ x: p.x, y: p.y, s: "Plus de billes !", c: "#fff", t: 0.8 }); return; }
+      d.ammo--; $("#am").textContent = `Billes : ${d.ammo}`;
+      const dist = Math.hypot(p.x - k.x, p.y - k.y);
+      if (dist <= R0){
+        if (k.mock > 0){
+          const crit = dist < R0 / 3, dmg = crit ? 8 : 5;
+          S.hp = Math.max(0, S.hp - dmg); d.hits++; k.hurt = 0.25; save(); refreshHp();
+          floats.push({ x: k.x, y: k.y - R0, s: crit ? `CRITIQUE −${dmg}` : `−${dmg} PV`, c: crit ? "#F5C518" : "#E8741E", t: 0.9 });
+          if (Math.random() < 0.5){ k.mock = 0; pick(); }
+        } else {
+          ghosts.push({ x: k.x, y: k.y, a: 0.5 });
+          k.x = 80 + Math.random() * (Wd - 160); k.y = 70 + Math.random() * (Hd - 140); pick();
+          floats.push({ x: p.x, y: p.y, s: "Esquivé !", c: "#B9C7BE", t: 0.8 });
+        }
+      } else floats.push({ x: p.x, y: p.y, s: "Raté", c: "#B9C7BE", t: 0.6 });
+    };
+    window.__arena = { k, R0, Wd, Hd, cv };
+    function end(){
+      if (over) return; over = true; cancelAnimationFrame(raf); clearTimers(); window.__arena = null;
+      if (S.hp <= 0){ flash("K.O. !", "Koro-sensei est à terre !"); return finishExam(); }
+      d.i++;
+      if (d.i >= d.qs.length) finishExam(); else ask();
+    }
+    $("#skip").onclick = end;
+    raf = requestAnimationFrame(frameFn);
+  }
+  function finishExam(){
+    clearTimers();
+    const win = S.hp <= 0;
+    cur.result = win ? "win" : "lose"; S.examWin = win; save();
+    paint(`<section class="act"><div class="act-head">${portraitHead("koro", win ? "ko" : "mock")}<div><div class="kicker">Examen final · bilan</div><h2 class="verdict">${win ? "Koro-sensei est atteint !" : "Koro-sensei a esquivé…"}</h2><p>${d.right} bonne${d.right > 1 ? "s" : ""} réponse${d.right > 1 ? "s" : ""} sur ${DUEL.length} · ${d.hits} tir${d.hits > 1 ? "s" : ""} au but · ${win ? "PV : 0" : "PV restants : " + Math.ceil(S.hp)}</p></div></div></section>${SPLIT}<section class="act">${ranking()}<div class="row end"><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+    $("#nx").onclick = next;
+  }
+  if (d.i < 0) intro(); else ask();
+};
+
+/* ---------- fins multiples ---------- */
+function endingId(){
+  const f = S.flags, win = !!S.examWin;
+  if ((f.gift || f.bribe || f.leak) && S.trust <= 3) return "scandal";
+  if (win && S.trust >= 6) return "trust";
+  if (win) return "bitter";
+  if (S.trust >= 6) return "nextyear";
+  return "lesson";
+}
+const ENDINGS = {
+  trust: { title: "Fin · L’acheteur de confiance", who: "koro", mood: "ok", txt: "Nurufufu… Vous m’avez eu. Pas avec un couteau : avec une préparation solide, un œil attentif et une éthique irréprochable. Le contrat Pixelia est signé, la PME est protégée, et votre réputation vous précède. Je suis fier de vous." },
+  bitter: { title: "Fin · Une victoire au goût amer", who: "karasuma", mood: null, txt: "Vous avez atteint Koro-sensei. Mais l’audit éthique de fin d’année a relevé plusieurs choix douteux. Le contrat tient… pour l’instant. Un bon acheteur gagne aussi la confiance, pas seulement la partie." },
+  scandal: { title: "Fin · Le scandale Pixelia", who: "asano", mood: null, txt: "La photo de la loge, les arrangements, les petits mensonges… tout est sorti. Le contrat Pixelia est suspendu pendant l’enquête interne. Rien n’est perdu : rejoue et choisis autrement. C’est le but d’un entraînement." },
+  nextyear: { title: "Fin · Rendez-vous l’année prochaine", who: "koro", mood: "mock", txt: "Esquivé ! Mais quelle classe : honnête, attentive, solide sous la pression. Il ne vous manque qu’un peu de précision. Révisez le carnet de Nagisa, et revenez me défier." },
+  lesson: { title: "Fin · La leçon", who: "nagisa", mood: null, txt: "Koro-sensei a esquivé, et plusieurs de nos choix nous ont coûté sa confiance. On recommence ? Cette fois, on prépare, on observe, et on reste droits." }
+};
+R.ending = () => {
+  const id = endingId(), e = ENDINGS[id];
+  S.ending = id; S.q = 8; save();
+  const n = S.nego;
+  paint(`<section class="ending">${portraitHead(e.who, e.mood || undefined).replace('class="panel"', 'class="panel" style="width:160px"')}<div class="kicker">Fin de l’année</div><h1>${esc(e.title)}</h1><p class="maxim" style="text-align:left">${esc(e.txt)}</p></section>${SPLIT}<section class="act">
+    <div class="ending"><div class="stats">
+      <div class="memo"><h3>Confiance</h3><p>${S.trust} / 10</p></div>
+      <div class="memo"><h3>Négociation</h3><p>${n ? `${eur(n.price)} par poste · ${n.score} / 100` : "Non jouée"}</p></div>
+      <div class="memo"><h3>Koro-sensei</h3><p>${S.examWin ? "Atteint" : `A esquivé (${Math.ceil(S.hp)} PV)`}</p></div>
+    </div></div>
+    <p style="color:var(--chalk-2)">Il existe 5 fins. Tes choix éthiques (cadeau, conflit d’intérêts, confidentialité, pression du directeur…) et ta réussite à l’examen décident laquelle tu obtiens.</p>
+    <div class="row end"><button class="btn ghost" id="again">Rejouer depuis le début</button><button class="btn primary" id="nx">Retour à l’école ▸</button></div></section>`);
+  $("#again").onclick = () => { const keep = { name: S.name, mode: S.mode, answerMode: S.answerMode, teams: S.teams.map(t => ({ ...t, pts: 0 })) }; S = Object.assign(FRESH(), keep); save(); closeMission(false); startChapter("c0"); };
+  $("#nx").onclick = next;
+};
+
+/* ---------- tentative d'assassinat de fin de chapitre ---------- */
+function assault(pct, then){
+  const ch = chap();
+  const zone = 0.12 + 0.3 * pct, center = 0.5;
+  const speed = (0.55 + ch.no * 0.12) * (RM ? 0.5 : 1);
+  let p = 0, dir = 1, raf = null, last = null, done = false;
+  let lead = 0; S.teams.forEach((t, i) => { if (t.pts > S.teams[lead].pts) lead = i; });
+  const who = teamsOn() ? `${S.teams[lead].name}, en tête du classement, envoie un représentant frapper.` : `${S.name}, à toi de frapper.`;
+  paint(`<section class="act"><div class="kicker">Tentative d’assassinat · fin du chapitre ${ch.no}</div><h2>Koro-sensei esquive à Mach 20 !</h2>
+    <p>Votre score du chapitre (${Math.round(pct * 100)} %) a élargi la zone de frappe. Frappez quand il passe dans la zone orange. Au centre : coup critique.</p>
+    <div class="track" aria-hidden="true"><div class="zone" style="left:${(center - zone / 2) * 100}%;width:${zone * 100}%"></div><div class="crit" style="left:${(center - zone / 6) * 100}%;width:${zone / 3 * 100}%"></div><div class="target" id="tg">${koro("mock")}</div></div></section>${SPLIT}<section class="act">
+    <p>${esc(who)} (Espace ou clic)</p><div id="fb"></div><div class="row end" id="act-row"><button class="btn primary strike-btn" id="strike">Frapper !</button></div></section>`);
+  function tick(t){
+    if (done) return;
+    if (last === null) last = t;
+    const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    p += dir * speed * dt;
+    if (p > 1){ p = 1; dir = -1; } if (p < 0){ p = 0; dir = 1; }
+    const tg = $("#tg"); if (!tg) return;
+    tg.style.left = (p * 100) + "%";
+    raf = requestAnimationFrame(tick);
+  }
+  raf = requestAnimationFrame(tick);
+  $("#strike").onclick = () => {
+    if (done) return;
+    done = true; cancelAnimationFrame(raf);
+    const gap = Math.abs(p - center), crit = gap <= zone / 6, hit = gap <= zone / 2;
+    if (hit){
+      S.hp = Math.max(0, S.hp - (crit ? 10 : 6));
+      if (teamsOn()){ S.teams[lead].pts = Math.round((S.teams[lead].pts + (crit ? 2 : 1)) * 10) / 10; const tb = $("#app .teambar"); if (tb) tb.outerHTML = teamBar(); }
+      save(); refreshHp();
+    }
+    $("#tg").innerHTML = koro(hit ? "ko" : "mock");
+    flash(crit ? "COUP CRITIQUE !" : hit ? "TOUCHÉ !" : "ESQUIVÉ !", crit ? "−10 PV pour Koro-sensei" : hit ? "−6 PV pour Koro-sensei" : "Nurufufu… trop lent !");
+    $("#fb").innerHTML = feedback(hit, crit ? "Coup critique !" : hit ? "Touché !" : "Esquivé…", (hit ? (crit ? "Koro-sensei perd 10 PV." : "Koro-sensei perd 6 PV.") + (teamsOn() ? ` ${S.teams[lead].name} gagne ${crit ? 2 : 1} point${crit ? "s" : ""}.` : "") : "Il a esquivé de justesse.") + " Plus votre score de chapitre est élevé, plus la zone est large.");
+    $("#act-row").innerHTML = `<button class="btn primary" id="nx">Voir le résultat ▸</button>`;
+    $("#nx").onclick = then; $("#nx").focus({ preventScroll: true });
+  };
+  $("#strike").focus({ preventScroll: true });
+}
+
+const RES = {
+  hit: { label: "Tentative réussie", mood: "ok", txt: "Touché ! Votre préparation était impeccable." },
+  graze: { label: "Effleuré", mood: "mock", txt: "Vous l’avez effleuré. Il ricane avec ses rayures vertes : vous pouvez rejouer le chapitre plus tard depuis le menu." },
+  miss: { label: "Esquivé", mood: "ko", txt: "Esquivé à Mach 20. Relisez le carnet de Nagisa : le marché récompense ceux qui reviennent." }
+};
+const RANK = { miss: 1, graze: 2, hit: 3 };
+function finishChapter(){
+  const ch = chap();
+  if (!ch.scored){ return closeMission(true); }
+  const pct = cur.max ? Math.min(1, cur.pts / cur.max) : 1;
+  if (!cur.assaulted){ cur.assaulted = true; return assault(pct, finishChapter); }
+  const r = pct >= 0.85 ? "hit" : pct >= 0.6 ? "graze" : "miss";
+  if (!S.results[cur.id] || RANK[r] > RANK[S.results[cur.id]]) S.results[cur.id] = r;
+  S.best[cur.id] = Math.max(S.best[cur.id] || 0, Math.round(pct * 100));
+  save();
+  const ranking = teamsOn() ? `<div class="memo"><h3>Classement des équipes</h3><ol>${S.teams.slice().sort((a, b) => b.pts - a.pts).map(t => `<li><b>${esc(t.name)}</b> : ${t.pts.toLocaleString("fr-FR")} points</li>`).join("")}</ol></div>` : "";
+  paint(`<section class="act">
+    <div class="result"><div class="panel">${koro(RES[r].mood)}</div>
+      <div class="talk"><div class="kicker">${esc(ch.label)} terminé · ${Math.round(pct * 100)} %</div><h2 style="font-size:28px">${esc(ch.title)}</h2><p class="verdict">${RES[r].label}</p><p>${esc(RES[r].txt)}</p><p class="maxim">« ${esc(ch.maxim)} »</p></div></div></section>${SPLIT}<section class="act">
+    ${ranking}
+    <div class="memo"><h3>Le carnet de Nagisa · à retenir</h3><ul>${ch.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul></div>
+    <div class="row end"><button class="btn primary" id="nx">Retour à l’école ▸</button></div></section>`);
+  $("#nx").onclick = () => closeMission(true);
+}
+
+/* ---------- quêtes ---------- */
+const QUESTS = [
+  { npc: "koro", ch: "c1", obj: "Parle à Koro-sensei, devant le tableau de la classe 3-E." },
+  { npc: "nagisa", ch: "c2", obj: "Nagisa t’attend dans la classe 3-E." },
+  { npc: "karma", ch: "c3a", obj: "Karma veut t’entraîner : il est au fond de la classe 3-E." },
+  { npc: "lefort", ch: "c3b", obj: "Rejoins Claire Lefort en salle de réunion (en haut à droite)." },
+  { npc: "irina", ch: "c4a", obj: "Irina t’attend en salle des profs (en bas à gauche)." },
+  { npc: "asano", ch: "c4b", obj: "Le directeur Asano te convoque dans son bureau (en bas à droite)." },
+  { npc: "karasuma", ch: "c5pre", obj: "Karasuma a des nouvelles : salle des profs." },
+  { npc: "koro", ch: "c5", obj: "Le gymnase est ouvert : affronte Koro-sensei !" },
+  { npc: null, ch: null, obj: "Année terminée ! Explore l’école, ou rejoue depuis le menu." }
+];
+const NEXT_Q = { c1: 1, c2: 2, c3a: 3, c3b: 4, c4a: 5, c4b: 6, c5pre: 7 };
+function advanceQuest(id){
+  if (NEXT_Q[id] !== undefined && S.q < NEXT_Q[id]){ S.q = NEXT_Q[id]; save(); toast("Nouvel objectif : " + QUESTS[S.q].obj); }
+}
+const CHATTER = {
+  koro: ["Nurufufu ! Tu as fini ta mission ? Regarde l’objectif en haut de l’écran.", "Une glace de Hokkaido, puis je reviens. À Mach 20, ça prend 3 minutes."],
+  nagisa: ["J’ai caché des notes dans l’école. Chaque étoile que tu trouves te donne un jeton d’indice gratuit.", "Observe d’abord, conclus ensuite."],
+  karma: ["Provoquer, c’est facile. Négocier, c’est un autre sport.", "Le jour de l’examen, vise quand il se moque. Il ne s’y attend jamais."],
+  lefort: ["Notre offre reste à l’étude, je vous laisse le temps de préparer.", "Merci pour cette négociation. J’attends le compte rendu !"],
+  irina: ["Une bonne acheteuse sait dire non avec le sourire.", "Persuader, oui. Manipuler, jamais."],
+  asano: ["Je n’ai pas le temps. Reviens quand on t’appellera.", "Hmm. Continue ton travail."],
+  karasuma: ["Concentre-toi sur ta mission actuelle.", "La rigueur, toujours."]
+};
+
+/* ---------- le monde (canevas) ---------- */
+const TILE = 32, COLS = 30, ROWS = 18, WW = COLS * TILE, WH = ROWS * TILE;
+const MAP = [
+  "##############################",
+  "#BBBBBBBBBBBB#SSSSSSSSSSSSSSS#",
+  "#............#...............#",
+  "#..DD.DD.DD..#...TTTTTTTTT...#",
+  "#............#...TTTTTTTTT...#",
+  "#..DD.DD.DD..#...............#",
+  "#............#P.............P#",
+  "######d##############d########",
+  "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+  "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+  "#####d#####g#########d########",
+  "#.........#GGGGGGGGG#........#",
+  "#.TTT.....#GGGGGGGGG#..TTTT..#",
+  "#.TTT.....#GGGGGGGGG#..TTTT..#",
+  "#.........#GGGGGGGGG#........#",
+  "#P.......S#GGGGGGGGG#P......P#",
+  "#.........#GGGGGGGGG#........#",
+  "##############################"
+];
+const SOLID = new Set(["#", "B", "D", "T", "S", "P"]);
+const ROOMS = [
+  { n: "Classe 3-E", x: 1, y: 1, w: 12, h: 6, f: "#B9895A" },
+  { n: "Salle de réunion", x: 14, y: 1, w: 15, h: 6, f: "#9DA7A3" },
+  { n: "Couloir", x: 1, y: 8, w: 28, h: 2, f: "#C9C2B3" },
+  { n: "Salle des profs", x: 1, y: 11, w: 9, h: 6, f: "#A98763" },
+  { n: "Gymnase", x: 11, y: 11, w: 9, h: 6, f: "#D9A35C" },
+  { n: "Bureau du directeur", x: 21, y: 11, w: 8, h: 6, f: "#7E5B4A" }
+];
+const LOOK = {
+  player: { body: "#F4F4F4", vest: "#3B3F4A", hair: "#3A2A20", style: "short", skin: "#F1D3B3" },
+  nagisa: { body: "#F4F4F4", vest: "#3B3F4A", hair: "#4C7BD9", style: "twin", skin: "#F3D7C0" },
+  karma: { body: "#1E1E24", vest: "#1E1E24", hair: "#C8322F", style: "spiky", skin: "#F1D2B6" },
+  karasuma: { body: "#22252E", vest: "#22252E", hair: "#111111", style: "short", skin: "#E6C4A6" },
+  irina: { body: "#8C1D3A", vest: "#8C1D3A", hair: "#E8C25A", style: "long", skin: "#F5DCC6" },
+  asano: { body: "#2F2F35", vest: "#2F2F35", hair: "#6E5E52", style: "slick", skin: "#EBCDB0" },
+  lefort: { body: "#1F6E68", vest: "#1F6E68", hair: "#4A2F25", style: "bob", skin: "#E9C3A2" }
+};
+const STARS = [{ id: "s1", c: 12, r: 6 }, { id: "s2", c: 28, r: 9 }, { id: "s3", c: 1, r: 16 }, { id: "s4", c: 28, r: 16 }];
+const T2P = (c, r) => ({ x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 });
+function npcs(){
+  const list = [
+    { id: "nagisa", ...T2P(5, 4) }, { id: "karma", ...T2P(11, 6) },
+    { id: "lefort", ...T2P(21, 5) }, { id: "irina", ...T2P(6, 14) },
+    { id: "karasuma", ...T2P(3, 11) }, { id: "asano", ...T2P(25, 14) }
+  ];
+  list.push(S.q >= 7 ? { id: "koro", ...T2P(15, 13) } : { id: "koro", ...T2P(9, 2) });
+  return list;
+}
+function gymOpen(){ return S.q >= 7; }
+function tileAt(c, r){ return (MAP[r] || "")[c] || "#"; }
+function solidAt(x, y){
+  const c = Math.floor(x / TILE), r = Math.floor(y / TILE), t = tileAt(c, r);
+  if (t === "g") return !gymOpen();
+  return SOLID.has(t);
+}
+function blocked(x, y){
+  if ([[x - 9, y - 2], [x + 9, y - 2], [x - 9, y + 12], [x + 9, y + 12]].some(([px, py]) => solidAt(px, py))) return true;
+  return npcs().some(n => Math.hypot(n.x - x, n.y + 6 - y) < 20);
+}
+
+let cv, g, keys = {}, lastT = null, walk = 0, facing = 1, faceY = 1, near = null, rafW = 0;
+const VW = WW, VH = WH, ZOOM = 1.65, DPR = Math.min(2, window.devicePixelRatio || 1);
+const cam = { x: 0, y: 0, ready: false };
+let bgCv = null, bgKey = "", parts = [], stepT = 0, stepAlt = 0, curRoom = "", banner = { txt: "", t: 0 };
+function rng(seed){ let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 10000) / 10000; }; }
+function shade(hex, k){ const n = parseInt(hex.slice(1), 16); let r = n >> 16, gg = (n >> 8) & 255, b = n & 255; const f = v => clamp(Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k), 0, 255); return "#" + ((1 << 24) + (f(r) << 16) + (f(gg) << 8) + f(b)).toString(16).slice(1); }
+function roomAt(x, y){ const c = x / TILE, r = y / TILE; return ROOMS.find(rm => c >= rm.x && c < rm.x + rm.w && r >= rm.y && r < rm.y + rm.h); }
+const LAMPS = [];
+ROOMS.forEach(rm => { const n = Math.max(1, Math.round(rm.w / 7)); for (let i = 0; i < n; i++) LAMPS.push({ x: (rm.x + rm.w * (i + 0.5) / n) * TILE, y: (rm.y + rm.h / 2) * TILE, r: Math.min(rm.w / n, rm.h) * TILE * 0.95, warm: rm.n !== "Salle de réunion" }); });
+
+/* ----- sons (synthétisés, aucun fichier) ----- */
+let AC = null, musicOn = false, musicTimer = 0;
+function audio(){ if (S.mute) return null; if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return null; } } if (AC.state === "suspended") AC.resume(); return AC; }
+function tone(f, d, type, vol, when, glide){
+  const a = audio(); if (!a) return; const t0 = a.currentTime + (when || 0);
+  const o = a.createOscillator(), v = a.createGain(); o.type = type || "sine"; o.frequency.setValueAtTime(f, t0); if (glide) o.frequency.exponentialRampToValueAtTime(glide, t0 + d);
+  v.gain.setValueAtTime(0.0001, t0); v.gain.exponentialRampToValueAtTime(vol || 0.1, t0 + 0.012); v.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+  o.connect(v).connect(a.destination); o.start(t0); o.stop(t0 + d + 0.05);
+}
+function noise(d, vol, freq){
+  const a = audio(); if (!a) return; const len = Math.floor(a.sampleRate * d), buf = a.createBuffer(1, len, a.sampleRate), ch = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), v = a.createGain(); s.buffer = buf; f.type = "bandpass"; f.frequency.value = freq || 900; f.Q.value = 1.2; v.gain.value = vol || 0.12;
+  s.connect(f).connect(v).connect(a.destination); s.start();
+}
+function sfx(k){
+  if (S.mute) return;
+  if (k === "step"){ stepAlt ^= 1; noise(0.07, 0.07, stepAlt ? 700 : 520); }
+  else if (k === "talk"){ tone(660, 0.08, "square", 0.04); tone(990, 0.1, "square", 0.035, 0.07); }
+  else if (k === "open"){ tone(220, 0.35, "triangle", 0.08, 0, 660); noise(0.3, 0.05, 2200); }
+  else if (k === "star"){ [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.25, "triangle", 0.07, i * 0.07)); }
+  else if (k === "room"){ tone(523, 0.18, "sine", 0.04); tone(784, 0.25, "sine", 0.035, 0.09); }
+}
+const MELO = [0, 4, 7, 9, 7, 4, 2, 4, 0, 2, 4, 7, 4, 2, -3, 0];
+function music(){
+  clearTimeout(musicTimer);
+  if (S.mute || !musicOn) return;
+  const a = audio(); if (!a) return;
+  const beat = 0.42, base = 262;
+  MELO.forEach((n, i) => { tone(base * Math.pow(2, n / 12), beat * 1.6, "sine", 0.018, i * beat); if (i % 4 === 0) tone(base / 2 * Math.pow(2, [0, 5, 7, 3][(i / 4) % 4] / 12), beat * 3.8, "triangle", 0.02, i * beat); });
+  musicTimer = setTimeout(music, MELO.length * beat * 1000);
+}
+function startMusic(){ if (musicOn) return; musicOn = true; music(); }
+
+/* ----- décor pré-rendu (sols, murs, mobilier) ----- */
+function buildBg(){
+  const key = gymOpen() ? "open" : "closed";
+  if (bgCv && bgKey === key) return;
+  bgKey = key; const SC = 2;
+  bgCv = document.createElement("canvas"); bgCv.width = WW * SC; bgCv.height = WH * SC;
+  const b = bgCv.getContext("2d"); b.scale(SC, SC);
+  const R = rng(7);
+  b.fillStyle = "#121218"; b.fillRect(0, 0, WW, WH);
+  ROOMS.forEach(rm => floor(b, rm, R));
+  // embrasures de portes : sol du couloir
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){ const ch = MAP[r][c]; if (ch === "d" || ch === "g") doorTile(b, c, r, ch); }
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (MAP[r][c] === "#") wallTile(b, c, r, R);
+  // ombres portées des murs sur le sol
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+    const ch = MAP[r][c]; if (ch === "#" || ch === "B") continue;
+    if (tileAt(c, r - 1) === "#" || tileAt(c, r - 1) === "B" || tileAt(c, r - 1) === "S"){ const gr = b.createLinearGradient(0, r * TILE, 0, r * TILE + 14); gr.addColorStop(0, "rgba(0,0,0,.35)"); gr.addColorStop(1, "rgba(0,0,0,0)"); b.fillStyle = gr; b.fillRect(c * TILE, r * TILE, TILE, 14); }
+    if (tileAt(c - 1, r) === "#"){ const gr = b.createLinearGradient(c * TILE, 0, c * TILE + 8, 0); gr.addColorStop(0, "rgba(0,0,0,.22)"); gr.addColorStop(1, "rgba(0,0,0,0)"); b.fillStyle = gr; b.fillRect(c * TILE, r * TILE, 8, TILE); }
+  }
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++){
+    const ch = MAP[r][c], x = c * TILE, y = r * TILE;
+    if (ch === "B") board(b, c, r);
+    else if (ch === "D") desk(b, x, y, R);
+    else if (ch === "T") table(b, c, r, R);
+    else if (ch === "S") shelf(b, x, y, R);
+    else if (ch === "P") plant(b, x, y, R);
+  }
+  // tableau : inscription à la craie
+  b.save(); b.fillStyle = "rgba(241,240,232,.92)"; b.font = "15px 'Mochiy Pop One', sans-serif"; b.textAlign = "center"; b.fillText("NÉGOCIATION", 4.5 * TILE, TILE + 22);
+  b.font = "9px 'Zen Maru Gothic', sans-serif"; b.fillStyle = "rgba(241,240,232,.6)"; b.fillText("ZOPA · MESORE · ancrage", 9.5 * TILE, TILE + 20); b.restore();
+  // terrain du gymnase
+  b.save(); b.strokeStyle = "rgba(255,255,255,.75)"; b.lineWidth = 2;
+  b.strokeRect(11 * TILE + 8, 11 * TILE + 8, 9 * TILE - 16, 6 * TILE - 16);
+  b.beginPath(); b.moveTo(15.5 * TILE, 11 * TILE + 8); b.lineTo(15.5 * TILE, 17 * TILE - 8); b.stroke();
+  b.beginPath(); b.arc(15.5 * TILE, 14 * TILE, 40, 0, 7); b.stroke();
+  b.strokeStyle = "rgba(200,50,47,.7)"; b.beginPath(); b.arc(11 * TILE + 8, 14 * TILE, 52, -1.2, 1.2); b.stroke(); b.beginPath(); b.arc(20 * TILE - 8, 14 * TILE, 52, Math.PI - 1.2, Math.PI + 1.2); b.stroke();
+  b.restore();
+  // plaques des salles
+  ROOMS.forEach(rm => { if (rm.n === "Couloir") return; const tx = (rm.x + rm.w / 2) * TILE, ty = (rm.y + rm.h) * TILE - 7; b.font = "bold 9px 'Zen Maru Gothic', sans-serif"; b.textAlign = "center"; const w = b.measureText(rm.n.toUpperCase()).width + 12; b.fillStyle = "rgba(14,14,18,.55)"; b.fillRect(tx - w / 2, ty - 10, w, 14); b.fillStyle = "rgba(241,240,232,.85)"; b.fillText(rm.n.toUpperCase(), tx, ty); });
+}
+function floor(b, rm, R){
+  const x0 = rm.x * TILE, y0 = rm.y * TILE, w = rm.w * TILE, h = rm.h * TILE, f = rm.f;
+  b.save(); b.beginPath(); b.rect(x0, y0, w, h); b.clip();
+  b.fillStyle = f; b.fillRect(x0, y0, w, h);
+  if (rm.n === "Classe 3-E" || rm.n === "Gymnase" || rm.n === "Salle des profs"){
+    const ph = rm.n === "Gymnase" ? 10 : 8;
+    for (let y = y0, row = 0; y < y0 + h; y += ph, row++){
+      let x = x0 - (row * 37) % 90;
+      while (x < x0 + w){ const len = 50 + R() * 70; b.fillStyle = shade(f, (R() - 0.5) * 0.16); b.fillRect(x, y, len, ph); b.fillStyle = "rgba(0,0,0,.18)"; b.fillRect(x + len - 1, y, 1, ph);
+        b.strokeStyle = "rgba(60,30,10,.08)"; b.lineWidth = 1; b.beginPath(); b.moveTo(x + 4, y + ph * (0.3 + R() * 0.4)); b.bezierCurveTo(x + len * 0.3, y + ph * R(), x + len * 0.6, y + ph * R(), x + len - 4, y + ph * (0.3 + R() * 0.4)); b.stroke(); x += len; }
+      b.fillStyle = "rgba(0,0,0,.16)"; b.fillRect(x0, y + ph - 1, w, 1);
+    }
+    if (rm.n === "Gymnase"){ const gr = b.createLinearGradient(x0, y0, x0 + w, y0 + h); gr.addColorStop(0, "rgba(255,255,255,.18)"); gr.addColorStop(0.5, "rgba(255,255,255,0)"); gr.addColorStop(1, "rgba(255,255,255,.1)"); b.fillStyle = gr; b.fillRect(x0, y0, w, h); }
+  } else if (rm.n === "Couloir"){
+    const s = 16; for (let y = y0; y < y0 + h; y += s) for (let x = x0; x < x0 + w; x += s){ const k = ((x / s + y / s) & 1); b.fillStyle = k ? "#D8D2C4" : "#B8B1A1"; b.fillRect(x, y, s, s); b.fillStyle = "rgba(255,255,255,.08)"; b.fillRect(x, y, s, 2); }
+    const gr = b.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, "rgba(255,255,255,.12)"); gr.addColorStop(0.5, "rgba(255,255,255,0)"); b.fillStyle = gr; b.fillRect(x0, y0, w, h);
+  } else {
+    for (let i = 0; i < w * h / 6; i++){ b.fillStyle = R() < 0.5 ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.05)"; b.fillRect(x0 + R() * w, y0 + R() * h, 1.5, 1.5); }
+    b.strokeStyle = rm.n === "Bureau du directeur" ? "rgba(232,194,90,.35)" : "rgba(255,255,255,.18)"; b.lineWidth = 3; b.strokeRect(x0 + 10, y0 + 10, w - 20, h - 20);
+    if (rm.n === "Bureau du directeur"){ b.lineWidth = 1; b.strokeRect(x0 + 16, y0 + 16, w - 32, h - 32); }
+  }
+  b.restore();
+}
+function doorTile(b, c, r, ch){
+  const x = c * TILE, y = r * TILE;
+  b.fillStyle = "#C9C2B3"; b.fillRect(x, y, TILE, TILE);
+  b.fillStyle = "#6B4A2B"; b.fillRect(x, y, 4, TILE); b.fillRect(x + TILE - 4, y, 4, TILE);
+  b.fillStyle = "rgba(0,0,0,.2)"; b.fillRect(x + 4, y, TILE - 8, 3);
+  if (ch === "g" && !gymOpen()){
+    b.fillStyle = "#3A1E50"; b.fillRect(x + 2, y + 6, TILE - 4, TILE - 12);
+    b.save(); b.beginPath(); b.rect(x + 2, y + 6, TILE - 4, TILE - 12); b.clip(); b.fillStyle = "#F5C518"; for (let i = -2; i < 6; i++){ b.beginPath(); b.moveTo(x + i * 10, y + 6); b.lineTo(x + i * 10 + 5, y + 6); b.lineTo(x + i * 10 - 15, y + 26); b.lineTo(x + i * 10 - 20, y + 26); b.fill(); } b.restore();
+    b.fillStyle = "#17171C"; b.fillRect(x + 4, y + 12, TILE - 8, 9); b.fillStyle = "#fff"; b.font = "bold 7px sans-serif"; b.textAlign = "center"; b.fillText("FERMÉ", x + 16, y + 19);
+  }
+}
+function wallTile(b, c, r, R){
+  const x = c * TILE, y = r * TILE, below = tileAt(c, r + 1), face = below !== "#" && r < ROWS - 1;
+  b.fillStyle = "#2B2B35"; b.fillRect(x, y, TILE, TILE);
+  b.fillStyle = "#3C3C4A"; b.fillRect(x, y, TILE, 5);
+  b.fillStyle = "rgba(255,255,255,.04)"; b.fillRect(x, y + 5, TILE, 1);
+  if (face && below !== "B" && below !== "S"){
+    const corridor = r === 7 || r === 10;
+    const fy = y + 10, fh = TILE - 10;
+    const gr = b.createLinearGradient(0, fy, 0, fy + fh); gr.addColorStop(0, corridor ? "#9AA4B0" : "#E6DCC8"); gr.addColorStop(1, corridor ? "#7C8794" : "#C9BDA6"); b.fillStyle = gr; b.fillRect(x, fy, TILE, fh);
+    b.fillStyle = "#5A4636"; b.fillRect(x, y + TILE - 4, TILE, 4);
+    if (r === 7 && c % 2 === 0 && c > 1 && c < COLS - 2){ // casiers
+      b.fillStyle = "#4C6E8A"; b.fillRect(x + 2, fy + 1, TILE - 4, fh - 6); b.fillStyle = "#3A566E"; b.fillRect(x + TILE / 2 - 0.5, fy + 1, 1, fh - 6);
+      b.fillStyle = "rgba(255,255,255,.35)"; for (let i = 0; i < 3; i++){ b.fillRect(x + 5, fy + 3 + i * 2, 8, 1); b.fillRect(x + 19, fy + 3 + i * 2, 8, 1); }
+      b.fillStyle = "#C9C2B3"; b.fillRect(x + 12, fy + 9, 2, 3); b.fillRect(x + 18, fy + 9, 2, 3);
+    } else if (r === 10 && c % 4 === 2){ // affiches
+      b.fillStyle = ["#F5C518", "#E8741E", "#4C7BD9", "#5FAF3A"][(c / 4 | 0) % 4]; b.fillRect(x + 8, fy + 2, 16, 13); b.fillStyle = "rgba(23,23,28,.6)"; b.fillRect(x + 10, fy + 5, 12, 2); b.fillRect(x + 10, fy + 9, 8, 2);
+    } else if (r === 0 || (r === 7 && c % 2)){ // fenêtres
+      const wg = b.createLinearGradient(0, fy, 0, fy + fh - 6); wg.addColorStop(0, "#9FD3F2"); wg.addColorStop(1, "#E8F4FA"); b.fillStyle = "#EDE7DA"; b.fillRect(x + 4, fy + 1, TILE - 8, fh - 6); b.fillStyle = wg; b.fillRect(x + 6, fy + 2, TILE - 12, fh - 9);
+      b.fillStyle = "#EDE7DA"; b.fillRect(x + TILE / 2 - 1, fy + 2, 2, fh - 9); b.fillStyle = "rgba(255,255,255,.6)"; b.fillRect(x + 8, fy + 3, 3, 8);
+    }
+  }
+}
+function board(b, c, r){
+  const x = c * TILE, y = r * TILE, L = tileAt(c - 1, r) !== "B", Rr = tileAt(c + 1, r) !== "B";
+  b.fillStyle = "#2B2B35"; b.fillRect(x, y, TILE, TILE);
+  b.fillStyle = "#7A5230"; b.fillRect(x, y + 3, TILE, TILE - 4);
+  const gr = b.createLinearGradient(0, y + 5, 0, y + TILE - 6); gr.addColorStop(0, "#26473A"); gr.addColorStop(1, "#1A3329");
+  b.fillStyle = gr; b.fillRect(x + (L ? 3 : 0), y + 5, TILE - (L ? 3 : 0) - (Rr ? 3 : 0), TILE - 11);
+  b.fillStyle = "rgba(241,240,232,.07)"; b.fillRect(x + 2, y + 8, TILE - 4, 2);
+  b.fillStyle = "#9C6B42"; b.fillRect(x, y + TILE - 6, TILE, 4);
+  if (c % 3 === 0){ b.fillStyle = "#fff"; b.fillRect(x + 8, y + TILE - 7, 5, 2); }
+}
+function desk(b, x, y, R){
+  b.fillStyle = "rgba(0,0,0,.25)"; b.beginPath(); b.ellipse(x + 17, y + 29, 14, 4, 0, 0, 7); b.fill();
+  // chaise derrière
+  b.fillStyle = "#3E3E48"; b.fillRect(x + 9, y + 1, 14, 6); b.fillStyle = "#55555F"; b.fillRect(x + 9, y + 1, 14, 2);
+  b.fillStyle = "#5A3A20"; b.fillRect(x + 4, y + 20, 3, 9); b.fillRect(x + TILE - 7, y + 20, 3, 9);
+  b.fillStyle = "#7A5230"; b.fillRect(x + 3, y + 16, TILE - 6, 6);
+  const gr = b.createLinearGradient(x, y + 6, x, y + 17); gr.addColorStop(0, "#B07A4A"); gr.addColorStop(1, "#946238"); b.fillStyle = gr; b.fillRect(x + 3, y + 6, TILE - 6, 11);
+  b.fillStyle = "rgba(255,255,255,.18)"; b.fillRect(x + 3, y + 6, TILE - 6, 1.5);
+  if (R() < 0.7){ b.fillStyle = "#FFFDF6"; b.save(); b.translate(x + 10 + R() * 8, y + 11); b.rotate((R() - 0.5) * 0.6); b.fillRect(-4, -3, 8, 6); b.fillStyle = "rgba(23,23,28,.3)"; b.fillRect(-3, -1.5, 6, 0.8); b.fillRect(-3, 0.5, 4, 0.8); b.restore(); }
+  if (R() < 0.4){ b.fillStyle = ["#C8322F", "#4C7BD9", "#5FAF3A"][Math.floor(R() * 3)]; b.fillRect(x + 21, y + 8, 5, 7); }
+}
+function table(b, c, r, R){
+  const x = c * TILE, y = r * TILE, up = tileAt(c, r - 1) === "T", dn = tileAt(c, r + 1) === "T", lf = tileAt(c - 1, r) === "T", rt = tileAt(c + 1, r) === "T";
+  const t0 = up ? 0 : 3, b0 = dn ? TILE : TILE - 6, l0 = lf ? 0 : 2, r0 = rt ? TILE : TILE - 2;
+  if (!dn){ b.fillStyle = "rgba(0,0,0,.25)"; b.fillRect(x + l0, y + TILE - 3, r0 - l0, 4); b.fillStyle = "#A9A293"; b.fillRect(x + l0, y + b0, r0 - l0, 4); }
+  b.fillStyle = "#EEE9DD"; b.fillRect(x + l0, y + t0, r0 - l0, b0 - t0);
+  if (!up){ b.fillStyle = "rgba(255,255,255,.6)"; b.fillRect(x + l0, y + t0, r0 - l0, 1.5); }
+  b.fillStyle = "rgba(0,0,0,.035)"; b.fillRect(x + l0, y + t0 + (b0 - t0) / 2, r0 - l0, (b0 - t0) / 2);
+  const k = R();
+  if (k < 0.18){ b.fillStyle = "#2E2E38"; b.fillRect(x + 8, y + 9, 16, 11); b.fillStyle = "#7FB6E0"; b.fillRect(x + 9, y + 10, 14, 7); b.fillStyle = "#55555F"; b.fillRect(x + 6, y + 20, 20, 3); }
+  else if (k < 0.4){ b.fillStyle = "#FFFDF6"; b.fillRect(x + 6 + R() * 10, y + 8 + R() * 8, 10, 12); b.strokeStyle = "rgba(0,0,0,.15)"; b.lineWidth = 0.6; b.strokeRect(x + 7, y + 9, 10, 12); }
+  else if (k < 0.55){ b.fillStyle = "#FFF"; b.beginPath(); b.arc(x + 16, y + 15, 4, 0, 7); b.fill(); b.fillStyle = "#6B3A1E"; b.beginPath(); b.arc(x + 16, y + 15, 2.8, 0, 7); b.fill(); }
+}
+function shelf(b, x, y, R){
+  b.fillStyle = "#4A3828"; b.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
+  b.fillStyle = "#33261A"; b.fillRect(x + 3, y + 3, TILE - 6, TILE - 6);
+  for (let s = 0; s < 2; s++){ const sy = y + 3 + s * 13; let bx = x + 4;
+    while (bx < x + TILE - 6){ const bw = 2 + Math.floor(R() * 3), bh = 7 + R() * 4; b.fillStyle = ["#C8322F", "#4C7BD9", "#F5C518", "#5FAF3A", "#E8741E", "#7A3FA0", "#EDE7DA"][Math.floor(R() * 7)]; b.fillRect(bx, sy + 12 - bh, bw, bh); b.fillStyle = "rgba(255,255,255,.25)"; b.fillRect(bx, sy + 12 - bh, 1, bh); bx += bw + 0.5; }
+    b.fillStyle = "#6B523A"; b.fillRect(x + 3, sy + 12, TILE - 6, 2); }
+}
+function plant(b, x, y, R){
+  b.fillStyle = "rgba(0,0,0,.3)"; b.beginPath(); b.ellipse(x + 16, y + 28, 10, 4, 0, 0, 7); b.fill();
+  b.fillStyle = "#A0522D"; b.beginPath(); b.moveTo(x + 9, y + 18); b.lineTo(x + 23, y + 18); b.lineTo(x + 21, y + 29); b.lineTo(x + 11, y + 29); b.closePath(); b.fill();
+  b.fillStyle = "#C06A3E"; b.fillRect(x + 8, y + 17, 16, 3);
+  for (let i = 0; i < 9; i++){ const a = -Math.PI / 2 + (i - 4) * 0.38, len = 9 + R() * 6; b.fillStyle = i % 2 ? "#3E8E5E" : "#2F7049"; b.save(); b.translate(x + 16, y + 17); b.rotate(a + Math.PI / 2); b.beginPath(); b.ellipse(0, -len / 2, 3.2, len / 2, 0, 0, 7); b.fill(); b.restore(); }
+  b.fillStyle = "rgba(255,255,255,.15)"; b.beginPath(); b.arc(x + 13, y + 6, 2, 0, 7); b.fill();
+}
+
+/* ----- particules ----- */
+function puff(x, y, n, col, sp, life, up){
+  if (RM) return;
+  for (let i = 0; i < n; i++){ const a = Math.random() * 7, v = sp * (0.4 + Math.random() * 0.6); parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5 - (up || 0), life, max: life, col, s: 1.5 + Math.random() * 2.5 }); }
+}
+function updParts(dt){
+  parts = parts.filter(p => (p.life -= dt) > 0);
+  parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.94; p.vy *= 0.94; });
+  if (!RM && Math.random() < dt * 6){ const L = LAMPS[Math.floor(Math.random() * LAMPS.length)], a = Math.random() * 7, d = Math.random() * L.r * 0.7; parts.push({ x: L.x + Math.cos(a) * d, y: L.y + Math.sin(a) * d * 0.6, vx: (Math.random() - 0.5) * 6, vy: -3 - Math.random() * 4, life: 4, max: 4, col: "mote", s: 1 + Math.random() }); }
+}
+function drawParts(){
+  parts.forEach(p => {
+    const k = p.life / p.max;
+    if (p.col === "mote"){ g.fillStyle = `rgba(255,244,214,${0.5 * Math.sin(k * Math.PI)})`; g.fillRect(p.x, p.y, p.s, p.s); return; }
+    g.globalAlpha = k * (p.col === "dust" ? 0.45 : 1); g.fillStyle = p.col === "dust" ? "#E8E0D0" : p.col;
+    g.beginPath(); g.arc(p.x, p.y, p.s * (p.col === "dust" ? 1 + (1 - k) * 1.5 : k + 0.3), 0, 7); g.fill(); g.globalAlpha = 1;
+  });
+}
+
+/* ----- rendu d'une image ----- */
+function drawWorld(t){
+  buildBg();
+  const vw = VW / ZOOM, vh = VH / ZOOM;
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  g.fillStyle = "#0B0B10"; g.fillRect(0, 0, VW, VH);
+  g.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, -cam.x * DPR * ZOOM, -cam.y * DPR * ZOOM);
+  g.imageSmoothingEnabled = true;
+  g.drawImage(bgCv, cam.x * 2, cam.y * 2, vw * 2, vh * 2, cam.x, cam.y, vw, vh);
+  if (gymOpen()){ const k = RM ? 0.5 : 0.5 + Math.sin(t / 300) * 0.3; g.strokeStyle = `rgba(245,197,24,${k})`; g.lineWidth = 3; g.beginPath(); g.arc(15.5 * TILE, 14 * TILE, 50, 0, 7); g.stroke(); }
+  STARS.forEach(sr => {
+    if (S.found[sr.id]) return; const p = T2P(sr.c, sr.r), k = 1 + Math.sin(t / 200) * 0.18, fl = RM ? 0 : Math.sin(t / 400) * 3;
+    const gl = g.createRadialGradient(p.x, p.y + fl, 0, p.x, p.y + fl, 22); gl.addColorStop(0, "rgba(245,197,24,.55)"); gl.addColorStop(1, "rgba(245,197,24,0)"); g.fillStyle = gl; g.fillRect(p.x - 22, p.y - 22 + fl, 44, 44);
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(p.x, p.y + 12, 6, 2, 0, 0, 7); g.fill();
+    drawStar(p.x, p.y + fl, 8 * k, t / 900);
+    if (!RM && Math.random() < 0.06) puff(p.x + (Math.random() - 0.5) * 14, p.y + fl, 1, "#FFE58A", 10, 0.7, 12);
+  });
+  const ents = npcs().map(n => ({ ...n, kind: "npc" })).concat([{ id: "player", x: S.px, y: S.py, kind: "player" }]).sort((a, b) => a.y - b.y);
+  const target = QUESTS[S.q] && QUESTS[S.q].npc;
+  drawParts();
+  ents.forEach(e => {
+    if (e.id === "koro") drawKoroW(e.x, e.y, t);
+    else if (e.kind === "player") drawChar(e.x, e.y, LOOK.player, walk, facing, faceY, t);
+    else { const dx = S.px - e.x, dy = S.py - e.y, close = Math.hypot(dx, dy) < 120; drawChar(e.x, e.y, LOOK[e.id], 0, close ? (dx > 0 ? 1 : -1) : 0, close && Math.abs(dy) > Math.abs(dx) && dy < 0 ? -1 : 1, t); }
+    if (e.kind === "npc" && e.id === target){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
+  });
+  lighting(t);
+  if (near){
+    const n = near, nm = CAST[n.id].name.split(" · ")[0];
+    g.font = "bold 11px 'Zen Maru Gothic', sans-serif"; const w = g.measureText("Parler à " + nm).width + 36;
+    const bx = clamp(n.x - w / 2, cam.x + 4, cam.x + vw - w - 4), by = n.y - (n.id === "koro" ? 82 : 72) + (RM ? 0 : Math.sin(t / 250) * 1.5);
+    g.fillStyle = "rgba(0,0,0,.3)"; roundRect(bx + 2, by + 3, w, 22, 7); g.fill();
+    g.fillStyle = "#FFFDF6"; g.strokeStyle = INK; g.lineWidth = 2; roundRect(bx, by, w, 22, 7); g.fill(); g.stroke();
+    g.fillStyle = "#E8741E"; roundRect(bx + 5, by + 4, 16, 14, 4); g.fill(); g.stroke(); g.fillStyle = INK; g.textAlign = "center"; g.fillText("E", bx + 13, by + 15);
+    g.textAlign = "left"; g.fillText("Parler à " + nm, bx + 26, by + 15);
+  }
+  // couche écran : vignette, flèche d'objectif, mini-carte, bannière
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.95); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.55)"); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
+  const tn = target && npcs().find(n => n.id === target);
+  if (tn){ const sx = (tn.x - cam.x) * ZOOM, sy = (tn.y - cam.y) * ZOOM; if (sx < 0 || sy < 0 || sx > VW || sy > VH){ const cx = VW / 2, cy = VH / 2, a = Math.atan2(sy - cy, sx - cx), m = 34, ex = clamp(cx + Math.cos(a) * 2000, m, VW - m), ey = clamp(cy + Math.sin(a) * 2000, m, VH - m), pul = RM ? 1 : 1 + Math.sin(t / 160) * 0.12;
+    g.save(); g.translate(ex, ey); g.rotate(a); g.scale(pul, pul); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 3; g.beginPath(); g.moveTo(18, 0); g.lineTo(-10, -13); g.lineTo(-4, 0); g.lineTo(-10, 13); g.closePath(); g.fill(); g.stroke(); g.restore(); } }
+  minimap(tn);
+  if (banner.t > 0){ g.globalAlpha = clamp(Math.min((2.6 - banner.t) / 0.3, banner.t / 0.5), 0, 1);
+    g.font = "20px 'Mochiy Pop One', sans-serif"; g.textAlign = "center"; const w = g.measureText(banner.txt).width + 60, by = 34;
+    const bgd = g.createLinearGradient(VW / 2 - w / 2, 0, VW / 2 + w / 2, 0); bgd.addColorStop(0, "rgba(14,14,18,0)"); bgd.addColorStop(0.2, "rgba(14,14,18,.8)"); bgd.addColorStop(0.8, "rgba(14,14,18,.8)"); bgd.addColorStop(1, "rgba(14,14,18,0)");
+    g.fillStyle = bgd; g.fillRect(VW / 2 - w / 2, by - 4, w, 40); g.fillStyle = "#F5C518"; g.fillRect(VW / 2 - w / 2 + 30, by + 34, w - 60, 2);
+    g.fillStyle = "#F1F0E8"; g.fillText(banner.txt, VW / 2, by + 24); g.globalAlpha = 1; }
+}
+function lighting(t){
+  const vw = VW / ZOOM, vh = VH / ZOOM;
+  g.save();
+  g.globalCompositeOperation = "multiply"; g.fillStyle = "#CFCBDA"; g.fillRect(cam.x, cam.y, vw, vh);
+  g.globalCompositeOperation = "screen";
+  LAMPS.forEach(L => { if (L.x + L.r < cam.x || L.x - L.r > cam.x + vw || L.y + L.r < cam.y || L.y - L.r > cam.y + vh) return;
+    const fl = RM ? 1 : 0.94 + Math.sin(t / 700 + L.x) * 0.03, gr = g.createRadialGradient(L.x, L.y, 0, L.x, L.y, L.r * fl);
+    gr.addColorStop(0, L.warm ? "rgba(255,214,150,.42)" : "rgba(190,220,255,.38)"); gr.addColorStop(0.6, L.warm ? "rgba(255,190,120,.12)" : "rgba(160,200,255,.1)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr; g.fillRect(L.x - L.r, L.y - L.r, L.r * 2, L.r * 2); });
+  const pg = g.createRadialGradient(S.px, S.py, 0, S.px, S.py, 70); pg.addColorStop(0, "rgba(255,240,210,.18)"); pg.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = pg; g.fillRect(S.px - 70, S.py - 70, 140, 140);
+  // rayons de soleil dans le couloir
+  if (cam.y + vh > 8 * TILE && cam.y < 10 * TILE) for (let c = 3; c < COLS - 2; c += 2){ const x = c * TILE, k = RM ? 0.08 : 0.07 + Math.sin(t / 1500 + c) * 0.025; const gr = g.createLinearGradient(0, 8 * TILE, 0, 10 * TILE); gr.addColorStop(0, `rgba(255,250,225,${k * 2})`); gr.addColorStop(1, "rgba(255,250,225,0)"); g.fillStyle = gr; g.beginPath(); g.moveTo(x + 6, 8 * TILE); g.lineTo(x + 26, 8 * TILE); g.lineTo(x + 46, 10 * TILE); g.lineTo(x + 18, 10 * TILE); g.closePath(); g.fill(); }
+  g.restore();
+}
+function minimap(tn){
+  const s = 0.13, mw = WW * s, mh = WH * s, mx = VW - mw - 12, my = 12;
+  g.fillStyle = "rgba(10,10,14,.7)"; roundRect(mx - 5, my - 5, mw + 10, mh + 10, 8); g.fill();
+  g.globalAlpha = 0.9; g.drawImage(bgCv, mx, my, mw, mh); g.globalAlpha = 1;
+  g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 1; g.strokeRect(mx + cam.x * s, my + cam.y * s, VW / ZOOM * s, VH / ZOOM * s);
+  npcs().forEach(n => { g.fillStyle = tn && n.id === tn.id ? "#F5C518" : "#E8741E"; g.beginPath(); g.arc(mx + n.x * s, my + n.y * s, tn && n.id === tn.id ? 3.5 : 2.2, 0, 7); g.fill(); });
+  g.fillStyle = "#fff"; g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.arc(mx + S.px * s, my + S.py * s, 3.5, 0, 7); g.fill(); g.stroke();
+}
+function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function drawStar(x, y, r, rot){ rot = rot || 0; g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2; g.beginPath(); for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + rot + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); g.fillStyle = "rgba(255,255,255,.7)"; g.beginPath(); g.arc(x - r * 0.2, y - r * 0.25, r * 0.18, 0, 7); g.fill(); }
+function drawChar(x, y, L, wk, dx, dy, t){
+  const mv = wk > 0, ph = wk * 11, sw = mv ? Math.sin(ph) : 0;
+  const bob = mv ? -Math.abs(Math.sin(ph)) * 2 : (RM ? 0 : Math.sin(t / 650 + x * 0.1) * 0.7);
+  const side = dy === 0 && dx !== 0, back = dy < 0;
+  const blink = !RM && ((t + x * 37) % 3800) < 120;
+  g.lineJoin = "round";
+  g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + 15, 11 - Math.abs(bob), 3.8, 0, 0, 7); g.fill();
+  // jambes et chaussures
+  g.fillStyle = "#2A2A30";
+  const lA = side ? sw * 4 : 0, lB = side ? -sw * 4 : 0, hA = side ? 0 : sw * 2, hB = side ? 0 : -sw * 2;
+  g.fillRect(x - 6 + lA, y + 5, 4.5, 9 - hA); g.fillRect(x + 1.5 + lB, y + 5, 4.5, 9 - hB);
+  g.fillStyle = "#141418"; g.fillRect(x - 7 + lA + (side ? dx : 0), y + 13 - hA, 6, 2.5); g.fillRect(x + 1 + lB + (side ? dx : 0), y + 13 - hB, 6, 2.5);
+  const yb = y + bob;
+  // cheveux arrière (vue de face)
+  if (!back && (L.style === "long" || L.style === "twin")){ g.fillStyle = shade(L.hair, -0.15); if (L.style === "long") roundRect(x - 11, yb - 22, 22, 22, 6), g.fill(); else { g.beginPath(); g.ellipse(x - 12, yb - 9, 4, 8, -0.15, 0, 7); g.ellipse(x + 12, yb - 9, 4, 8, 0.15, 0, 7); g.fill(); } }
+  // bras
+  const arm = (ax, k) => { g.fillStyle = shade(L.body, -0.12); g.save(); g.translate(ax, yb - 4); g.rotate(k * 0.5); roundRect(-2.5, 0, 5, 11, 2.5); g.fill(); g.strokeStyle = INK; g.lineWidth = 1.2; g.stroke(); g.fillStyle = L.skin; g.beginPath(); g.arc(0, 11, 2.3, 0, 7); g.fill(); g.restore(); };
+  if (!side){ arm(x - 10.5, -sw * 0.5 + 0.08); arm(x + 10.5, sw * 0.5 - 0.08); }
+  else if (dx > 0) arm(x - 3, -sw);
+  else arm(x + 3, sw);
+  // torse
+  const bg2 = g.createLinearGradient(x - 10, yb - 6, x + 10, yb + 9); bg2.addColorStop(0, shade(L.body, 0.12)); bg2.addColorStop(1, shade(L.body, -0.12));
+  g.fillStyle = bg2; g.strokeStyle = INK; g.lineWidth = 1.6; roundRect(x - (side ? 8 : 10), yb - 6, side ? 16 : 20, 15, 5); g.fill(); g.stroke();
+  if (L.vest !== L.body && !back){ g.fillStyle = L.vest; g.fillRect(x - 9, yb - 4, 5, 12); g.fillRect(x + 4, yb - 4, 5, 12); g.fillStyle = "#C8322F"; g.beginPath(); g.moveTo(x - 2, yb - 5); g.lineTo(x + 2, yb - 5); g.lineTo(x + 1.2, yb + 3); g.lineTo(x, yb + 4.5); g.lineTo(x - 1.2, yb + 3); g.closePath(); g.fill(); }
+  else if (L.vest !== L.body && back){ g.fillStyle = L.vest; g.fillRect(x - 8, yb - 4, 16, 11); }
+  if (side) arm(x + (dx > 0 ? 3 : -3), dx > 0 ? sw : -sw);
+  // tête
+  const hg = g.createRadialGradient(x - 3, yb - 19, 2, x, yb - 15, 12); hg.addColorStop(0, shade(L.skin, 0.12)); hg.addColorStop(1, shade(L.skin, -0.1));
+  g.fillStyle = hg; g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.arc(x, yb - 15, 10, 0, 7); g.fill(); g.stroke();
+  g.fillStyle = L.hair; const hl = shade(L.hair, 0.25);
+  if (back){ g.beginPath(); g.arc(x, yb - 15.5, 10.5, 0, 7); g.fill(); g.stroke(); if (L.style === "long"){ roundRect(x - 11, yb - 18, 22, 20, 6); g.fill(); } if (L.style === "twin"){ g.beginPath(); g.ellipse(x - 12, yb - 9, 4, 8, -0.15, 0, 7); g.ellipse(x + 12, yb - 9, 4, 8, 0.15, 0, 7); g.fill(); } }
+  else if (L.style === "spiky"){ g.beginPath(); g.moveTo(x - 11, yb - 13); for (let i = 0; i <= 6; i++) g.lineTo(x - 11 + i * 3.7 + dx, yb - (i % 2 ? 22 : 29)); g.lineTo(x + 11, yb - 13); g.lineTo(x + 6, yb - 19); g.lineTo(x - 6, yb - 19); g.closePath(); g.fill(); g.lineWidth = 1.2; g.stroke(); }
+  else if (L.style === "slick"){ g.beginPath(); g.arc(x, yb - 17, 10.5, Math.PI * 1.02, Math.PI * 1.98); g.quadraticCurveTo(x + 4, yb - 22, x - 10, yb - 18); g.fill(); }
+  else { g.beginPath(); g.arc(x, yb - 17, 10.8, Math.PI, 0); g.quadraticCurveTo(x + 6 * (dx || 1), yb - 20, x - 10.8, yb - 17); g.fill(); if (L.style === "bob" || L.style === "long"){ g.fillRect(x - 11, yb - 18, 4, 11); g.fillRect(x + 7, yb - 18, 4, 11); } if (L.style === "twin"){ g.fillStyle = "#F5C518"; g.fillRect(x - 13, yb - 16, 3, 3); g.fillRect(x + 10, yb - 16, 3, 3); } }
+  if (!back){
+    g.fillStyle = hl; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(x - 3, yb - 23, 4, 1.6, -0.3, 0, 7); g.fill(); g.globalAlpha = 1;
+    const ex = side ? dx * 3 : dx;
+    if (blink){ g.fillStyle = INK; g.fillRect(x - 5 + ex, yb - 13, 3.5, 1.2); g.fillRect(x + 1.5 + ex, yb - 13, 3.5, 1.2); }
+    else { g.fillStyle = INK; if (!(side && dx > 0)) { g.beginPath(); g.ellipse(x - 3.5 + ex, yb - 13.5, 1.6, 2.2, 0, 0, 7); g.fill(); } if (!(side && dx < 0)) { g.beginPath(); g.ellipse(x + 3.5 + ex, yb - 13.5, 1.6, 2.2, 0, 0, 7); g.fill(); }
+      g.fillStyle = "#fff"; if (!(side && dx > 0)) g.fillRect(x - 4 + ex, yb - 15, 1, 1); if (!(side && dx < 0)) g.fillRect(x + 3 + ex, yb - 15, 1, 1); }
+    g.fillStyle = "rgba(232,116,30,.25)"; g.beginPath(); g.ellipse(x - 6 + ex, yb - 10, 2, 1.2, 0, 0, 7); g.ellipse(x + 6 + ex, yb - 10, 2, 1.2, 0, 0, 7); g.fill();
+  }
+}
+function drawKoroW(x, y, t){
+  const fl = RM ? 0 : Math.sin(t / 380) * 2.5;
+  const gl = g.createRadialGradient(x, y - 10, 4, x, y - 10, 40); gl.addColorStop(0, "rgba(245,197,24,.28)"); gl.addColorStop(1, "rgba(245,197,24,0)"); g.fillStyle = gl; g.fillRect(x - 40, y - 50, 80, 80);
+  g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(x, y + 17, 15 - fl, 4.5, 0, 0, 7); g.fill();
+  y += fl - 2;
+  g.lineCap = "round";
+  for (let i = -2; i <= 2; i++){ const w = Math.sin(t / 150 + i) * 3.5; g.strokeStyle = INK; g.lineWidth = 5.5; g.beginPath(); g.moveTo(x + i * 5, y + 4); g.quadraticCurveTo(x + i * 7 + w, y + 12, x + i * 6 - w * 0.5, y + 17); g.stroke(); g.strokeStyle = "#F5C518"; g.lineWidth = 3.5; g.stroke(); }
+  g.lineCap = "butt";
+  const rob = g.createLinearGradient(x - 12, y - 10, x + 12, y + 8); rob.addColorStop(0, "#3A3446"); rob.addColorStop(1, "#1A1622");
+  g.fillStyle = rob; g.strokeStyle = INK; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 13, y + 8); g.quadraticCurveTo(x - 8, y - 6, x, y - 10); g.quadraticCurveTo(x + 8, y - 6, x + 13, y + 8); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = "#E8E2D0"; g.beginPath(); g.moveTo(x - 4, y - 7); g.lineTo(x, y - 1); g.lineTo(x + 4, y - 7); g.fill();
+  const hd = g.createRadialGradient(x - 5, y - 24, 3, x, y - 18, 16); hd.addColorStop(0, "#FFE36A"); hd.addColorStop(1, "#E2B00C");
+  g.fillStyle = hd; g.beginPath(); g.arc(x, y - 18, 15, 0, 7); g.fill(); g.stroke();
+  g.fillStyle = "rgba(255,255,255,.5)"; g.beginPath(); g.ellipse(x - 6, y - 26, 4, 2, -0.5, 0, 7); g.fill();
+  g.fillStyle = INK; g.beginPath(); g.arc(x - 5, y - 21, 2, 0, 7); g.arc(x + 5, y - 21, 2, 0, 7); g.fill();
+  g.fillStyle = "#fff"; g.beginPath(); g.moveTo(x - 9, y - 15); g.quadraticCurveTo(x, y - 5, x + 9, y - 15); g.quadraticCurveTo(x, y - 11, x - 9, y - 15); g.fill(); g.stroke();
+  g.fillStyle = "#26222E"; g.beginPath(); g.moveTo(x - 16, y - 29); g.lineTo(x, y - 37); g.lineTo(x + 16, y - 29); g.lineTo(x, y - 24); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = "#F5C518"; g.beginPath(); g.arc(x, y - 30, 2.4, 0, 7); g.fill();
+}
+/* déplacement au clic : plus court chemin sur la grille des cases (parcours en largeur) */
+let path = [], autoTalk = null;
+function walkable(c, r){
+  const t = tileAt(c, r);
+  if (t === "g") return gymOpen();
+  if (SOLID.has(t)) return false;
+  return !npcs().some(n => Math.floor(n.x / TILE) === c && Math.floor(n.y / TILE) === r);
+}
+function goTo(x, y, npc){
+  const sc = Math.floor(S.px / TILE), sr = Math.floor(S.py / TILE);
+  let goals;
+  if (npc){ const nc = Math.floor(npc.x / TILE), nr = Math.floor(npc.y / TILE); goals = [[nc, nr + 1], [nc + 1, nr], [nc - 1, nr], [nc, nr - 1]].filter(([c, r]) => walkable(c, r)); }
+  else goals = [[Math.floor(x / TILE), Math.floor(y / TILE)]].filter(([c, r]) => walkable(c, r));
+  if (!goals.length) return;
+  const key = (c, r) => r * COLS + c, prev = new Map([[key(sc, sr), null]]), queue = [[sc, sr]];
+  let found = null;
+  while (queue.length){
+    const [c, r] = queue.shift();
+    if (goals.some(([gc, gr]) => gc === c && gr === r)){ found = [c, r]; break; }
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dc, dr]) => {
+      const nc = c + dc, nr = r + dr, k = key(nc, nr);
+      if (nc < 0 || nr < 0 || nc >= COLS || nr >= ROWS || prev.has(k) || !walkable(nc, nr)) return;
+      prev.set(k, [c, r]); queue.push([nc, nr]);
+    });
+  }
+  if (!found) return;
+  const route = []; let p = found;
+  while (p && !(p[0] === sc && p[1] === sr)){ route.unshift(p); p = prev.get(key(p[0], p[1])); }
+  path = route; autoTalk = npc ? npc.id : null;
+  if (!route.length && npc) interact();
+}
+function setFace(dx, dy){ if (Math.abs(dy) > Math.abs(dx) + 0.01){ faceY = dy > 0 ? 1 : -1; } else if (dx){ faceY = 0; facing = dx > 0 ? 1 : -1; } }
+function updateWorld(dt){
+  updParts(dt);
+  if (banner.t > 0) banner.t -= dt;
+  if (!ov.hidden) return;
+  let dx = 0, dy = 0, moved = false;
+  if (keys.ArrowLeft || keys.q || keys.a) dx--;
+  if (keys.ArrowRight || keys.d) dx++;
+  if (keys.ArrowUp || keys.z || keys.w) dy--;
+  if (keys.ArrowDown || keys.s) dy++;
+  if (dx || dy){ path = []; autoTalk = null; }
+  else if (path.length){
+    const [c, r] = path[0], tx = c * TILE + TILE / 2, ty = r * TILE + TILE / 2;
+    const ddx = tx - S.px, ddy = ty - S.py, d = Math.hypot(ddx, ddy), sp = 170 * dt;
+    if (d > 0.5) setFace(ddx, ddy);
+    if (d <= sp){ S.px = tx; S.py = ty; path.shift(); if (!path.length){ save(); if (autoTalk){ autoTalk = null; interact(); } } }
+    else { S.px += ddx / d * sp; S.py += ddy / d * sp; }
+    walk += dt; moved = true;
+  }
+  if (dx || dy){
+    const l = Math.hypot(dx, dy), sp = 150 * dt;
+    const nx = S.px + dx / l * sp, ny = S.py + dy / l * sp;
+    if (!blocked(nx, S.py)) S.px = nx;
+    if (!blocked(S.px, ny)) S.py = ny;
+    walk += dt; moved = true; setFace(dx, dy);
+  } else if (!path.length) walk = 0;
+  if (moved){ stepT -= dt; if (stepT <= 0){ stepT = 0.28; sfx("step"); puff(S.px, S.py + 14, 2, "dust", 18, 0.5, 4); } } else stepT = 0;
+  const rm = roomAt(S.px, S.py), rn = rm ? rm.n : "";
+  if (rn && rn !== curRoom){ if (curRoom){ banner = { txt: rn, t: 2.6 }; sfx("room"); } curRoom = rn; }
+  findNear();
+  STARS.forEach(sr => {
+    if (S.found[sr.id]) return;
+    const p = T2P(sr.c, sr.r);
+    if (Math.hypot(p.x - S.px, p.y - S.py) < 22){ S.found[sr.id] = 1; S.tokens++; save(); drawHud(); sfx("star"); puff(p.x, p.y, 26, "#F5C518", 120, 0.9, 10); toast("Note de Nagisa trouvée : +1 jeton d’indice (indice gratuit)."); }
+  });
+}
+function updCam(dt, snap){
+  const vw = VW / ZOOM, vh = VH / ZOOM;
+  const tx = clamp(S.px - vw / 2, 0, WW - vw), ty = clamp(S.py - vh / 2 - 10, 0, WH - vh);
+  if (snap || RM || !cam.ready){ cam.x = tx; cam.y = ty; cam.ready = true; return; }
+  const k = 1 - Math.pow(0.0025, dt); cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
+}
+function loopW(t){
+  if (lastT === null) lastT = t;
+  const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
+  updateWorld(dt);
+  updCam(dt);
+  if (ov.hidden) drawWorld(t);
+  rafW = requestAnimationFrame(loopW);
+}
+function findNear(){
+  near = null; let best = 46;
+  npcs().forEach(n => { const d = Math.hypot(n.x - S.px, n.y - S.py); if (d < best){ best = d; near = n; } });
+  return near;
+}
+function interact(){
+  if (!ov.hidden || !findNear()) return;
+  const qd = QUESTS[S.q];
+  if (qd && qd.npc === near.id && qd.ch){ sfx("open"); startChapter(qd.ch); return; }
+  sfx("talk");
+  const lines = CHATTER[near.id] || ["…"];
+  const extra = S.ending && near.id === "koro" ? ["Nurufufu ! Ta fin : « " + ENDINGS[S.ending].title.replace("Fin · ", "") + " ». Veux-tu en découvrir une autre ? Rejoue depuis le menu."] : [];
+  const txt = (extra.length ? extra : lines)[Math.floor(Math.random() * (extra.length || lines.length))];
+  cur = { id: "talk", i: 0 };
+  CH.talk = { title: "Discussion", label: "École", steps: [{ t: "say", who: near.id, txt: txt + (qd && qd.obj ? " (Objectif : " + qd.obj + ")" : "") }] };
+  startChapter("talk");
+}
+
+function drawHud(){
+  const h = $("#hud"); if (!h) return;
+  const qd = QUESTS[S.q];
+  h.innerHTML = `<div class="brand">Classe 3-E : Opération Négociation<small>${teamsOn() ? S.teams.length + " équipes" : esc(S.name)}</small></div>
+    <div class="tools"><button class="btn small" id="b-carnet">Carnet</button><button class="btn small" id="b-guide">Guide</button><button class="btn small ghost" id="b-sound" aria-pressed="${!S.mute}">${S.mute ? "Son : non" : "Son : oui"}</button><button class="btn small ghost" id="b-menu">Menu</button></div>
+    <div class="gauges"><div class="gauge hp"><span class="nm">Koro-sensei</span><div class="tr"><span style="width:${S.hp / HP_MAX * 100}%"></span></div><span class="v">${Math.ceil(S.hp)} PV</span></div>
+      <div class="gauge trust"><span class="nm">Confiance</span><div class="tr"><span style="width:${S.trust * 10}%"></span></div><span class="v">${S.trust} / 10</span></div>
+      <span class="tokens" title="Jetons d’indice">★ ${S.tokens}</span></div>
+    <div class="objective"><b>Objectif</b><span>${esc(qd ? qd.obj : "")}</span></div>${teamBar()}`;
+  $("#b-carnet").onclick = renderCarnet;
+  $("#b-guide").onclick = renderGuide;
+  $("#b-menu").onclick = renderMenu;
+  $("#b-sound").onclick = () => { S.mute = !S.mute; save(); if (S.mute){ musicOn = false; clearTimeout(musicTimer); } else startMusic(); drawHud(); };
+}
+
+function renderWorld(){
+  root.innerHTML = `<div class="wrap"><div class="hud" id="hud"></div><div class="stage"><canvas id="world" width="${VW * DPR}" height="${VH * DPR}" aria-label="L’école : déplace ton personnage avec les flèches ou Z Q S D, parle avec E"></canvas></div>
+    <div class="pads"><div class="dpad" aria-label="Croix directionnelle"><span></span><button data-k="ArrowUp" aria-label="Haut">▲</button><span></span><button data-k="ArrowLeft" aria-label="Gauche">◀</button><span></span><button data-k="ArrowRight" aria-label="Droite">▶</button><span></span><button data-k="ArrowDown" aria-label="Bas">▼</button><span></span></div>
+      <p class="controls-help">Clique (ou touche) un endroit ou un personnage pour y aller · ou flèches, Z Q S D · E, Espace ou Entrée pour parler · Suis le « ! » jaune et la flèche · Trouve les 4 étoiles cachées</p>
+      <button class="abtn" id="abtn" aria-label="Parler">E</button></div>${credits()}</div>`;
+  cv = $("#world"); g = cv.getContext("2d");
+  const wake = () => { if (!S.mute){ audio(); startMusic(); } };
+  document.addEventListener("pointerdown", wake, { once: true }); document.addEventListener("keydown", wake, { once: true });
+  $$(".dpad button").forEach(b => {
+    const k = b.dataset.k;
+    b.onpointerdown = e => { e.preventDefault(); keys[k] = true; };
+    b.onpointerup = b.onpointerleave = b.onpointercancel = () => { keys[k] = false; };
+  });
+  $("#abtn").onclick = interact;
+  cv.onclick = e => {
+    const r = cv.getBoundingClientRect(), x = cam.x + (e.clientX - r.left) * VW / r.width / ZOOM, y = cam.y + (e.clientY - r.top) * VH / r.height / ZOOM;
+    const n = npcs().find(n => Math.hypot(n.x - x, n.y - 10 - y) < 26);
+    if (n && findNear() && n.id === near.id) interact();
+    else goTo(x, y, n || null);
+  };
+  curRoom = (roomAt(S.px, S.py) || {}).n || "";
+  drawHud(); updCam(0, true);
+  cancelAnimationFrame(rafW); lastT = null; rafW = requestAnimationFrame(loopW);
+}
+
+/* ---------- carnet, guide, menu ---------- */
+const MENTOR_LINE = {
+  c1: "Koro-sensei : « Préparez-vous comme pour un assassinat : rien au hasard. »",
+  c2: "Nagisa : « J’observe, puis je vérifie par une question. »",
+  c3b: "Karma : « Je voulais la provoquer. J’ai appris à échanger plutôt qu’à attaquer. »",
+  c4a: "Irina : « Persuader, oui. Manipuler, jamais. »",
+  c5: "Karasuma : « Révisez tout. L’examen ne pardonne rien. »"
+};
+const SOURCES = [
+  "Fisher R., Ury W., Getting to Yes (Comment réussir une négociation), 1981 : méthode raisonnée de Harvard, MESORE (BATNA).",
+  "Mehrabian A., Silent Messages, 1971, et ses expériences de 1967 sur la communication des attitudes.",
+  "Hall E. T., The Hidden Dimension (La dimension cachée), 1966 : proxémie.",
+  "Ekman P., travaux sur les expressions faciales et les micro-expressions (à partir de 1969).",
+  "Bond C. F., DePaulo B. M., « Accuracy of Deception Judgments », Personality and Social Psychology Review, 2006.",
+  "Chartrand T. L., Bargh J. A., « The Chameleon Effect », Journal of Personality and Social Psychology, 1999.",
+  "Loi n° 2016-1691 du 9 décembre 2016 (Sapin II) ; Agence française anticorruption (AFA).",
+  "Loi n° 2017-399 du 27 mars 2017 relative au devoir de vigilance ; norme ISO 20400:2017 Achats responsables.",
+  "Loi n° 2018-670 du 30 juillet 2018 relative au secret des affaires.",
+  "Code de commerce, art. L441-10 (délais de paiement) et L442-1 (pratiques restrictives) ; Code civil, art. 1137 (dol) — sur Légifrance."
+];
+const CARNET_IDS = ["c1", "c2", "c3b", "c4a", "c5"];
+function renderCarnet(){
+  cur = null;
+  const plain = CARNET_IDS.map(id => `${CH[id].title.toUpperCase()}\n` + CH[id].memo.map(m => "- " + m).join("\n")).join("\n\n") + "\n\nSOURCES\n" + SOURCES.map(s => "- " + s).join("\n");
+  paint(`<section class="act"><div class="act-head">${portraitHead("nagisa")}<div><div class="kicker">Fiche de révision</div><h1 style="font-size:30px">Le carnet de Nagisa</h1><p style="color:var(--chalk-2)">Nagisa note tout ce qui peut aider la classe à atteindre Koro-sensei.</p></div></div></section>${SPLIT}<section class="act">
+    <div class="carnet">${CARNET_IDS.map(id => { const c = CH[id], done = S.results[id] || (id === "c5" && S.ending); return `<div class="memo" ${done ? "" : 'style="opacity:.6"'}><div class="who">${portraitHead(c.mentor)}<div><h3 style="margin:0">${esc(c.title)}</h3><p style="font-size:14px;color:var(--ink-2)">${esc(MENTOR_LINE[id])}</p></div></div><ul>${c.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul><p class="maxim" style="margin-top:12px;font-size:16px">« ${esc(c.maxim)} »</p></div>`; }).join("")}</div>
+    <div class="memo"><h3>Sources</h3><ul>${SOURCES.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
+    <div class="memo copybox"><h3>Copier la fiche en texte</h3><textarea id="fiche-txt" readonly>${esc(plain)}</textarea><div class="row"><button class="btn small primary" id="copy">Copier le texte</button><span id="copied" style="font-size:14px"></span></div></div></section>`);
+  $("#copy").onclick = () => {
+    const ta = $("#fiche-txt");
+    const fb = () => { ta.focus(); ta.select(); $("#copied").textContent = "Texte sélectionné : fais Ctrl+C."; };
+    try { navigator.clipboard.writeText(ta.value).then(() => { $("#copied").textContent = "Copié."; }, fb); } catch(e){ fb(); }
+  };
+}
+function renderGuide(){
+  cur = null;
+  paint(`<section class="act"><div class="act-head">${portraitHead("karasuma")}<div><div class="kicker">Pour le groupe qui anime</div><h1 style="font-size:30px">Guide de l’animateur</h1></div></div></section>${SPLIT}<section class="act">
+    <div class="memo"><h3>Déroulé conseillé (environ 60 minutes)</h3><ul>
+      <li><b>5 min · Lancement.</b> Projetez le jeu, choisissez « Classe en équipes » et le mode Affrontement, formez des groupes de 3 à 5. Un élève tient le clavier et déplace le personnage ; la classe le guide.</li>
+      <li><b>14 min · Chapitre 1 (Koro-sensei).</b> Processus, méthode de Harvard, laboratoire de ZOPA, calcul de la MESORE.</li>
+      <li><b>12 min · Chapitre 2 (Nagisa).</b> Lecture de signaux non verbaux, puis entraînement éclair « Signal ou certitude ? ».</li>
+      <li><b>12 min · Chapitre 3 (Karma, puis Claire Lefort).</b> Échauffement « Repère la tactique », décision sur le cadeau, puis négociation en temps réel : la patience de Claire baisse, il faut cliquer « Observer » pendant ses micro-expressions.</li>
+      <li><b>10 min · Chapitre 4 (Irina, puis le directeur Asano).</b> Cinq dossiers éthiques, puis la pression du directeur. Les choix modifient la jauge de Confiance et l’histoire.</li>
+      <li><b>7 min · Chapitre 5 (gymnase).</b> Examen final : les bonnes réponses donnent des billes, puis la classe tire sur Koro-sensei quand il se moque. Fin selon la Confiance et le résultat.</li>
+    </ul></div>
+    <div class="memo"><h3>Critères du cahier des charges</h3><div class="tablewrap" style="border-width:2px"><table><thead><tr><th>Critère</th><th>Ce que le jeu apporte</th></tr></thead><tbody>
+      <tr><td>Rigueur et maîtrise</td><td>Chaque réponse est suivie d’une explication sourcée (Fisher et Ury, Mehrabian, Hall, Ekman, Sapin II, Code de commerce, Code civil, devoir de vigilance, ISO 20400).</td></tr>
+      <tr><td>Application concrète</td><td>Un achat chiffré de 30 ordinateurs, une négociation complète en temps réel, des dilemmes éthiques aux conséquences visibles.</td></tr>
+      <tr><td>Efficacité pédagogique</td><td>Toutes les équipes répondent à chaque question et débattent ; explications systématiques ; carnet de révision.</td></tr>
+      <tr><td>Créativité adaptée</td><td>L’univers d’Assassination Classroom sert l’apprentissage : explorer l’école, lire les micro-expressions, tirer quand Koro-sensei se moque, 5 fins selon l’éthique.</td></tr>
+      <tr><td>Engagement collectif</td><td>Groupes de 3 à 5, scores par équipe, Combo 3-E, choix éthiques décidés à la majorité de la classe.</td></tr>
+      <tr><td>Organisation</td><td>Déroulé minuté, chronos réglables, tir assisté, menu « Aller à un chapitre » pour gérer le temps.</td></tr>
+    </tbody></table></div></div>
+    <div class="memo"><h3>Les livrables</h3><ul>
+      <li><b>01 Animation ludopédagogique</b> : le jeu.</li>
+      <li><b>Exemple concret</b> : l’achat de 30 ordinateurs portables auprès de Pixelia.</li>
+      <li><b>03 Vérification des acquis</b> : l’examen final au gymnase et les entraînements éclair.</li>
+      <li><b>04 Consolidation</b> : le carnet de Nagisa, avec les personnages et les sources (à faire valider avant diffusion).</li>
+    </ul></div></section>`);
+}
+function renderMenu(){
+  cur = null;
+  let armed = false;
+  paint(`<section class="act"><div class="kicker">Menu</div><h1 style="font-size:30px">Options de partie</h1></section>${SPLIT}<section class="act">
+    <div class="memo"><h3>Aller à un chapitre (animateur)</h3><p>Pratique pour gérer le temps de la séance ou reprendre une partie précise.</p>
+      <div class="row" style="margin-top:10px">${QUESTS.slice(0, 8).map((q, i) => `<button class="btn small" data-jump="${i}">${["Chap. 1", "Chap. 2", "Échauffement", "Négociation", "Éthique", "Directeur", "Karasuma", "Examen"][i]}</button>`).join("")}</div></div>
+    <div class="memo"><h3>Accessibilité</h3><div class="row"><label class="toggle"><input type="checkbox" id="m-notimer" ${S.noTimer ? "checked" : ""}> Sans chrono (questions et patience)</label><label class="toggle"><input type="checkbox" id="m-assist" ${S.assist ? "checked" : ""}> Tir assisté</label></div></div>
+    <div class="row end"><button class="btn ghost" id="m-title">Écran titre</button><button class="btn ghost" id="m-reset">Recommencer à zéro</button><button class="btn primary" id="m-back">Reprendre</button></div></section>`);
+  $$("[data-jump]").forEach(b => b.onclick = () => {
+    S.q = +b.dataset.jump;
+    const n = npcs().find(n => n.id === QUESTS[S.q].npc);
+    if (n){ const spot = [[0, 40], [40, 0], [-40, 0], [0, -40], [40, 40], [-40, 40]].map(([dx, dy]) => [n.x + dx, n.y + dy]).find(([x, y]) => !blocked(x, y)); if (spot){ S.px = spot[0]; S.py = spot[1]; } }
+    save(); closeMission(false); toast("Objectif : " + QUESTS[S.q].obj);
+  });
+  $("#m-notimer").onchange = e => { S.noTimer = e.target.checked; save(); };
+  $("#m-assist").onchange = e => { S.assist = e.target.checked; save(); };
+  $("#m-back").onclick = () => closeMission(false);
+  $("#m-title").onclick = () => { closeMission(false); renderTitle(); };
+  $("#m-reset").onclick = () => {
+    if (!armed){ armed = true; $("#m-reset").textContent = "Confirmer : tout effacer"; return; }
+    const keep = { name: S.name, mode: S.mode, answerMode: S.answerMode, teams: S.teams.map(t => ({ ...t, pts: 0 })) };
+    S = Object.assign(FRESH(), keep); save(); closeMission(false); renderTitle();
+  };
+}
+function credits(){
+  return `<p class="credits">Fan-jeu pédagogique non commercial, réalisé pour un cours de Master GPLA. Univers et personnages inspirés du manga <i>Assassination Classroom</i> (<i>Ansatsu Kyōshitsu</i>) de Yūsei Matsui, publié par Shūeisha ; ils restent la propriété de leurs auteurs. Illustrations et code originaux. Claire Lefort, Pixelia, Datalis et l’étude de cas sont fictifs.</p>`;
+}
+
+/* ---------- écran titre ---------- */
+function renderTitle(){
+  cancelAnimationFrame(rafW);
+  const has = S.started;
+  const defaults = ["Équipe Nagisa", "Équipe Karma", "Équipe Kayano", "Équipe Sugino", "Équipe Okuda", "Équipe Isogai", "Équipe Kanzaki", "Équipe Terasaka"];
+  const draft = defaults.map((d, i) => ({ name: (S.teams[i] && S.teams[i].name) || d, members: (S.teams[i] && S.teams[i].members) || "" }));
+  let count = S.teams.length > 1 ? S.teams.length : 4;
+  root.innerHTML = `<div class="wrap"><section>
+    <div class="hero">
+      <div><div style="font-weight:900;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--koro)">Ludopédagogie · Master GPLA · Achats</div>
+        <h1>Classe 3-E : <em>Opération Négociation</em></h1><div class="chalkline"></div>
+        <p class="lede">Explore l’école de la classe 3-E, accepte les missions de Koro-sensei et de ses élèves, négocie en temps réel avec Claire Lefort, résiste aux pressions… puis affronte Koro-sensei au gymnase. Tes choix éthiques décident de la fin.</p></div>
+      <div class="cast"><figure class="big"><div class="panel">${koro("normal")}</div><figcaption>Koro-sensei</figcaption></figure>
+        <figure><div class="panel">${CAST.nagisa.svg}</div><figcaption>Nagisa</figcaption></figure>
+        <figure><div class="panel">${CAST.karma.svg}</div><figcaption>Karma</figcaption></figure>
+        <figure><div class="panel">${CAST.lefort.svg}</div><figcaption>Claire Lefort</figcaption></figure></div>
+    </div>
+    <form id="start" class="setup">
+      <fieldset><legend>Mode de jeu</legend>
+        <label class="radio"><input type="radio" name="mode" id="mode-solo" value="solo" ${S.mode !== "teams" ? "checked" : ""}> Solo</label>
+        <div class="field"><label for="player-name">Ton prénom</label><input id="player-name" maxlength="20" value="${esc(S.name)}"></div>
+        <label class="radio"><input type="radio" name="mode" id="mode-teams" value="teams" ${S.mode === "teams" ? "checked" : ""}> Classe en équipes (projeté au tableau)</label>
+      </fieldset>
+      <fieldset><legend>Équipes (groupes de 3 à 5)</legend>
+        <div class="field"><label for="team-count">Nombre d’équipes</label><select id="team-count">${[2,3,4,5,6,7,8].map(n => `<option value="${n}" ${count === n ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+        <div class="field"><span style="font-weight:700">Façon de répondre</span>
+          <label class="radio"><input type="radio" name="amode" id="amode-all" value="all" ${S.answerMode !== "turns" ? "checked" : ""}> Affrontement : toutes les équipes répondent en même temps</label>
+          <label class="radio"><input type="radio" name="amode" id="amode-turns" value="turns" ${S.answerMode === "turns" ? "checked" : ""}> Tour par tour : une équipe par question</label></div>
+        <div class="team-rows" id="team-rows"></div>
+      </fieldset>
+      <div class="row" style="grid-column:1/-1"><button class="btn primary" type="submit">${has ? "Continuer la partie" : "Entrer à l’école"}</button>${has ? `<button class="btn ghost" type="button" id="fresh">Nouvelle partie</button>` : ""}</div>
+    </form>${credits()}</section></div>`;
+  function readRows(){ $$("[data-tname]").forEach(el => { draft[+el.dataset.tname].name = el.value; }); $$("[data-tmem]").forEach(el => { draft[+el.dataset.tmem].members = el.value; }); }
+  function rows(){ $("#team-rows").innerHTML = draft.slice(0, count).map((t, i) => `<div class="team-row"><div class="field"><label for="team-${i}">Équipe ${i + 1}</label><input id="team-${i}" data-tname="${i}" maxlength="24" value="${esc(t.name)}"></div><div class="field"><label for="members-${i}">Membres (3 à 5 prénoms)</label><input id="members-${i}" data-tmem="${i}" maxlength="80" placeholder="Léa, Hugo, Inès…" value="${esc(t.members)}"></div></div>`).join(""); }
+  $("#team-count").onchange = e => { readRows(); count = +e.target.value; rows(); };
+  rows();
+  function apply(){
+    readRows();
+    S.mode = $("#mode-teams").checked ? "teams" : "solo";
+    S.answerMode = $("#amode-turns").checked ? "turns" : "all";
+    S.name = ($("#player-name").value || "").trim().slice(0, 20) || "Élève";
+    if (S.mode === "teams"){
+      const old = S.teams;
+      S.teams = draft.slice(0, count).map((t, i) => ({ name: t.name.trim() || defaults[i], members: t.members.trim(), pts: (old[i] && old[i].pts) || 0 }));
+      if (S.turn >= count) S.turn = 0;
+    }
+    save();
+  }
+  $("#start").onsubmit = e => {
+    e.preventDefault(); apply();
+    renderWorld();
+    if (!S.started){ S.started = true; save(); startChapter("c0"); }
+  };
+  if ($("#fresh")) $("#fresh").onclick = () => {
+    apply();
+    const keep = { name: S.name, mode: S.mode, answerMode: S.answerMode, teams: S.teams.map(t => ({ ...t, pts: 0 })) };
+    S = Object.assign(FRESH(), keep, { started: true }); save();
+    renderWorld(); startChapter("c0");
+  };
+}
+
+/* ---------- clavier ---------- */
+document.addEventListener("keydown", e => {
+  const tag = (document.activeElement && document.activeElement.tagName) || "";
+  const typingField = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+  if (!ov.hidden){
+    if (e.key === "o" || e.key === "O"){ if (window.__obs){ e.preventDefault(); window.__obs(); } return; }
+    if (e.key === " " && $("#strike")){ e.preventDefault(); $("#strike").click(); return; }
+    if ((e.key === "Enter" || e.key === " ") && (document.activeElement === document.body || document.activeElement === ov)){ const b = $("#nx"); if (b && !b.hidden){ e.preventDefault(); b.click(); } }
+    return;
+  }
+  if (typingField) return;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(k)) e.preventDefault();
+  if (k === "e" || k === "Enter" || k === " "){ interact(); return; }
+  keys[k] = true;
+});
+document.addEventListener("keyup", e => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; keys[k] = false; });
+window.addEventListener("blur", () => { keys = {}; });
+
+load();
+renderTitle();
+})();
+</script>
+</body>
+</html>
