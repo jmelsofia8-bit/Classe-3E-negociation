@@ -1212,6 +1212,15 @@ R.quiz = s => {
   $$(".opt").forEach(b => b.onclick = () => {
     const i = +b.dataset.i, ok = i === s.ok;
     if (!ok) b.classList.add("bad");
+    // question de vérification : en cas d'erreur, on réexplique sans donner la réponse, puis on repose la question
+    if (!ok && s.retry){
+      $$(".opt").forEach(x => { x.disabled = true; });
+      sfx("talk");
+      $("#fb").innerHTML = feedback(false, "Pas tout à fait…", (s.again || "Relis bien l’explication.") + " Essaie encore !") + `<div class="row end" style="margin-top:10px"><button class="btn primary" id="again">Réessayer ▸</button></div>`;
+      $("#again").onclick = () => R.quiz(s); $("#again").focus({ preventScroll: true });
+      return;
+    }
+    if (ok && s.retry) sfx("star");
     const g = ok ? value() : 0;
     cur.pts += g; if (!s.practice) award(g);
     done();
@@ -1676,28 +1685,28 @@ function finishChapter(){
 
 /* question de vérification posée par chaque élève après son explication (sans points : juste pour vérifier qu'on a compris) */
 const CHECKS = {
-  kayano: { q: "Pendant une négociation, ton interlocutrice croise soudain les bras. Que fais-tu ?",
+  kayano: { again: "Souviens-toi : un geste isolé n’est pas une preuve. On le compare d’abord à la ligne de base, puis on vérifie.", q: "Pendant une négociation, ton interlocutrice croise soudain les bras. Que fais-tu ?",
     opts: ["Je compare à sa ligne de base et je vérifie avec une question ouverte.", "J’en conclus qu’elle refuse mon offre.", "J’applique la règle des 93 % : son corps dit non."], ok: 0,
     why: "Un geste isolé ne prouve rien. On le compare à la ligne de base et au contexte, puis on vérifie l’hypothèse par une question ouverte." },
-  nakamura: { q: "Tu viens d’annoncer ton offre. Le fournisseur se tait. Que fais-tu ?",
+  nakamura: { again: "Rappelle-toi : le silence est un outil. Celui qui le comble fait souvent une concession inutile.", q: "Tu viens d’annoncer ton offre. Le fournisseur se tait. Que fais-tu ?",
     opts: ["Je laisse le silence s’installer et j’attends sa réponse.", "Je baisse tout de suite mon prix pour casser le malaise.", "Je parle d’autre chose pour combler le blanc."], ok: 0,
     why: "Le silence est un outil : celui qui le comble fait souvent une concession inutile. On laisse l’autre répondre." },
-  sugino: { q: "Quel prix d’ouverture est un bon ancrage ?",
+  sugino: { again: "L’ancrage doit être ambitieux, mais crédible, et appuyé sur des chiffres du marché.", q: "Quel prix d’ouverture est un bon ancrage ?",
     opts: ["Un prix ambitieux mais crédible, justifié par les prix constatés sur le marché.", "Un prix très bas, pour choquer le vendeur.", "Mon prix limite, pour aller plus vite."], ok: 0,
     why: "Un ancrage marche s’il est ambitieux mais crédible et justifié. Un prix absurde abîme la relation, et révéler son prix limite enlève toute marge." },
-  kataoka: { q: "Laquelle de ces questions est une question ouverte ?",
+  kataoka: { again: "Une question ouverte ne se répond pas par oui ou par non : elle commence souvent par « qu’est-ce qui », « comment » ou « pourquoi ».", q: "Laquelle de ces questions est une question ouverte ?",
     opts: ["« Qu’est-ce qui est le plus important pour vous dans ce contrat ? »", "« C’est votre dernier prix ? »", "« Vous pouvez livrer lundi ? »"], ok: 0,
     why: "Une question ouverte (qu’est-ce qui, comment, pourquoi…) fait parler l’autre de ses intérêts. Les deux autres appellent un simple oui ou non." },
-  takebayashi: { q: "Au moment de signer, le fournisseur ajoute « juste » 900 € de frais de livraison. Comment s’appelle cette tactique ?",
+  takebayashi: { again: "Repense aux tactiques : laquelle consiste à ajouter un petit détail tout à la fin, juste avant de signer ?", q: "Au moment de signer, le fournisseur ajoute « juste » 900 € de frais de livraison. Comment s’appelle cette tactique ?",
     opts: ["Le grignotage.", "L’ancrage.", "La fausse date limite."], ok: 0,
     why: "Le grignotage, c’est un petit ajout de dernière minute. On le refuse, ou on rouvre le donnant-donnant : « si vous ajoutez des frais, alors… »." },
-  terasaka: { q: "Pendant l’appel d’offres, un fournisseur t’offre deux places pour un match. Que fais-tu ?",
+  terasaka: { again: "Pendant un appel d’offres, accepter un avantage, même petit, crée un conflit d’intérêts. Et on ne cache rien.", q: "Pendant l’appel d’offres, un fournisseur t’offre deux places pour un match. Que fais-tu ?",
     opts: ["Je refuse poliment et je le déclare à ma hiérarchie.", "J’accepte : c’est un simple cadeau.", "J’accepte, mais je n’en parle à personne."], ok: 0,
     why: "Pendant une consultation, accepter un cadeau crée un conflit d’intérêts, ou au moins son apparence. On refuse et on déclare." },
-  okuda: { q: "Laquelle de ces phrases est un mensonge, et pas un simple bluff ?",
+  okuda: { again: "Taire une information, c’est permis. Affirmer quelque chose de faux, ça ne l’est pas.", q: "Laquelle de ces phrases est un mensonge, et pas un simple bluff ?",
     opts: ["« Nous avons une offre à 1 000 € ailleurs », alors que c’est faux.", "Ne pas dire quel est ton prix limite.", "« Nous étudions d’autres offres », alors que c’est vrai."], ok: 0,
     why: "Taire son prix limite est permis. Inventer une fausse offre est un mensonge, qui peut même constituer un dol (Code civil, art. 1137)." },
-  isogai: { q: "En France, quel est le délai de paiement maximum d’un fournisseur, en règle générale ?",
+  isogai: { again: "Le Code de commerce fixe une limite précise, comptée à partir de la date de la facture.", q: "En France, quel est le délai de paiement maximum d’un fournisseur, en règle générale ?",
     opts: ["60 jours après la date de la facture.", "180 jours, si l’acheteur le décide.", "Il n’y a pas de limite."], ok: 0,
     why: "Le Code de commerce (art. L441-10) fixe le délai à 60 jours maximum après la date de la facture. Payer plus tard pour garder sa trésorerie est interdit." }
 };
@@ -1706,7 +1715,7 @@ Object.keys(STUDENTS).forEach(id => {
   const s = STUDENTS[id];
   CH["e_" + id] = { title: s.title, label: "Conseil de " + s.short, mentor: id, memo: s.memo,
     steps: s.lines.map(l => ({ t: "say", who: id, ex: l.ex, txt: l.txt }))
-      .concat([{ t: "say", who: id, txt: "Voyons si tu as bien compris. Une petite question, sans points en jeu !" }, { t: "quiz", who: id, practice: true, card: "Question de " + s.short + " · as-tu bien compris ?", ...CHECKS[id] }])
+      .concat([{ t: "say", who: id, txt: "Voyons si tu as bien compris. Une petite question, sans points en jeu !" }, { t: "quiz", who: id, practice: true, card: "Question de " + s.short + " · as-tu bien compris ?", retry: true, ...CHECKS[id] }])
       .concat([{ t: "say", who: id, txt: "Voilà ! Je l’ai noté dans ton carnet. Bonne chance pour la suite !" }]) };
 });
 CH.ex = { title: "Les conseils des élèves", mentor: "kayano", memo: [], steps: [] };
