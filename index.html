@@ -2277,9 +2277,8 @@ function renderMenu(){
     S = Object.assign(FRESH(), keep); save(); closeMission(false); renderTitle();
   };
 }
-function credits(){
-  return `<p class="credits">Fan-jeu pédagogique non commercial, réalisé pour un cours de Master GPLA. Univers et personnages inspirés du manga <i>Assassination Classroom</i> (<i>Ansatsu Kyōshitsu</i>) de Yūsei Matsui, publié par Shūeisha ; ils restent la propriété de leurs auteurs. Illustrations et code originaux. Claire Lefort, Pixelia, Datalis et l’étude de cas sont fictifs.</p>`;
-}
+/* mention retirée de l'écran à la demande de l'auteur ; les crédits restent dans le README */
+function credits(){ return ""; }
 
 /* ---------- écran titre ---------- */
 function renderTitle(){
