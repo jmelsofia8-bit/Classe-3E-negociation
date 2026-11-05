@@ -290,7 +290,7 @@ const root = $("#root"), ov = $("#ov"), app = $("#app");
 const HP_MAX = 150;
 
 const FRESH = () => ({ name: "Élève", mode: "solo", answerMode: "all", teams: [], turn: 0, results: {}, best: {}, noTimer: false, assist: false,
-  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 7 * 32 + 16, py: 8 * 32 + 20, tokens: 0, found: {}, started: false, nego: null, examWin: null, ending: null });
+  hp: HP_MAX, trust: 6, flags: {}, q: 0, px: 7 * 32 + 16, py: 8 * 32 + 20, tokens: 0, found: {}, lessons: {}, started: false, nego: null, examWin: null, ending: null });
 let S = FRESH();
 let cur = null;
 function load(){ try { const r = localStorage.getItem(SAVE_KEY); if (r) Object.assign(S, JSON.parse(r)); } catch(e){} }
@@ -460,7 +460,71 @@ c0: { title: "Prologue", label: "Prologue",
     { t: "say", who: "koro", fx: "shock", txt: "Nurufufu ! Bonjour, chers élèves ! Cette année, en plus des maths, je vous apprends l’art de la négociation d’achat." },
     { t: "say", who: "koro", txt: "Notre accord : à l’examen final, au gymnase, vous pourrez m’attaquer. Chaque leçon réussie me fait perdre des forces. Si vous me mettez K.O., je me laisse atteindre." },
     { t: "say", who: "karasuma", txt: "Et voici un vrai dossier. Une filiale française d’un groupe partenaire doit acheter 30 ordinateurs portables. Budget : 36 000 € HT. Vous menez l’achat de bout en bout." },
-    { t: "say", who: "nagisa", txt: "Déplace-toi avec les flèches (ou Z Q S D), et parle aux gens avec E ou Espace. Commence par Koro-sensei, devant le tableau." }
+    { t: "say", who: "koro", txt: "Mais avant de m’affronter, faites le tour de vos camarades. Chacun a un secret de négociation à vous apprendre. Revenez me voir ensuite : je vous ferai passer le test ! Nurufufu." },
+    { t: "say", who: "nagisa", txt: "Déplace-toi avec les flèches (ou Z Q S D), et parle aux gens avec E ou Espace. Va voir Karma, Karasuma-sensei, Irina… et moi ! Suis les « ! » jaunes." }
+  ] },
+/* ----- la tournée des leçons (avant le test de Koro-sensei) -----
+   Les étapes marquées ex: true sont les exemples concrets : on peut les retirer sans rien casser. */
+l1: { title: "C’est quoi, négocier ?", label: "Leçon de Nagisa", mentor: "nagisa",
+  memo: [
+    "Négocier, c’est chercher un accord quand il existe à la fois un intérêt commun (on veut conclure) et un désaccord (prix, délai, garantie…).",
+    "Sans intérêt commun, pas de négociation : on s’en va. Sans désaccord, pas besoin de négocier.",
+    "En achats, l’acheteur et le fournisseur veulent tous deux signer : le but est de trouver l’accord qui sert les deux."
+  ],
+  steps: [
+    { t: "say", who: "nagisa", txt: "Salut @name ! Avant le test de Koro-sensei, je t’explique la base : négocier, c’est chercher un accord avec quelqu’un quand on a à la fois un intérêt commun et un désaccord." },
+    { t: "say", who: "nagisa", ex: true, txt: "Exemple : il reste une seule part de pizza et on est deux. On peut la couper en deux… ou se parler. Moi, j’adore la croûte ; toi, tu préfères la garniture. En discutant, chacun repart avec ce qu’il voulait vraiment." },
+    { t: "say", who: "nagisa", txt: "Sans intérêt commun, il n’y a rien à négocier : on s’en va. Sans désaccord, pas besoin de négocier : on signe. En achats, l’acheteur et le fournisseur veulent tous les deux conclure, mais pas aux mêmes conditions." },
+    { t: "quiz", who: "nagisa", practice: true, q: "Dans quelle situation y a-t-il vraiment une négociation ?",
+      opts: ["Un fournisseur et un acheteur veulent tous deux signer, mais pas au même prix.", "Tu achètes un ticket de bus à un automate.", "Deux entreprises qui n’ont aucun intérêt à travailler ensemble."], ok: 0,
+      why: "Il faut les deux ingrédients : un intérêt commun (signer) et un désaccord (le prix). L’automate ne discute pas, et sans intérêt commun personne ne reste à la table." },
+    { t: "say", who: "nagisa", txt: "Bien joué ! Je note ça dans mon carnet pour toi. Va voir les autres : chacun a sa leçon." }
+  ] },
+l2: { title: "Position ou intérêt ?", label: "Leçon de Karma", mentor: "karma",
+  memo: [
+    "La position, c’est ce que l’autre réclame (« je veux 1 250 € ») ; l’intérêt, c’est la raison pour laquelle il le réclame (« je dois atteindre mon objectif »).",
+    "Se battre sur les positions fait un gagnant et un perdant. Chercher les intérêts permet souvent de trouver une solution où les deux gagnent.",
+    "C’est le cœur de la méthode raisonnée de Harvard (Fisher et Ury, 1981)."
+  ],
+  steps: [
+    { t: "say", who: "karma", txt: "Tu veux un secret ? Ce que les gens réclament, c’est leur position. Pourquoi ils le réclament, c’est leur intérêt. Et c’est l’intérêt qui compte." },
+    { t: "say", who: "karma", ex: true, txt: "Exemple : deux élèves veulent la même salle à 14 h. Ils se disputent… jusqu’à ce qu’on leur demande pourquoi. L’un a besoin de calme pour réviser, l’autre d’un vidéoprojecteur. La salle info est libre et silencieuse : problème réglé pour les deux." },
+    { t: "say", who: "karma", txt: "Si tu te bats sur les positions, l’un gagne et l’autre perd. Si tu cherches les intérêts, tu trouves souvent mieux pour les deux. C’est la méthode raisonnée de Harvard, de Fisher et Ury." },
+    { t: "quiz", who: "karma", practice: true, q: "Un fournisseur dit : « Je veux être payé à 30 jours, pas plus. » Quel est probablement son intérêt ?",
+      opts: ["Avoir de la trésorerie rapidement.", "Être payé à 30 jours.", "Embêter l’acheteur."], ok: 0,
+      why: "« 30 jours » est sa position. L’intérêt derrière, c’est sa trésorerie. Une fois que tu le sais, tu peux proposer autre chose : un acompte, par exemple, en échange d’un meilleur prix." },
+    { t: "say", who: "karma", txt: "Pas mal. Provoquer, c’est facile ; comprendre ce que l’autre veut vraiment, c’est ça, l’arme." }
+  ] },
+l3: { title: "Se préparer", label: "Leçon de Karasuma", mentor: "karasuma",
+  memo: [
+    "Les 7 étapes : préparation → ouverture → découverte → argumentation et propositions → échange de concessions → conclusion → formalisation et suivi.",
+    "MESORE (BATNA en anglais) : ta meilleure solution de rechange si l’accord échoue. Elle fixe ton prix limite : au-delà, tu pars.",
+    "Sans solution de rechange, tu es en position de faiblesse : cherche une alternative avant de négocier."
+  ],
+  steps: [
+    { t: "say", who: "karasuma", txt: "Une mission réussie, c’est une mission préparée. Une négociation suit 7 étapes : préparation, ouverture, découverte, argumentation et propositions, échange de concessions, conclusion, puis formalisation et suivi." },
+    { t: "say", who: "karasuma", txt: "Le plus important de la préparation : ta MESORE, ta meilleure solution de rechange si l’accord échoue. Elle te donne ton prix limite. Au-delà, tu te lèves et tu pars." },
+    { t: "say", who: "karasuma", ex: true, txt: "Exemple : tu veux acheter un vélo d’occasion affiché à 200 €. Tu as repéré une autre annonce à 180 € pour un vélo équivalent. Ta MESORE, c’est cette annonce : payer plus de 180 € ici n’aurait aucun sens." },
+    { t: "quiz", who: "karasuma", practice: true, q: "Tu arrives en négociation sans aucune solution de rechange. Qu’est-ce que ça change ?",
+      opts: ["Tu es en position de faiblesse : il fallait chercher une alternative avant de négocier.", "Rien du tout, la MESORE ne sert qu’aux grandes entreprises.", "Tu es en position de force : tu n’as rien à perdre."], ok: 0,
+      why: "Sans MESORE, tu ne sais pas quand dire non, et l’autre le sent. La préparation consiste justement à se créer des alternatives (autres fournisseurs, autres solutions)." },
+    { t: "say", who: "karasuma", txt: "Correct. La rigueur, toujours. Retiens bien les 7 étapes : Koro-sensei va te les demander." }
+  ] },
+l4: { title: "L’ancrage et la ZOPA", label: "Leçon d’Irina", mentor: "irina",
+  memo: [
+    "Ancrage : le premier chiffre annoncé influence toute la discussion. Celui qui ouvre fixe le point de départ.",
+    "ZOPA : zone d’accord possible, entre le prix minimum du vendeur et le prix maximum de l’acheteur. Si elles ne se croisent pas, pas d’accord possible.",
+    "On ouvre de façon ambitieuse mais crédible, avec une justification. On ne révèle jamais son prix limite."
+  ],
+  steps: [
+    { t: "say", who: "irina", txt: "Écoute bien, mon petit. Le premier chiffre annoncé influence toute la discussion : c’est l’ancrage. Celui qui ouvre fixe le point de départ." },
+    { t: "say", who: "irina", ex: true, txt: "Exemple : un vendeur annonce 500 € pour un objet qui en vaut 300. Tu obtiens 400 € et tu crois avoir fait une affaire… alors que tu as payé 100 € de trop. L’ancre a fait son travail." },
+    { t: "say", who: "irina", txt: "Ensuite, la ZOPA : la zone d’accord possible. Elle va du prix minimum du vendeur au prix maximum de l’acheteur. Si ces deux limites ne se croisent pas, aucun accord n’est possible." },
+    { t: "say", who: "irina", ex: true, txt: "Exemple : le vendeur du vélo ne descendra pas sous 150 €, et toi tu ne paieras pas plus de 180 €. Tout accord entre 150 et 180 € est possible : c’est la ZOPA." },
+    { t: "quiz", who: "irina", practice: true, q: "Le vendeur ne descend pas sous 150 €. Toi, tu ne veux pas payer plus de 180 €. Où se trouve la ZOPA ?",
+      opts: ["Entre 150 € et 180 €", "En dessous de 150 €", "Au-dessus de 180 €", "Il n’y en a pas"], ok: 0,
+      why: "La ZOPA va du prix limite du vendeur (150 €) au prix limite de l’acheteur (180 €). En dessous, le vendeur refuse ; au-dessus, c’est toi qui refuses." },
+    { t: "say", who: "irina", txt: "Dernier conseil : ouvre de façon ambitieuse mais crédible, toujours avec une justification. Et ne révèle jamais ton prix limite. Jamais." }
   ] },
 c1: { no: 1, title: "Le temps de la préparation", label: "Chapitre 1", scored: true, mentor: "koro",
   maxim: "Une négociation se gagne avant d’entrer dans la salle. Nurufufu.",
@@ -472,6 +536,7 @@ c1: { no: 1, title: "Le temps de la préparation", label: "Chapitre 1", scored: 
     "On ouvre de façon ambitieuse mais crédible, avec une justification chiffrée. On ne révèle jamais son prix limite."
   ],
   steps: [
+    { t: "say", who: "koro", fx: "shock", txt: "Nurufufu ! Vous avez fait le tour de vos camarades ? Alors place au test ! Chaque bonne réponse me fera perdre des forces." },
     { t: "say", who: "koro", txt: "Par le chemin ! Une négociation suit des étapes. Celui qui les saute se fait dévorer. Remettez-les dans l’ordre." },
     { t: "order", who: "koro", q: "Remets les 7 étapes du processus de négociation dans l’ordre.",
       items: ["Préparation : objectifs, MESORE, prix limite, informations sur l’interlocuteur", "Ouverture : accueil, présentation, ordre du jour et durée", "Découverte : questions ouvertes, écoute active, reformulation", "Argumentation et premières propositions", "Échange de concessions (« si… alors »)", "Conclusion : récapitulatif et validation de l’accord", "Formalisation et suivi : compte rendu écrit, contrat, évaluation"],
@@ -892,7 +957,7 @@ R.quiz = s => {
       cur.pts += pts * n / S.teams.length;
       $("#rev").hidden = true;
       done();
-      strike(n / S.teams.length, pts);
+      if (!s.practice) strike(n / S.teams.length, pts);
       const m = majority(picks);
       if (s.fx && m !== null && s.fx[m]) s.fx[m]();
       $("#fb").innerHTML = feedback(n > 0, `${n} équipe${n > 1 ? "s" : ""} sur ${S.teams.length} ${n > 1 ? "ont" : "a"} trouvé.${s.fx && m !== null ? " La classe a choisi la réponse " + "ABCD"[order.findIndex(o => o.i === m)] + " : l’histoire en tiendra compte." : ""}`, s.why);
@@ -903,9 +968,9 @@ R.quiz = s => {
     const i = +b.dataset.i, ok = i === s.ok;
     if (!ok) b.classList.add("bad");
     const g = ok ? value() : 0;
-    cur.pts += g; award(g);
+    cur.pts += g; if (!s.practice) award(g);
     done();
-    if (ok) strike(1, g);
+    if (ok && !s.practice) strike(1, g);
     if (s.fx && s.fx[i]) s.fx[i]();
     $("#fb").innerHTML = feedback(ok, ok ? "Exact !" : "Raté…", s.why + (s.fx ? " Ton choix aura des conséquences pour la suite." : ""));
   });
@@ -1369,7 +1434,27 @@ const QUESTS = [
   { npc: null, ch: null, obj: "Année terminée ! Explore l’école, ou rejoue depuis le menu." }
 ];
 const NEXT_Q = { c1: 1, c2: 2, c3a: 3, c3b: 4, c4a: 5, c4b: 6, c5pre: 7 };
+/* tournée des leçons : tant qu'elle n'est pas finie, l'objectif 0 pointe vers les camarades au lieu de Koro-sensei */
+const LESSONS = ["l1", "l2", "l3", "l4"];
+const LESSON_NPC = { l1: "nagisa", l2: "karma", l3: "karasuma", l4: "irina" };
+const SHORT = { nagisa: "Nagisa", karma: "Karma", karasuma: "Karasuma-sensei", irina: "Irina" };
+function lessonsLeft(){ return LESSONS.filter(id => !(S.lessons || {})[id]); }
+function lessonFor(npcId){ return S.q === 0 ? lessonsLeft().find(id => LESSON_NPC[id] === npcId) : null; }
+function quest(){
+  const left = lessonsLeft();
+  if (S.q === 0 && left.length) return { npc: null, npcs: left.map(id => LESSON_NPC[id]), obj: `Avant le test de Koro-sensei, fais le tour de tes camarades : ${LESSONS.length - left.length} / ${LESSONS.length} leçons. Il reste : ${left.map(id => SHORT[LESSON_NPC[id]]).join(", ")}.` };
+  return QUESTS[S.q];
+}
 function advanceQuest(id){
+  if (LESSONS.includes(id)){
+    if (!S.lessons) S.lessons = {};
+    if (S.lessons[id]) return;
+    S.lessons[id] = 1;
+    const left = lessonsLeft().length;
+    if (left){ save(); toast(`Leçon apprise et notée dans le carnet : ${LESSONS.length - left} / ${LESSONS.length}.`); }
+    else { S.tokens++; save(); toast("Tournée terminée ! +1 jeton d’indice. Koro-sensei t’attend devant le tableau pour le test."); }
+    return;
+  }
   if (NEXT_Q[id] !== undefined && S.q < NEXT_Q[id]){ S.q = NEXT_Q[id]; save(); toast("Nouvel objectif : " + QUESTS[S.q].obj); }
 }
 const CHATTER = {
@@ -1670,13 +1755,13 @@ function drawWorld(t){
     if (!RM && Math.random() < 0.06) puff(p.x + (Math.random() - 0.5) * 14, p.y + fl, 1, "#FFE58A", 10, 0.7, 12);
   });
   const ents = npcs().map(n => ({ ...n, kind: "npc" })).concat([{ id: "player", x: S.px, y: S.py, kind: "player" }]).sort((a, b) => a.y - b.y);
-  const target = QUESTS[S.q] && QUESTS[S.q].npc;
+  const qd = quest(), targets = qd ? (qd.npcs || (qd.npc ? [qd.npc] : [])) : [];
   drawParts();
   ents.forEach(e => {
     if (e.id === "koro") drawKoroW(e.x, e.y, t);
     else if (e.kind === "player") drawChar(e.x, e.y, LOOK.player, walk, facing, faceY, t);
     else { const dx = S.px - e.x, dy = S.py - e.y, close = Math.hypot(dx, dy) < 120; drawChar(e.x, e.y, LOOK[e.id], 0, close ? (dx > 0 ? 1 : -1) : 0, close && Math.abs(dy) > Math.abs(dx) && dy < 0 ? -1 : 1, t); }
-    if (e.kind === "npc" && e.id === target){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
+    if (e.kind === "npc" && targets.includes(e.id)){ const by = e.y - (e.id === "koro" ? 58 : 48) + (RM ? 0 : Math.sin(t / 180) * 4); g.fillStyle = "rgba(245,197,24,.3)"; g.beginPath(); g.arc(e.x, by, 15, 0, 7); g.fill(); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 2.5; g.beginPath(); g.arc(e.x, by, 10, 0, 7); g.fill(); g.stroke(); g.fillStyle = INK; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.fillText("!", e.x, by + 5); }
   });
   lighting(t);
   if (near){
@@ -1691,10 +1776,10 @@ function drawWorld(t){
   // couche écran : vignette, flèche d'objectif, mini-carte, bannière
   g.setTransform(DPR, 0, 0, DPR, 0, 0);
   const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.95); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.55)"); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
-  const tn = target && npcs().find(n => n.id === target);
+  const tn = npcs().filter(n => targets.includes(n.id)).sort((a, b) => Math.hypot(a.x - S.px, a.y - S.py) - Math.hypot(b.x - S.px, b.y - S.py))[0];
   if (tn){ const sx = (tn.x - cam.x) * ZOOM, sy = (tn.y - cam.y) * ZOOM; if (sx < 0 || sy < 0 || sx > VW || sy > VH){ const cx = VW / 2, cy = VH / 2, a = Math.atan2(sy - cy, sx - cx), m = 34, ex = clamp(cx + Math.cos(a) * 2000, m, VW - m), ey = clamp(cy + Math.sin(a) * 2000, m, VH - m), pul = RM ? 1 : 1 + Math.sin(t / 160) * 0.12;
     g.save(); g.translate(ex, ey); g.rotate(a); g.scale(pul, pul); g.fillStyle = "#F5C518"; g.strokeStyle = INK; g.lineWidth = 3; g.beginPath(); g.moveTo(18, 0); g.lineTo(-10, -13); g.lineTo(-4, 0); g.lineTo(-10, 13); g.closePath(); g.fill(); g.stroke(); g.restore(); } }
-  minimap(tn);
+  minimap(targets);
   if (banner.t > 0){ g.globalAlpha = clamp(Math.min((2.6 - banner.t) / 0.3, banner.t / 0.5), 0, 1);
     g.font = "20px 'Mochiy Pop One', sans-serif"; g.textAlign = "center"; const w = g.measureText(banner.txt).width + 60, by = 34;
     const bgd = g.createLinearGradient(VW / 2 - w / 2, 0, VW / 2 + w / 2, 0); bgd.addColorStop(0, "rgba(14,14,18,0)"); bgd.addColorStop(0.2, "rgba(14,14,18,.8)"); bgd.addColorStop(0.8, "rgba(14,14,18,.8)"); bgd.addColorStop(1, "rgba(14,14,18,0)");
@@ -1715,12 +1800,12 @@ function lighting(t){
   if (cam.y + vh > 8 * TILE && cam.y < 10 * TILE) for (let c = 3; c < COLS - 2; c += 2){ const x = c * TILE, k = RM ? 0.08 : 0.07 + Math.sin(t / 1500 + c) * 0.025; const gr = g.createLinearGradient(0, 8 * TILE, 0, 10 * TILE); gr.addColorStop(0, `rgba(255,250,225,${k * 2})`); gr.addColorStop(1, "rgba(255,250,225,0)"); g.fillStyle = gr; g.beginPath(); g.moveTo(x + 6, 8 * TILE); g.lineTo(x + 26, 8 * TILE); g.lineTo(x + 46, 10 * TILE); g.lineTo(x + 18, 10 * TILE); g.closePath(); g.fill(); }
   g.restore();
 }
-function minimap(tn){
+function minimap(targets){
   const s = 0.13, mw = WW * s, mh = WH * s, mx = VW - mw - 12, my = 12;
   g.fillStyle = "rgba(10,10,14,.7)"; roundRect(mx - 5, my - 5, mw + 10, mh + 10, 8); g.fill();
   g.globalAlpha = 0.9; g.drawImage(bgCv, mx, my, mw, mh); g.globalAlpha = 1;
   g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 1; g.strokeRect(mx + cam.x * s, my + cam.y * s, VW / ZOOM * s, VH / ZOOM * s);
-  npcs().forEach(n => { g.fillStyle = tn && n.id === tn.id ? "#F5C518" : "#E8741E"; g.beginPath(); g.arc(mx + n.x * s, my + n.y * s, tn && n.id === tn.id ? 3.5 : 2.2, 0, 7); g.fill(); });
+  npcs().forEach(n => { const on = targets.includes(n.id); g.fillStyle = on ? "#F5C518" : "#E8741E"; g.beginPath(); g.arc(mx + n.x * s, my + n.y * s, on ? 3.5 : 2.2, 0, 7); g.fill(); });
   g.fillStyle = "#fff"; g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.arc(mx + S.px * s, my + S.py * s, 3.5, 0, 7); g.fill(); g.stroke();
 }
 function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
@@ -1875,8 +1960,15 @@ function findNear(){
 }
 function interact(){
   if (!ov.hidden || !findNear()) return;
-  const qd = QUESTS[S.q];
+  const qd = quest(), les = lessonFor(near.id);
+  if (les){ sfx("open"); startChapter(les); return; }
   if (qd && qd.npc === near.id && qd.ch){ sfx("open"); startChapter(qd.ch); return; }
+  if (near.id === "koro" && S.q === 0 && lessonsLeft().length){
+    sfx("talk"); const left = lessonsLeft();
+    cur = { id: "talk", i: 0 };
+    CH.talk = { title: "Discussion", label: "École", steps: [{ t: "say", who: "koro", fx: "shock", txt: `Nurufufu… Tu n’as vu que ${LESSONS.length - left.length} camarade${LESSONS.length - left.length > 1 ? "s" : ""} sur ${LESSONS.length} ! Je sens l’odeur de l’impréparation. Va d’abord voir : ${left.map(id => SHORT[LESSON_NPC[id]]).join(", ")}. Ensuite, je te fais passer le test.` }] };
+    startChapter("talk"); return;
+  }
   sfx("talk");
   const lines = CHATTER[near.id] || ["…"];
   const extra = S.ending && near.id === "koro" ? ["Nurufufu ! Ta fin : « " + ENDINGS[S.ending].title.replace("Fin · ", "") + " ». Veux-tu en découvrir une autre ? Rejoue depuis le menu."] : [];
@@ -1888,7 +1980,7 @@ function interact(){
 
 function drawHud(){
   const h = $("#hud"); if (!h) return;
-  const qd = QUESTS[S.q];
+  const qd = quest();
   h.innerHTML = `<div class="brand">Classe 3-E : Opération Négociation<small>${teamsOn() ? S.teams.length + " équipes" : esc(S.name)}</small></div>
     <div class="tools"><button class="btn small" id="b-carnet">Carnet</button><button class="btn small" id="b-guide">Guide</button><button class="btn small ghost" id="b-sound" aria-pressed="${!S.mute}">${S.mute ? "Son : non" : "Son : oui"}</button><button class="btn small ghost" id="b-menu">Menu</button></div>
     <div class="gauges"><div class="gauge hp"><span class="nm">Koro-sensei</span><div class="tr"><span style="width:${S.hp / HP_MAX * 100}%"></span></div><span class="v">${Math.ceil(S.hp)} PV</span></div>
@@ -1928,7 +2020,11 @@ function renderWorld(){
 
 /* ---------- carnet, guide, menu ---------- */
 const MENTOR_LINE = {
-  c1: "Koro-sensei : « Préparez-vous comme pour un assassinat : rien au hasard. »",
+  l1: "Nagisa : « Un intérêt commun, un désaccord : c’est ça, une négociation. »",
+  l2: "Karma : « Ce qu’ils réclament compte moins que pourquoi ils le réclament. »",
+  l3: "Karasuma-sensei : « Sans solution de rechange, tu ne sais pas quand dire non. »",
+  l4: "Irina : « Le premier chiffre fixe la partie. Ne révèle jamais ta limite. »",
+  c1:"Koro-sensei : « Préparez-vous comme pour un assassinat : rien au hasard. »",
   c2: "Nagisa : « J’observe, puis je vérifie par une question. »",
   c3b: "Karma : « Je voulais la provoquer. J’ai appris à échanger plutôt qu’à attaquer. »",
   c4a: "Irina : « Persuader, oui. Manipuler, jamais. »",
@@ -1946,12 +2042,12 @@ const SOURCES = [
   "Loi n° 2018-670 du 30 juillet 2018 relative au secret des affaires.",
   "Code de commerce, art. L441-10 (délais de paiement) et L442-1 (pratiques restrictives) ; Code civil, art. 1137 (dol) — sur Légifrance."
 ];
-const CARNET_IDS = ["c1", "c2", "c3b", "c4a", "c5"];
+const CARNET_IDS = ["l1", "l2", "l3", "l4", "c1", "c2", "c3b", "c4a", "c5"];
 function renderCarnet(){
   cur = null;
   const plain = CARNET_IDS.map(id => `${CH[id].title.toUpperCase()}\n` + CH[id].memo.map(m => "- " + m).join("\n")).join("\n\n") + "\n\nSOURCES\n" + SOURCES.map(s => "- " + s).join("\n");
   paint(`<section class="act"><div class="act-head">${portraitHead("nagisa")}<div><div class="kicker">Fiche de révision</div><h1 style="font-size:30px">Le carnet de Nagisa</h1><p style="color:var(--chalk-2)">Nagisa note tout ce qui peut aider la classe à atteindre Koro-sensei.</p></div></div></section>${SPLIT}<section class="act">
-    <div class="carnet">${CARNET_IDS.map(id => { const c = CH[id], done = S.results[id] || (id === "c5" && S.ending); return `<div class="memo" ${done ? "" : 'style="opacity:.6"'}><div class="who">${portraitHead(c.mentor)}<div><h3 style="margin:0">${esc(c.title)}</h3><p style="font-size:14px;color:var(--ink-2)">${esc(MENTOR_LINE[id])}</p></div></div><ul>${c.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul><p class="maxim" style="margin-top:12px;font-size:16px">« ${esc(c.maxim)} »</p></div>`; }).join("")}</div>
+    <div class="carnet">${CARNET_IDS.map(id => { const c = CH[id], done = S.results[id] || (S.lessons || {})[id] || (id === "c5" && S.ending); return `<div class="memo" ${done ? "" : 'style="opacity:.6"'}><div class="who">${portraitHead(c.mentor)}<div><h3 style="margin:0">${esc(c.title)}</h3><p style="font-size:14px;color:var(--ink-2)">${esc(MENTOR_LINE[id])}</p></div></div><ul>${c.memo.map(m => `<li>${esc(m)}</li>`).join("")}</ul><p class="maxim" style="margin-top:12px;font-size:16px">« ${esc(c.maxim)} »</p></div>`; }).join("")}</div>
     <div class="memo"><h3>Sources</h3><ul>${SOURCES.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
     <div class="memo copybox"><h3>Copier la fiche en texte</h3><textarea id="fiche-txt" readonly>${esc(plain)}</textarea><div class="row"><button class="btn small primary" id="copy">Copier le texte</button><span id="copied" style="font-size:14px"></span></div></div></section>`);
   $("#copy").onclick = () => {
