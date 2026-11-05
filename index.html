@@ -199,7 +199,12 @@ thead th{background:var(--ink);color:var(--paper);font-family:var(--f-display);f
 .patience{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
 .patience .lbl{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--chalk-2)}
 .micro{position:relative}
-.micro.flash .panel{outline:4px solid var(--maru);outline-offset:3px}
+.micro.flash .panel{outline:4px solid var(--maru);outline-offset:3px;animation:microPulse .6s ease-in-out infinite alternate}
+@keyframes microPulse{to{outline-color:var(--koro);outline-offset:6px}}
+@media (prefers-reduced-motion:reduce){.micro.flash .panel{animation:none}}
+.emo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;margin-top:8px}
+.emo-grid figure{margin:0;text-align:center}.emo-grid .panel{border-radius:12px;overflow:hidden}.emo-grid figcaption{font-weight:700;margin-top:4px;font-size:14px}
+.emo-one{max-width:200px;margin:0 auto}.emo-one .panel{border-radius:14px;overflow:hidden}
 .micro .spark{position:absolute;top:6px;right:6px;background:var(--maru);color:var(--ink);font-weight:900;font-size:12px;padding:3px 8px;border-radius:999px}
 .insight{border:2px solid var(--maru);background:rgba(232,116,30,.14);border-radius:10px;padding:10px 14px;font-weight:700}
 .debrief{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
@@ -427,10 +432,45 @@ function koro(mood){
     `<path d="M26 34 L60 18 L94 34 L60 46Z" fill="#26222E" ${st}/><path d="M42 36 Q60 30 78 36 L78 42 Q60 36 42 42Z" fill="#26222E" ${st}/><path d="M86 31 L92 48" stroke="#E8C34A" stroke-width="3"/><circle cx="92" cy="50" r="3" fill="#E8C34A"/>`,
     "Koro-sensei");
 }
+/* traits du visage par émotion (visage centré en 60,60 ; yeux en 48/72,62) : les 7 émotions d'Ekman + regards */
+const EMO = {
+  joy: "la joie", sad: "la tristesse", anger: "la colère", fear: "la peur", surprise: "la surprise", disgust: "le dégoût", contempt: "le mépris",
+  glance: "un regard furtif", avert: "un regard qui fuit"
+};
+function feat(k){
+  const L = d => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
+  const E = (dx, dy, r) => `<ellipse cx="${48 + dx}" cy="${62 + dy}" rx="${r}" ry="${r + 1.5}" fill="${INK}"/><ellipse cx="${72 + dx}" cy="${62 + dy}" rx="${r}" ry="${r + 1.5}" fill="${INK}"/><circle cx="${49.5 + dx}" cy="${60 + dy}" r="1.4" fill="#fff"/><circle cx="${73.5 + dx}" cy="${60 + dy}" r="1.4" fill="#fff"/>`;
+  const Wd = r => `<ellipse cx="48" cy="62" rx="6.5" ry="7.5" fill="#fff" stroke="${INK}" stroke-width="2"/><ellipse cx="72" cy="62" rx="6.5" ry="7.5" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="48" cy="62" r="${r}" fill="${INK}"/><circle cx="72" cy="62" r="${r}" fill="${INK}"/>`;
+  const blush = `<ellipse cx="40" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".7"/><ellipse cx="80" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".7"/>`;
+  switch (k){
+    case "joy": return L("M41 51 Q47 46 54 50 M66 50 Q73 46 79 51") + L("M42 63 Q48 57 54 63 M66 63 Q72 57 78 63") + L("M37 60 L34 58 M37 64 L34 65 M83 60 L86 58 M83 64 L86 65") + `<path d="M45 76 Q60 95 75 76Z" fill="#fff" ${st}/>` + blush;
+    case "sad": return L("M41 55 Q48 53 54 47 M66 47 Q72 53 79 55") + E(0, 2, 3.3) + L("M43 58 L53 56 M67 56 L77 58") + L("M50 85 Q60 77 70 85") + `<path d="M44 70 Q46 75 44 77 Q42 75 44 70Z" fill="#9AD0F5" stroke="${INK}" stroke-width="1"/>`;
+    case "anger": return `<path d="M40 48 L55 56 M65 56 L80 48" stroke="${INK}" stroke-width="4.5" stroke-linecap="round"/>` + E(0, 1, 3.3) + `<path d="M42 58 L55 61 M65 61 L78 58" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` + `<path d="M48 83 H72" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>` + L("M55 72 L53 76 M65 72 L67 76") + `<path d="M86 40 l4 -4 m-4 0 l4 4" stroke="#C8322F" stroke-width="2.5" stroke-linecap="round"/>`;
+    case "fear": return L("M41 48 Q47 44 55 47 M65 47 Q73 44 79 48") + L("M53 46 L55 50 M67 46 L65 50") + Wd(2.6) + `<path d="M46 81 Q60 76 74 81 Q60 90 46 81Z" fill="#fff" ${st}/>` + `<path d="M88 50 Q92 58 88 62 Q84 58 88 50Z" fill="#9AD0F5" stroke="${INK}" stroke-width="1.5"/>`;
+    case "surprise": return L("M40 46 Q47 38 55 45 M65 45 Q73 38 80 46") + Wd(3) + `<ellipse cx="60" cy="84" rx="6" ry="8" fill="${INK}"/>`;
+    case "disgust": return L("M41 55 L54 57 M66 54 L79 52") + E(0, 1, 3.2) + L("M42 59 L54 61") + L("M54 70 Q56 67 58 70 M62 70 Q64 67 66 70") + L("M48 81 Q53 76 58 80 Q63 76 72 80");
+    case "contempt": return L("M41 53 H54 M66 52 Q73 48 79 52") + E(0, 0, 3.4) + L("M67 58 L77 57") + L("M50 81 Q60 82 66 80 Q71 78 74 73");
+    case "glance": return L("M41 53 H54 M66 53 H79") + E(4.5, 2, 3.3) + L("M50 81 Q60 82 70 81") + `<path d="M84 76 l8 6" stroke="${INK}" stroke-width="1.5" stroke-dasharray="2 2"/>`;
+    case "avert": return L("M41 54 Q47 53 54 55 M66 55 Q73 53 79 54") + E(-4.5, 3.5, 3.1) + L("M43 59 L53 60 M67 60 L77 59") + L("M51 82 Q60 80 69 83");
+    default: return L("M41 54 H54 M66 54 H79") + E(0, 0, 3.6) + L("M50 80 Q60 85 70 80");
+  }
+}
+/* visage neutre d'un élève anonyme, pour la planche des émotions */
+function emoFace(k){
+  return frame("#EDE7DA",
+    neck("#F1D3B3") + torso("#3B3F4A") + `<path d="M46 98 L60 116 L74 98" fill="#F4F4F4" ${st}/>` + head("#F1D3B3") +
+    `<path d="M31 56 Q30 26 60 26 Q90 26 89 56 Q80 38 60 38 Q40 38 31 56Z" fill="#3A2A20" ${st}/>` + feat(k), "Visage exprimant " + (EMO[k] || "une émotion"));
+}
 function lefort(rel, micro){
   const line = d => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
   let brows, mouth, extra = "", label;
-  if (micro){ brows = line("M41 50 Q47 46 54 50 M66 50 Q73 46 79 50"); mouth = `<ellipse cx="60" cy="82" rx="5" ry="4" fill="${INK}"/>`; label = "Claire Lefort, micro-expression"; }
+  if (micro){
+    const k = micro === true ? "surprise" : micro;
+    return frame("#FFE9C7",
+      `<path d="M28 62 Q24 22 60 20 Q96 22 92 62 Q94 80 86 86 L34 86 Q26 80 28 62Z" fill="#4A2F25" ${st}/>` +
+      neck("#E9C3A2") + torso("#1F6E68") + `<path d="M46 98 L60 116 L74 98" fill="#fff" ${st}/>` + head("#E9C3A2") +
+      `<path d="M31 54 Q34 28 62 28 Q84 28 89 50 Q70 36 50 40 Q38 44 31 54Z" fill="#4A2F25" ${st}/>` + feat(k), "Claire Lefort, micro-expression : " + (EMO[k] || ""));
+  }
   else if (rel >= 4){ brows = line("M41 53 Q47 49 54 52 M66 52 Q73 49 79 53"); mouth = `<path d="M48 77 Q60 91 72 77Z" fill="#fff" ${st}/>`; extra = `<ellipse cx="41" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".6"/><ellipse cx="79" cy="73" rx="5" ry="3" fill="#E9967A" opacity=".6"/>`; label = "Claire Lefort, détendue et souriante"; }
   else if (rel >= 2){ brows = line("M41 54 H54 M66 54 H79"); mouth = line("M50 80 Q60 85 70 80"); label = "Claire Lefort, neutre"; }
   else { brows = line("M41 52 L54 57 M66 57 L79 52"); mouth = line("M51 84 Q60 78 69 84"); extra = `<path d="M88 46 Q92 54 88 58 Q84 54 88 46Z" fill="#9AD0F5" stroke="${INK}" stroke-width="1.5"/><path d="M22 132 L50 112 L72 120 L98 104 L104 132Z" fill="#1F6E68" ${st}/>`; label = "Claire Lefort, crispée, bras croisés"; }
@@ -630,6 +670,7 @@ c2: { no: 2, title: "Le temps de l’observation", label: "Chapitre 2", scored: 
     { t: "quiz", who: "koro", q: "Paul Ekman a décrit des émotions de base reconnues dans de nombreuses cultures. Laquelle n’en fait PAS partie ?",
       opts: ["La joie", "Le mépris", "La surprise", "L’ennui"], ok: 3,
       why: "Joie, tristesse, colère, peur, surprise, dégoût, et le mépris. Le mépris se lit souvent dans un coin de la bouche qui se relève d’un seul côté. Une micro-expression dure moins d’une demi-seconde : il faut être attentif." },
+    { t: "emotions" },
     { t: "blitz", who: "nagisa", title: "Signal ou certitude ?", q: "40 secondes : vrai ou faux ? La classe crie sa réponse, l’animateur clique.", time: 40, choices: ["Vrai", "Faux"],
       items: [
         { t: "Des bras croisés prouvent un refus.", a: 1, why: "Un geste isolé ne prouve rien : contexte et ligne de base d’abord." },
@@ -819,14 +860,14 @@ const BOSS = [
 const PHASES = ["Ouverture", "Découverte", "Proposition", "Concessions", "Tactique adverse", "Grignotage", "Conclusion"];
 const NEGO = {
   open: { ph: 0, line: "Commençons. Je vous écoute.", cue: "Elle te tend la main avec un sourire franc et s’assoit en face de toi, de l’autre côté de la table.",
-    micro: { cue: "Un éclair d’inquiétude passe sur son visage quand tu poses ton dossier épais sur la table.", insight: "Elle craint une négociation dure : rassure-la en posant un cadre clair." },
+    micro: { face: "fear", cue: "Un éclair d’inquiétude passe sur son visage quand tu poses ton dossier épais sur la table.", insight: "Elle craint une négociation dure : rassure-la en posant un cadre clair." },
     opts: [
       { t: "Poignée de main ferme, puis tu poses le cadre : « Je propose : vos questions sur notre besoin, votre offre, les conditions, puis les prochaines étapes. Nous avons 45 minutes. »", f: s => { s.rel++; s.proc++; s.node = "disc"; s.note.push("Ouverture maîtrisée : un ordre du jour et une durée posent le cadre."); return "Parfait, c’est clair. Allons-y."; } },
       { t: "Tu attaques directement : « Votre prix est beaucoup trop élevé. »", f: s => { s.rel--; s.node = "disc"; s.note.push("Ouverture brutale : attaquer le prix avant d’avoir compris l’autre crispe la relation."); return "Ah. Bonjour quand même. … Je vous présente notre offre ?"; } },
       { t: "Tu parles dix minutes de ton week-end pour créer du lien.", f: s => { s.node = "disc"; s.note.push("Brise-glace trop long : un peu de lien, oui, mais pas au détriment du temps de la réunion."); return "Ha ha, sympa. (Elle jette un œil discret à sa montre.) Bon, on regarde l’offre ?"; } }
     ] },
   disc: { ph: 1, line: "Notre offre : 30 Pixelia Pro 14 à 1 250 € HT l’unité, garantie 1 an, livraison sous 6 semaines.", cue: "Débit calme, regard posé. Elle pose son stylo et attend ta réaction.",
-    micro: { cue: "Un sourire très bref quand elle prononce le nom de ton groupe.", insight: "Ton groupe l’intéresse plus que ce contrat : il y a un intérêt caché à explorer." ,
+    micro: { face: "joy", cue: "Un sourire très bref quand elle prononce le nom de ton groupe.", insight: "Ton groupe l’intéresse plus que ce contrat : il y a un intérêt caché à explorer." ,
       bonus: { t: "« J’ai l’impression que notre groupe vous intéresse au-delà de ce contrat. Qu’est-ce qu’un partenariat pourrait vous apporter ? »", f: s => { s.proc++; s.rel++; s.interest = true; s.node = "prop"; s.note.push("Micro-expression repérée et vérifiée par une question : son intérêt (entrer dans le groupe) est révélé et la relation progresse."); return "Vous êtes observateur… Oui. Être référencés dans votre groupe changerait tout pour nous. (Elle se penche en avant.)"; } } },
     opts: [
       { t: "Question ouverte : « Qu’est-ce qui est le plus important pour vous dans ce contrat ? »", f: s => { s.proc++; s.interest = true; s.node = "prop"; s.note.push("Découverte réussie : la question ouverte a révélé son intérêt, devenir fournisseur de référence du groupe."); return "Honnêtement ? Entrer dans votre groupe. Un premier contrat de référence, et de la visibilité sur les renouvellements."; } },
@@ -834,21 +875,21 @@ const NEGO = {
       { t: "Comme le suggère Karma : « Datalis nous fait 900 €. » (C’est faux.)", f: s => { s.rel--; s.lie = true; S.flags.lie = true; trustAdd(-2); s.node = "prop"; s.note.push("Mensonge sur l’offre concurrente : c’est déloyal, et elle a immédiatement demandé une preuve."); return "900 € pour ce modèle ? (Elle hausse un sourcil, un coin de la bouche se relève.) Vous pouvez me montrer le devis ?"; } }
     ] },
   prop: { ph: 2, line: "Alors, quelle est votre proposition ?", cue: "Elle croise les mains sous le menton et te regarde attentivement.",
-    micro: { cue: "Ses sourcils se lèvent une fraction de seconde : de la surprise.", insight: "Elle s’attendait à un prix plus haut : un ancrage chiffré la fera bouger." },
+    micro: { face: "surprise", cue: "Ses sourcils se lèvent une fraction de seconde : de la surprise.", insight: "Elle s’attendait à un prix plus haut : un ancrage chiffré la fera bouger." },
     opts: [
       { t: "Ancrage justifié : « Pour ce modèle, les prix constatés par lots de 30 vont de 1 020 à 1 120 €. Nous visons 1 040 € HT. »", f: s => { s.proc++; s.node = "conc"; if (s.rel >= 3){ s.price = 1160; s.note.push("Ancrage crédible et chiffré : elle est descendue à 1 160 €."); return "1 040 €… Vous avez fait vos devoirs. Je ne peux pas aller jusque-là, mais je peux vous proposer 1 160 €."; } s.price = 1200; s.note.push("Ancrage chiffré, mais la relation tendue l’a rendue moins conciliante : 1 200 €."); return "Après ce début de réunion ? Je peux faire 1 200 €, pas plus."; } },
       { t: "« Faites-nous votre meilleur prix. »", f: s => { s.price = 1210; s.node = "conc"; s.note.push("Tu l’as laissée ancrer : sans chiffre de ta part, elle ne descend qu’à 1 210 €."); return "Mon meilleur prix ? 1 210 €. C’est un vrai effort."; } },
       { t: "« Nous pouvons monter jusqu’à 1 190 €. »", f: s => { s.price = 1190; s.proc--; s.reveal = true; s.node = "conc"; s.note.push("Prix limite révélé : elle a pris 1 190 € immédiatement. Tu n’as plus de marge."); return "Très bien, 1 190 € alors ! (Ses épaules se relâchent : elle vient d’obtenir son prix.)"; } }
     ] },
   conc: { ph: 3, line: "Je peux difficilement aller plus loin.", cue: null,
-    micro: { cue: "Son regard file vers le carnet quand tu prononces « renouvellement ».", insight: "La visibilité sur les renouvellements est sa vraie monnaie d’échange." },
+    micro: { face: "glance", cue: "Son regard file vers le carnet quand tu prononces « renouvellement ».", insight: "La visibilité sur les renouvellements est sa vraie monnaie d’échange." },
     opts: [
       { t: "« Si nous signons un accord-cadre de deux ans pour le renouvellement du parc, alors pouvez-vous aller à 1 080 € et passer la garantie à 3 ans ? »", f: s => { s.proc++; s.warranty = 3; s.node = "tactic"; if (s.interest){ s.price = Math.max(1080, s.price - 80); s.rel++; s.note.push("Concession conditionnelle qui répond à son intérêt : prix en baisse et garantie 3 ans."); return "Deux ans de visibilité… c’est exactement ce qu’il nous faut. D’accord pour la garantie 3 ans, et je descends de 80 €."; } s.price -= 40; s.note.push("Concession conditionnelle : bonne méthode, mais sans connaître son intérêt, le gain est plus faible."); return "Hmm. La garantie 3 ans, oui. Sur le prix, je peux faire 40 € de moins."; } },
       { t: "« Coupons la poire en deux. »", f: s => { s.price = Math.round((s.price + 1040) / 2 / 10) * 10; s.node = "tactic"; s.note.push("Couper la poire en deux : rapide, mais sans contrepartie ni garantie supplémentaire."); return `Va pour ${eur(s.price)}. Mais la garantie reste à 1 an.`; } },
       { t: "« Bon, nous acceptons votre délai de 6 semaines et nous payons à la commande. »", f: s => { s.proc--; s.node = "tactic"; s.note.push("Concessions offertes sans rien demander en échange : la règle d’or est cassée."); return "Merci, c’est très aimable ! (Elle note, sans rien proposer en retour.)"; } }
     ] },
   tactic: { ph: 4, line: "Je dois vous prévenir : ce prix n’est valable que jusqu’à ce soir 18 h. Après, les composants augmentent.", cue: "Elle regarde sa montre et commence à se lever à moitié de sa chaise.",
-    micro: { cue: "Un coin de sa bouche se relève d’un seul côté en annonçant l’échéance.", insight: "Sourire asymétrique : souvent du mépris ou de l’assurance. L’urgence est peut-être un bluff.",
+    micro: { face: "contempt", cue: "Un coin de sa bouche se relève d’un seul côté en annonçant l’échéance.", insight: "Sourire asymétrique : souvent du mépris ou de l’assurance. L’urgence est peut-être un bluff.",
       bonus: { t: "« Votre échéance de 18 h… pouvez-vous me montrer l’avis de hausse de votre fournisseur de composants ? »", f: s => { s.proc++; s.price -= 10; s.node = "nibble"; s.note.push("Bluff démasqué grâce à la micro-expression : tu as demandé une preuve, l’échéance a disparu et elle a lâché 10 € de plus."); return "(Elle rit.) Bien joué. Il n’y a pas d’avis. Disons que je retire l’échéance… et 10 € par poste."; } } },
     opts: [
       { t: "« Je comprends. Pouvez-vous nous l’envoyer par écrit, avec la justification de la hausse ? Nous avons un processus de validation, et une autre offre à l’étude. »", f: s => { s.proc++; s.node = "nibble"; s.note.push("Fausse date limite repérée : tu as demandé une justification écrite et rappelé ta MESORE, calmement."); return "(Elle se rassoit.) … Bon. L’offre peut tenir jusqu’à vendredi."; } },
@@ -856,7 +897,7 @@ const NEGO = {
       { t: "« Vous bluffez, et vous le savez. »", f: s => { s.rel -= 2; s.node = "nibble"; s.note.push("Accuser de bluff abîme la relation. Mieux vaut demander une preuve."); return "(Ses lèvres se pincent.) Je ne bluffe pas. Je vous informe."; } }
     ] },
   nibble: { ph: 5, line: "Parfait. Ah, un petit détail : la livraison et l’installation sur site, c’est 900 € en plus. D’accord ?", cue: "Ton léger, presque distrait. Elle range déjà ses papiers.",
-    micro: { cue: "Elle évite ton regard une demi-seconde en annonçant les frais.", insight: "Elle sait que c’est un ajout de dernière minute : tu peux le refuser." },
+    micro: { face: "avert", cue: "Elle évite ton regard une demi-seconde en annonçant les frais.", insight: "Elle sait que c’est un ajout de dernière minute : tu peux le refuser." },
     opts: [
       { t: "« Nous parlions d’un prix rendu sur site. Si vous ajoutez des frais, alors nous revenons aussi sur la durée de l’accord-cadre. »", f: s => { s.proc++; s.node = "close"; s.note.push("Grignotage repoussé : tu as rouvert le donnant-donnant au lieu d’accepter un ajout de dernière minute."); return "(Elle sourit.) Bien vu. Livraison incluse, n’en parlons plus."; } },
       { t: "« D’accord, ce n’est que 900 €. »", f: s => { s.price += 30; s.nibble = true; s.node = "close"; s.note.push("Grignotage accepté : 900 € de plus, soit 30 € par poste."); return "Merci ! Je l’ajoute."; } },
@@ -953,6 +994,36 @@ R.say = s => {
   $("#nx").onclick = () => { if (!finishType()) next(); };
   $("#nx").focus({ preventScroll: true });
 };
+/* planche des 7 émotions d'Ekman, puis entraînement « Quelle émotion vois-tu ? » (sans points) */
+const EKMAN = ["joy", "sad", "anger", "fear", "surprise", "disgust", "contempt"];
+const EMO_TIP = { joy: "yeux plissés, joues relevées", sad: "sourcils relevés au centre, coins de la bouche vers le bas", anger: "sourcils froncés, lèvres serrées", fear: "yeux écarquillés, bouche étirée", surprise: "sourcils très hauts, bouche ouverte", disgust: "nez plissé, lèvre supérieure relevée", contempt: "un seul coin de la bouche relevé" };
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+R.emotions = () => {
+  paint(`<section class="act"><div class="act-head">${portraitHead("nagisa")}<div><div class="kicker">Planche d’observation</div><p class="q">Les 7 émotions de base décrites par Paul Ekman. Regarde bien les sourcils, les yeux et la bouche.</p></div></div></section>${SPLIT}<section class="act">
+    <div class="emo-grid">${EKMAN.map(k => `<figure><div class="panel">${emoFace(k)}</div><figcaption>${cap(EMO[k].replace(/^(la |le )/, ""))}</figcaption><p style="font-size:12px;color:var(--chalk-2);margin:2px 0 0">${EMO_TIP[k]}</p></figure>`).join("")}</div>
+    <div class="row end" style="margin-top:12px"><button class="btn primary" id="nx">Je m’entraîne ▸</button></div></section>`);
+  $("#nx").onclick = () => quizRound(0, shuffle(EKMAN).slice(0, 4), 0);
+  $("#nx").focus({ preventScroll: true });
+};
+function quizRound(i, list, good){
+  if (i >= list.length){
+    paint(`<section class="act"><div class="act-head">${portraitHead("nagisa")}<div><div class="kicker">Entraînement terminé</div><p class="q">${good} / ${list.length} émotions reconnues.</p></div></div></section>${SPLIT}<section class="act">${hintBox(good === list.length ? "Parfait ! Pendant la négociation avec Claire Lefort, ces expressions passeront vite sur son visage : appuie sur O dès que tu en vois une." : "Pas mal ! Pense aux sourcils, aux yeux et à la bouche. Pendant la négociation, appuie sur O dès qu’une expression passe sur le visage de Claire Lefort.")}<div class="row end"><button class="btn primary" id="nx">Suite ▸</button></div></section>`);
+    $("#nx").onclick = next; $("#nx").focus({ preventScroll: true });
+    return;
+  }
+  const k = list[i], opts = shuffle([k].concat(shuffle(EKMAN.filter(x => x !== k)).slice(0, 3)));
+  paint(`<section class="act"><div class="kicker">Quelle émotion vois-tu ? · ${i + 1} / ${list.length}</div><div class="emo-one"><div class="panel">${emoFace(k)}</div></div></section>${SPLIT}<section class="act">
+    <div class="opts">${opts.map((o, j) => `<button class="opt" data-e="${o}"><b>${"ABCD"[j]}</b><span>${cap(EMO[o])}</span></button>`).join("")}</div><div id="fb"></div>
+    <div class="row end"><button class="btn primary" id="nx" hidden>Suite ▸</button></div></section>`);
+  $$("[data-e]").forEach(b => b.onclick = () => {
+    const ok = b.dataset.e === k; if (ok) good++;
+    $$("[data-e]").forEach(x => { x.disabled = true; if (x.dataset.e === k) x.classList.add("ok"); });
+    if (!ok) b.classList.add("bad");
+    sfx(ok ? "star" : "talk");
+    $("#fb").innerHTML = feedback(ok, ok ? "Exact !" : "C’était " + EMO[k] + ".", "Indice : " + EMO_TIP[k] + ".");
+    $("#nx").hidden = false; $("#nx").onclick = () => quizRound(i + 1, list, good); $("#nx").focus({ preventScroll: true });
+  });
+}
 R.draw = s => {
   sfx("flip");
   paint(`<section class="act"><div class="kicker">Une carte est piochée…</div><div class="dwrap"><div class="dcard"><div class="dc-top"><span>CARTE</span><span>${s.n} / ${CARDS.length}</span></div><div class="dc-ico" aria-hidden="true">${s.ico}</div><div class="dc-rule">${esc(s.rule)}</div><div class="dc-sub">Une situation se présente. Ton choix changera la jauge de Confiance.</div></div></div></section>${SPLIT}<section class="act"><div class="row end"><span class="pad-hint">Entrée pour continuer</span><button class="btn primary" id="nx">Retourner la carte ▸</button></div></section>`);
@@ -1169,7 +1240,9 @@ R.nego = () => {
     const cue = s.node === "conc" ? (s.interest ? "Quand tu évoques la suite de la relation, elle se penche en avant et rouvre son carnet." : "Elle s’adosse et repose son stylo.") : n.cue;
     const said = (s.reply ? s.reply + " " : "") + n.line + (s.node === "close" && S.flags.gift ? " Et on se revoit au match, n’est-ce pas ?" : "");
     let insight = false, microOn = false, left = PAT, waited = 0;
-    const when = 2 + Math.random() * 4;
+    /* micro-expression : bien signalée (son, cadre, badge) et assez longue pour un jeu ; un peu plus courte au fil de la partie */
+    const when = 1.5 + Math.random() * 2.5;
+    const dur = S.noTimer ? 8 : [4.5, 4, 3.5, 3.5, 3, 3][Math.min(5, s.microN || 0)];
     paint(`<section class="act">${turnLine(true)}${stats()}
       <div class="patience"${S.noTimer ? " hidden" : ""}><span class="lbl">Patience</span><div class="timer" id="tm"><span style="width:100%"></span></div></div>
       <div class="scene"><div class="micro" id="mic"><div class="panel" id="lf">${lefort(s.rel)}</div></div><div class="talk"><div class="tag">${esc(CAST.lefort.name)}</div><div class="bubble" id="bub"></div>${cueBox(cue)}<div id="ins"></div></div></div></section>${SPLIT}<section class="act">
@@ -1184,7 +1257,9 @@ R.nego = () => {
         if (insight) return;
         if (microOn){
           insight = true; s.seen++;
-          $("#ins").innerHTML = `<div class="insight">Bien vu : ${esc(n.micro.cue)} ${esc(n.micro.insight)}</div>`;
+          $("#ins").innerHTML = `<div class="insight">Bien vu, c’était ${esc(EMO[n.micro.face] || "une micro-expression")} ! ${esc(n.micro.cue)} ${esc(n.micro.insight)}</div>`;
+          const ob = $("#obs"); if (ob) ob.classList.remove("glow"); const sp = $("#mic .spark"); if (sp) sp.textContent = "Repéré !";
+          sfx("star");
           if (n.micro.bonus){
             const b = document.createElement("button");
             b.className = "opt bonus"; b.innerHTML = `<b>★</b><span>${esc(n.micro.bonus.t)}</span>`;
@@ -1201,15 +1276,19 @@ R.nego = () => {
     } else window.__obs = null;
     every(() => {
       waited += 0.1;
-      if (n.micro && !microOn && !insight && waited >= when && waited < when + 1.4){
-        microOn = true;
-        const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel, true);
-        const m = $("#mic"); if (m){ m.classList.add("flash"); }
+      if (n.micro && !microOn && !insight && waited >= when && waited < when + dur){
+        microOn = true; s.microN = (s.microN || 0) + 1;
+        const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel, n.micro.face);
+        const m = $("#mic"); if (m){ m.classList.add("flash"); if (!$("#mic .spark")) m.insertAdjacentHTML("beforeend", `<span class="spark">Observe ! (O)</span>`); }
+        const ob = $("#obs"); if (ob) ob.classList.add("glow");
+        sfx("micro");
       }
-      if (microOn && waited >= when + 1.4){
-        microOn = false; if (!insight) s.missedNow = true;
+      if (microOn && waited >= when + dur){
+        microOn = false;
         const lf = $("#lf"); if (lf) lf.innerHTML = lefort(s.rel);
-        const m = $("#mic"); if (m) m.classList.remove("flash");
+        const m = $("#mic"); if (m){ m.classList.remove("flash"); const sp = $("#mic .spark"); if (sp) sp.remove(); }
+        const ob = $("#obs"); if (ob) ob.classList.remove("glow");
+        if (!insight){ s.missedNow = true; $("#ins").innerHTML = `<div class="insight" style="border-color:var(--chalk-2);background:transparent">Trop tard : une expression vient de passer sur son visage. Sois attentif à la prochaine !</div>`; }
       }
       if (S.noTimer) return;
       left -= 0.1;
@@ -1660,6 +1739,7 @@ function sfx(k){
   else if (k === "talk"){ tone(660, 0.08, "square", 0.04); tone(990, 0.1, "square", 0.035, 0.07); }
   else if (k === "open"){ tone(220, 0.35, "triangle", 0.08, 0, 660); noise(0.3, 0.05, 2200); }
   else if (k === "star"){ [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.25, "triangle", 0.07, i * 0.07)); }
+  else if (k === "micro"){ tone(1760, 0.12, "sine", 0.06); tone(2349, 0.18, "sine", 0.05, 0.08); }
   else if (k === "flip"){ noise(0.18, 0.08, 3000); tone(330, 0.3, "triangle", 0.06, 0.12, 990); tone(1320, 0.4, "sine", 0.04, 0.3); }
   else if (k === "room"){ tone(523, 0.18, "sine", 0.04); tone(784, 0.25, "sine", 0.035, 0.09); }
 }
